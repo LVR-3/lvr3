@@ -65,3 +65,9 @@ debian/lvr2-*/
 ext/rivlib/
 texture_*.jpg
 texture_*.ppm
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
