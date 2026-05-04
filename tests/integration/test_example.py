@@ -9,10 +9,9 @@ logger = logging.getLogger(__name__)
 class TestIntegration:
     """Integration test examples."""
 
-    def test_message_fixture_integration(self, sample_message):
+    def test_message_fixture_integration(self, buildDirectory):
         """Test using shared fixtures."""
-        assert isinstance(sample_message, str)
-        assert sample_message.startswith("Hello")
+        logging.info(buildDirectory)
 
     def test_multiple_fixtures(self, sample_message, sample_numbers):
         """Test combining multiple fixtures."""

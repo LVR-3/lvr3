@@ -10,7 +10,7 @@ pip install -r requirements.txt
 ```
 
 ## run tests
-
+build the project first, then run the tests from the root of the repository using pytest:
 ```bash
 python3 -m pytest -v
 ```
