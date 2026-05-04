@@ -26,4 +26,4 @@ def sample_numbers():
 @pytest.fixture(scope="function")
 def buildDirectory():
     """Provide the repository build directory path."""
-    return pathlib.Path(__file__).resolve().parents[1] / "build"
+    return pathlib.Path(__file__).resolve().parents[1] / "build" / "bin"
