@@ -19,15 +19,15 @@ Main reconstruction path (`src/tools/lvr2_reconstruct/Main.cpp`):
 sequenceDiagram
     autonumber
     participant CLI as CLI invocation
-    participant Opt as reconstruct::Options (BaseOption)
+    participant OptionsBox as reconstruct::Options (BaseOption)
     participant MF as ModelFactory
     participant Surf as PointsetSurface/SearchTree
     participant Reco as FastReconstruction
     participant Mesh as MeshBuffer/Optimizer
     participant Out as Output ModelFactory
 
-    CLI->>Opt: parse argv / --inputFile
-    Opt->>MF: getInputFileName()
+    CLI->>OptionsBox: parse argv / --inputFile
+    OptionsBox->>MF: getInputFileName()
     MF->>MF: readModel(path)
     MF-->>Surf: create point-surface abstraction
     Surf-->>Reco: build grid + reconstruction
@@ -82,11 +82,11 @@ classDiagram
 
 ```mermaid
 flowchart LR
-    A[Root options\nCMakeLists.txt:5-15] --> B[Required deps\nCMakeLists.txt:134-240]
-    B --> C[Core build\nsrc/liblvr2/CMakeLists.txt]
-    C --> D[Tool targets\nadd_subdirectory(src/tools/...)]
-    D --> E[Export/install\nCMakePackageConfigHelpers]
-    E --> F[Consumer: find_package(lvr2)]
+    A["Root options<br/>CMakeLists.txt:5-15"] --> B["Required deps<br/>CMakeLists.txt:134-240"]
+    B --> C["Core build<br/>src/liblvr2/CMakeLists.txt"]
+    C --> D["Tool targets<br/>add_subdirectory src/tools"]
+    D --> E["Export/install<br/>CMakePackageConfigHelpers"]
+    E --> F["Consumer<br/>find_package(lvr2)"]
 ```
 
 ## What can be removed cleanly
