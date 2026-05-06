@@ -1,59 +1,77 @@
 # Simplification Plan
 
-## Goal
-Reduce build/runtime footprint without changing project semantics, while keeping a clear path for explicit optional features.
+> [!IMPORTANT]
+> The plan is not “delete everything old.” It is: **protect the reconstruction
+> core, isolate optional features, then remove surfaces that have no owner,
+> smoke test, or current dependency story.**
 
-## Prioritized strip / quarantine plan
-
-### T0 (low risk, high clarity)
-| Item | Impact | Effort | Risk |
-|---|---|---|---|
-| Remove/relocate commented tool entries from root (`lvr2_slam2hdf5`, `lvr2_hdf5togeotiff`, `lvr2_registration`, `lvr2_hdf5_convert_old`, `teaser_example`) | Shrinks maintenance surface; clarifies shipped feature set. | Low | Low |
-| Move stale scripts from runtime path (`Singularity.def`, `spack_modules.bash`, `eval.sh`) to archived/docs-not-maintained location | Clarifies build contract. | Low | Low |
-| Add CI gate for docs/rendered output sanity + package artifacts check (fail-fast) | Improves detectability of regressions. | Medium | Low |
-
-### T1 (medium impact, medium effort)
-| Item | Impact | Effort | Risk |
-|---|---|---|---|
-| Default tools split (`LVR2_BUILD_TOOLS_EXPERIMENTAL` stays OFF) plus explicit feature blocks (GPU/Viewer/3DTiles) | Reduces surprise and compile-time drift. | Medium | Low |
-| Fix feature-flag drift (`LVR2_WITH_*` vs `WITH_*`) across `CMakeLists.txt`, `src/liblvr2/CMakeLists.txt`, and `src/tools/lvr2_3dtiles/CMakeLists.txt` | Stabilizes toggles and avoids silent dead paths. | Medium | Medium |
-| Remove or explicitly mark legacy `3DTILES` block until contract is settled | Removes broken branch risk from default workflow. | Medium | Medium |
-| Clean up `ext/kintinuous` and `LVR2_WITH_KINFU` usage | Removes dead legacy dependency chain and old stack assumptions. | Medium | Medium |
-
-### T2 (high impact, higher effort)
-| Item | Impact | Effort | Risk |
-|---|---|---|---|
-| Split display/OpenGL from headless core (`src/liblvr2/display/*`) | Enables true headless default with smaller dependency requirements. | High | Medium |
-| Rework vendored policy (LZ4, nanoflann, psimpl, rply, laslib, spdlog/HighFive) into explicit `LVR2_USE_BUNDLED_*` toggles | Simplifies security/compliance and reproducibility. | High | Medium |
-| Replace legacy static/shared duplication (`lvr2`, `lvr2_static`, `lvr2cuda`, `lvr2cuda_static`, rply/laslib both modes) with build-option control | Shrinks artifact fan-out and packaging complexity. | Medium/High | Low |
-| Consolidate package metadata source of truth (CPack vs `debian/` vs ROS `package.xml`) | Removes packaging surprise and CI confusion. | High | High |
-
-## What should be preserved first (non-strip)
-- `lvr2_reconstruct` core flow and options baseline.
-- Public library headers under `include/lvr2` currently used by downstream.
-- Required core deps that are used by all builds (Boost/Eigen/HDF5/OpenCV/GDAL/etc.).
-
-## Simplification decision matrix
+## Roadmap
 
 ```mermaid
 stateDiagram-v2
-    [*] --> InScopeAudit
-    InScopeAudit --> QuickClean : low-risk items
-    QuickClean --> FeatureSplit : explicit feature boundaries
-    FeatureSplit --> DependencyPrune : remove broken/legacy branches
-    DependencyPrune --> ContractAlign : package/docs/tests alignment
-    ContractAlign --> [*]
+    [*] --> NameTheCore
+    NameTheCore --> NormalizeFlags
+    NormalizeFlags --> GateFeatures
+    GateFeatures --> ArchiveDeadBranches
+    ArchiveDeadBranches --> AlignContracts
+    AlignContracts --> AddHealthChecks
+    AddHealthChecks --> [*]
 ```
 
-## Concrete strip candidates (current)
-- `ext/kintinuous`, `LVR2_WITH_KINFU`, `src/liblvr2` Freenect branch.
-- `lvr2_fastsense_reconstruction`, `lvr2_hdf5_builder`, `lvr2_hdf5_builder_2`, `lvr2_largescale_reconstruct_mpi` and other unreferenced/experimental tool bins.
-- `LVR2_WITH_3DTILES` path unless offline/provisioned policy is established.
-- `Singularity.def`, `spack_modules.bash`, `eval.sh` from active project surface.
+## PR stack
 
-## Why this ordering
-- Starts with low-effort clarity moves (tooling/docs), then isolates feature boundaries (so no implicit build creep), then removes true risk-heavy legacy branches.
+| Order | PR theme | Outcome | Risk |
+|---:|---|---|---|
+| 1 | Name the default product | Document “headless core + 3 tools” as the supported baseline. | Low |
+| 2 | Normalize feature flags | `LVR2_WITH_*` becomes the only active option namespace. | Medium |
+| 3 | Make GPU explicit | CUDA/OpenCL stop surprising default builds, or get a documented default profile. | Medium |
+| 4 | Archive dead branches | KinFu, Freenect, orphan/commented tools, and stale scripts leave the active path. | Medium |
+| 5 | Split display/viewer | Headless core no longer requires OpenGL/GLUT display API. | Medium/High |
+| 6 | Align package contracts | README, CPack, `package.xml`, `debian/`, and export config stop disagreeing. | High |
+| 7 | Add proof | CI runs default smoke/CTest and install/export checks. | Low/Medium |
 
-## Deep refs
-- Detailed findings: `docs/analysis-input/simplification-recon.md`
-- Option/config evidence: `docs/analysis-input/dependencies-recon.md`, `docs/analysis-input/architecture-recon.md`
+## Strip candidates
+
+| Candidate | Why it fits the thread | Evidence | First safe move |
+|---|---|---|---|
+| KinFu | Old stack, root option not meaningfully wired into current product. | [`LVR2_WITH_KINFU`](../CMakeLists.txt#L9), [`ext/kintinuous`](../ext/kintinuous) | Move to archive or remove after owner check. |
+| Freenect/Kinect | Option/source gates drift; deprecated headers involved. | [Freenect option](../CMakeLists.txt#L14), [probe](../CMakeLists.txt#L470-L477), [source gate](../src/liblvr2/CMakeLists.txt#L130-L133) | Deprecate unless hardware support is confirmed. |
+| 3D Tiles path | Feature wiring and dependency fetch policy are unclear. | [3D Tiles block](../CMakeLists.txt#L540-L571), [tool CMake](../src/tools/lvr2_3dtiles/CMakeLists.txt) | Quarantine behind explicit “unsupported/experimental” docs. |
+| Commented/orphan tools | They create perceived product surface without default support. | [tool block](../CMakeLists.txt#L773-L811), [`src/tools/`](../src/tools) | Move to an `attic` branch/path or delete after owner check. |
+| Legacy Debian path | CPack already exists and `debian/` uses stale options/deps. | [CPack](../CMakeModules/lvr2-packaging.cmake#L35-L60), [Debian rules](../debian/rules#L22-L27) | Pick CPack or regenerate Debian metadata. |
+| Stale local scripts | One-off/hardcoded environments look like maintained entry points. | [`Singularity.def`](../Singularity.def), [`spack_modules.bash`](../spack_modules.bash), [`eval.sh`](../eval.sh) | Move to unsupported archive or delete. |
+
+## Keep before cutting
+
+- Preserve [`lvr2_reconstruct`](../src/tools/lvr2_reconstruct) as the flagship
+  runtime path.
+- Preserve public headers under [`include/lvr2`](../include/lvr2) until the next
+  major/API cleanup plan exists.
+- Preserve IO formats that are confirmed user-facing contracts; gate them only
+  after a migration note exists.
+
+## Gating checklist
+
+Use this checklist before removing a subsystem:
+
+- [ ] Is it reachable from default CMake?
+- [ ] Is there an owner or current user?
+- [ ] Does CI build or smoke-test it?
+- [ ] Are dependencies available on supported Ubuntu/ROS targets?
+- [ ] Is it part of the installed API/export contract?
+- [ ] Can it be archived first instead of deleted?
+
+## Suggested first cleanup issue
+
+> Normalize feature flags and mark unsupported feature branches.
+
+Scope:
+
+- Replace internal `WITH_*` checks with `LVR2_WITH_*` equivalents.
+- Add compatibility warnings for old names for one release.
+- Mark 3D Tiles, Freenect, and KinFu as unsupported unless owners confirm.
+- Add one configure-only CI job that toggles retained feature flags.
+
+Why first: it makes later deletion decisions mechanical instead of guesswork.
+
+Raw detail: [simplification recon](analysis-input/simplification-recon.md).

@@ -1,63 +1,68 @@
-# LVR2 Analysis Docs
+# LVR2 Repository Analysis
 
-Status-oriented map for a no-code analysis pass across build, dependencies, simplification, and architecture.
+> [!IMPORTANT]
+> **Common thread:** make LVR2 a small, reliable, headless reconstruction core.
+> Keep GPU, viewer, 3D Tiles, legacy IO, and old packaging as explicit opt-in
+> feature packs or archive them when they are not maintained.
 
-## Short entry
-- **Project**: `lvr2` (version 25.2.3) is a C++17 point-cloud reconstruction toolkit with a shared library plus many tool/front-end targets.
-- **Scope assessed**: build graph, dependency surface, public API modules, and health signals from repo and workflows.
-- **Source of truth used**: `CMakeLists.txt` build wiring, `src/liblvr2/CMakeLists.txt`, tool `CMakeLists.txt` files, packaging configs, CI workflows, and focused recon notes in `docs/analysis-input/*.md`.
+## Read by intent
 
-## Document map
-- `docs/current-state.md` — module inventory + health check (build/test/docs/package).
-- `docs/dependencies.md` — required / optional / vendored dependency matrix + strip candidates.
-- `docs/simplification.md` — prioritized strip/cleanup plan with impact/effort/risk.
-- `docs/architecture.md` — execution/data-flow + module wiring with file anchors.
+| If you want to... | Start here | You get |
+|---|---|---|
+| Understand the repo shape | [Current state](current-state.md) | Product surface, health pulse, and drift map |
+| Find dependency risk | [Dependencies](dependencies.md) | Required/optional/vendored dependency contract |
+| Plan cleanup work | [Simplification plan](simplification.md) | Ordered PR stack with strip candidates |
+| Follow runtime/build flow | [Architecture](architecture.md) | Reconstruction pipeline and build seams |
+| Audit raw evidence | [`analysis-input/`](analysis-input/) | Dense recon notes from subagent passes |
 
-## Current state (compact)
-- **Build config**: `CMakeLists.txt:5-15` enables library + core tools by default; examples/viewer default OFF.
-- **Dependency policy**: broad required set + broad optional gates; many optional features are still effectively always initialized by defaults (`LVR2_WITH_CUDA=ON`, `LVR2_WITH_OPENCL=ON`).
-- **Tool surface**: `src/tools/*` has 34 tool dirs; only a subset is active by default.
-- **Tests/CI**: no first-party `ctest` flow in build scripts.
-- **Packaging/docs**: metadata drift between CMake, `package.xml`, legacy Debian files, and README dependency snippets.
-
-## Top recommendations
-1. **Normalize feature flags** (`LVR2_WITH_*` end-to-end) and remove old `WITH_*` references before build simplification.
-2. **Split optional surfaces** (viewer/GPU/3DTiles/legacy tools) from the default headless product.
-3. **Align package + docs + CI dependency contracts** to prevent install drift.
-4. **Prune proven-dead modules** (orphaned/ commented tools + dormant vendor subtrees) after ownership review.
-5. **Add at least one health gate** (`ctest`, docs smoke checks, release artifact checks) in CI.
-
-## Mermaid: quick document map
+## The analysis thread
 
 ```mermaid
-mindmap
-  root((lvr2 docs))
-    README
-      Short entry
-      Recommendations
-    current-state
-      Module inventory
-      Health: build/test/docs/package
-    dependencies
-      Required
-      Optional
-      Vendored
-      Strip targets
-    simplification
-      Priority plan
-      Impact/Effort/Risk
-      Strip candidates
-    architecture
-      Build topology
-      Runtime data-flow
-      API module relations
-    analysis-input
-      architecture-recon.md
-      dependencies-recon.md
-      health-recon.md
-      simplification-recon.md
+flowchart TD
+    A["Keep the reconstruction core small"] --> B["Make optional features explicit"]
+    B --> C["Strip or archive unsupported branches"]
+    C --> D["Align docs, CI, packages, and exports"]
+    D --> E["Add checks that prove the contract"]
+
+    A -. evidence .-> A1["Core tools in CMake"]
+    B -. evidence .-> B1["Feature flags and optional deps"]
+    C -. evidence .-> C1["Legacy vendors and orphan tools"]
+    D -. evidence .-> D1["README, CPack, Debian, ROS drift"]
 ```
 
-## Deep references
-- Raw findings: `docs/analysis-input/architecture-recon.md`, `docs/analysis-input/dependencies-recon.md`, `docs/analysis-input/health-recon.md`, `docs/analysis-input/simplification-recon.md`.
-- Product build/install baseline: `CMakeLists.txt`, `src/liblvr2/CMakeLists.txt`, `CMakeModules/lvr2-packaging.cmake`, `CMakeModules/lvr2-config.cmake.in`, `.github/workflows/*.yml`.
+Use the diagram as the through-line for the rest of the docs: every finding is
+about shrinking hidden default surface area or proving that a retained surface is
+maintained.
+
+## Findings at a glance
+
+| Area | Current signal | Why it matters | Deep dive |
+|---|---|---|---|
+| Default surface | Tools are on, examples/viewer are off, CUDA/OpenCL default on in [root options](../CMakeLists.txt#L5-L15). | The default build is not a minimal headless build yet. | [Current state](current-state.md#product-surface) |
+| Dependency contract | Required deps and exported deps are broad; optional deps leak into default reasoning. | Install and downstream `find_package(lvr2)` behavior can drift. | [Dependencies](dependencies.md#contract-risks) |
+| Tool sprawl | Only three default tools are enabled in [tool wiring](../CMakeLists.txt#L767-L811), but many experimental/commented/orphan dirs remain. | Unsupported tools add review, package, and docs cost. | [Simplification](simplification.md#strip-candidates) |
+| Health checks | Main CI builds but does not run first-party CTest. | Compile success can hide runtime or packaging regressions. | [Current state](current-state.md#health-pulse) |
+| Packaging/docs | CPack, `debian/`, `package.xml`, README, and workflows are not one contract. | Users and downstream packagers see contradictory requirements. | [Dependencies](dependencies.md#metadata-drift) |
+
+## First PR stack
+
+- [ ] Normalize feature flags to `LVR2_WITH_*` and deprecate old `WITH_*` names.
+- [ ] Flip CUDA/OpenCL to explicit opt-in or document why they remain default-on.
+- [ ] Add a minimal CI smoke/CTest gate for the default build.
+- [ ] Archive or remove dead branches: KinFu, Freenect, commented/orphan tools, stale local scripts.
+- [ ] Pick one packaging source of truth and link README dependency docs to it.
+
+## Evidence appendix
+
+<details>
+<summary>Raw recon files</summary>
+
+- [Architecture recon](analysis-input/architecture-recon.md)
+- [Dependency recon](analysis-input/dependencies-recon.md)
+- [Health recon](analysis-input/health-recon.md)
+- [Simplification recon](analysis-input/simplification-recon.md)
+
+These appendices are intentionally denser than the main docs. Use them when you
+need exact observations behind a recommendation.
+
+</details>

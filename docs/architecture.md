@@ -1,110 +1,119 @@
 # Architecture / Data Flow
 
-## High-level architecture
-- **Build layer**: root `CMakeLists.txt` resolves required deps, then optional feature deps, then composes `src/liblvr2` and selected tool targets.
-- **Core library**: `src/liblvr2/CMakeLists.txt` builds `lvr2core` object + `lvr2_static` + `lvr2` (+ CUDA variants when `CUDA_FOUND`).
-- **Tool layer**: executables in `src/tools/*/CMakeLists.txt` mostly link to static core libs (`lvr2_static`), e.g. `src/tools/lvr2_reconstruct/CMakeLists.txt`.
-- **Install/config layer**: root install writes headers + exported targets + package configs (`CMakeModules/*.cmake.in`, `CMakeModules/lvr2-packaging.cmake`).
+> [!NOTE]
+> This page identifies the path to protect while simplifying the repo: **CLI →
+> model IO → point surface/search → reconstruction → mesh/output**. Strip work
+> should avoid destabilizing this path.
 
-## Runtime flow (`lvr2_reconstruct`)
-Main reconstruction path (`src/tools/lvr2_reconstruct/Main.cpp`):
-1. Parse CLI (`reconstruct::Options`) from `BaseOption`.
-2. Load model through `ModelFactory::readModel` (`include/lvr2/io/ModelFactory.hpp` + `src/liblvr2/io/ModelFactory.cpp`).
-3. Build surface model (`PointsetSurface`) and neighbor structure (`SearchTree`).
-4. Build grid + reconstruction (`GridBase`, `FastReconstructionBase`).
-5. Optional texture/material pipeline (`Materializer`, texturizers).
-6. Optimize mesh + persistence via `ModelFactory::saveModel`.
+## Runtime pipeline
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant CLI as CLI invocation
-    participant OptionsBox as reconstruct::Options (BaseOption)
-    participant MF as ModelFactory
-    participant Surf as PointsetSurface/SearchTree
+    participant User as CLI user
+    participant OptionsBox as reconstruct::Options
+    participant IO as ModelFactory
+    participant Surface as PointsetSurface
+    participant Search as SearchTree
     participant Reco as FastReconstruction
-    participant Mesh as MeshBuffer/Optimizer
-    participant Out as Output ModelFactory
+    participant Mesh as Mesh pipeline
+    participant Save as Output IO
 
-    CLI->>OptionsBox: parse argv / --inputFile
-    OptionsBox->>MF: getInputFileName()
-    MF->>MF: readModel(path)
-    MF-->>Surf: create point-surface abstraction
-    Surf-->>Reco: build grid + reconstruction
-    Reco->>Mesh: mesh output
-    Mesh->>Mesh: optimize/cluster/clean
-    Mesh->>Out: saveModel(path)
-    Out-->>CLI: status / saved artifacts
+    User->>OptionsBox: parse input and algorithm options
+    OptionsBox->>IO: provide input path and transforms
+    IO->>Surface: load point or scan data
+    Surface->>Search: query neighbors and normals
+    Search-->>Reco: surface samples
+    Reco->>Mesh: create mesh buffer
+    Mesh->>Mesh: optimize, cluster, materialize
+    Mesh->>Save: final model
+    Save-->>User: written artifact or error
 ```
 
-## Data/Component view
+| Step | Main files | Notes |
+|---|---|---|
+| Parse CLI | [`Options.cpp`](../src/tools/lvr2_reconstruct/Options.cpp), [`BaseOption.hpp`](../include/lvr2/config/BaseOption.hpp) | Reconstruction behavior is option-driven. |
+| Load model | [`ModelFactory.hpp`](../include/lvr2/io/ModelFactory.hpp), [`ModelFactory.cpp`](../src/liblvr2/io/ModelFactory.cpp) | Extension-based IO dispatch. |
+| Build surface/search | [`PointsetSurface.hpp`](../include/lvr2/reconstruction/PointsetSurface.hpp), [`SearchTree.hpp`](../include/lvr2/reconstruction/SearchTree.hpp), [`SearchTreeFlann.hpp`](../include/lvr2/reconstruction/SearchTreeFlann.hpp) | Search backend is a natural seam. |
+| Reconstruct | [`Main.cpp`](../src/tools/lvr2_reconstruct/Main.cpp), [`FastReconstruction.hpp`](../include/lvr2/reconstruction/FastReconstruction.hpp) | Main product path to preserve. |
+| Save output | [`ModelFactory.cpp`](../src/liblvr2/io/ModelFactory.cpp) | Same factory owns output dispatch. |
+
+## Component seams
 
 ```mermaid
 classDiagram
-    class BaseOption {
-      +variables map
-      +setup()
-    }
-    class Options {
+    class OptionsBox {
       +getPCM()
       +getDecomposition()
     }
     class ModelFactory {
-      +readModel(file)
-      +saveModel(model,file)
+      +readModel(path)
+      +saveModel(model,path)
+    }
+    class PointBuffer {
+      +points
+      +normals
+      +colors
     }
     class PointsetSurface {
-      +searchTree()
-      +distance(v)
+      +distance(query)
       +calculateSurfaceNormals()
     }
     class SearchTree {
-      +kSearch()
-      +radiusSearch()
+      +kSearch(query)
+      +radiusSearch(query)
     }
-    class FastReconstructionBase {
+    class FastReconstruction {
       +getMesh()
     }
-    class lvr2_library {
-      +api headers
-      +link interface
+    class MeshBuffer {
+      +vertices
+      +faces
     }
-    BaseOption <|-- Options
-    Options --> BaseOption
-    Options --> ModelFactory
-    ModelFactory --> PointsetSurface
+
+    OptionsBox --> ModelFactory
+    ModelFactory --> PointBuffer
+    PointBuffer --> PointsetSurface
     PointsetSurface --> SearchTree
-    PointsetSurface --> FastReconstructionBase
-    FastReconstructionBase --> lvr2_library
+    PointsetSurface --> FastReconstruction
+    FastReconstruction --> MeshBuffer
+    MeshBuffer --> ModelFactory
 ```
 
-## Build-time dependency flow
+Use these seams for simplification:
+
+- **Search backends**: keep the interface, reduce default backend/dependency spread.
+- **IO formats**: make unsupported formats feature-gated rather than advertised by default.
+- **Mesh post-processing**: keep it behind the default reconstruction path; avoid coupling it to viewer/GPU-only code.
+
+## Build topology
 
 ```mermaid
 flowchart LR
-    A["Root options<br/>CMakeLists.txt:5-15"] --> B["Required deps<br/>CMakeLists.txt:134-240"]
-    B --> C["Core build<br/>src/liblvr2/CMakeLists.txt"]
-    C --> D["Tool targets<br/>add_subdirectory src/tools"]
-    D --> E["Export/install<br/>CMakePackageConfigHelpers"]
-    E --> F["Consumer<br/>find_package(lvr2)"]
+    A["Root options<br/>CMakeLists.txt"] --> B["Required deps"]
+    A --> C["Optional feature deps"]
+    B --> D["src/liblvr2"]
+    C --> D
+    D --> E["Default tools"]
+    D --> F["Experimental tools"]
+    D --> G["Install/export"]
+    G --> H["Downstream find_package"]
 ```
 
-## What can be removed cleanly
-- **Display/OpenGL code remains in core** (`include/lvr2/display/*` + `src/liblvr2` always includes display sources) so it cannot be headless-optimized without a module split (`src/liblvr2/CMakeLists.txt`).
-- **Tool branches** (`Freenect`, `3DTiles`, CUDA/OpenCL, viewer) are mostly additive and can be detached behind explicit build profiles.
-- **Legacy/redundant modules** (e.g., `ext/kintinuous`, orphan tool dirs, old docs/scripts) are not referenced in default user path and are likely first-class strip candidates.
+| Build area | File links | Simplification seam |
+|---|---|---|
+| Root options | [options](../CMakeLists.txt#L5-L15) | Decide default product shape here. |
+| Dependency probes | [required deps](../CMakeLists.txt#L134-L258), [optional deps](../CMakeLists.txt#L270-L582) | Keep feature deps behind feature flags. |
+| Core lib | [`src/liblvr2/CMakeLists.txt`](../src/liblvr2/CMakeLists.txt) | Split display/GPU/legacy IO from headless core. |
+| Tools | [tool block](../CMakeLists.txt#L767-L811), [`src/tools`](../src/tools) | Keep default tools small; quarantine experimental tools. |
+| Export/install | [`lvr2-config.cmake.in`](../CMakeModules/lvr2-config.cmake.in), [CPack](../CMakeModules/lvr2-packaging.cmake) | Export only the retained public contract. |
 
-## Source anchors used
-- `src/tools/lvr2_reconstruct/Main.cpp`
-- `src/tools/lvr2_reconstruct/Options.cpp` / `src/tools/lvr2_reconstruct/Options.hpp`
-- `src/liblvr2/io/ModelFactory.cpp` / `include/lvr2/io/ModelFactory.hpp`
-- `include/lvr2/reconstruction/PointsetSurface.hpp`
-- `include/lvr2/reconstruction/SearchTree.hpp`
-- `include/lvr2/reconstruction/FastReconstruction.hpp`
-- `src/liblvr2/CMakeLists.txt`
-- `CMakeLists.txt`
-- `CMakeModules/lvr2-config.cmake.in`
+## What can be detached first
 
-## Deep references
-- `docs/analysis-input/architecture-recon.md`
-- `docs/analysis-input/dependencies-recon.md`
+- Viewer/display code from headless core (`include/lvr2/display`, display sources
+  in [`src/liblvr2/CMakeLists.txt`](../src/liblvr2/CMakeLists.txt)).
+- GPU-specific tools and CUDA/OpenCL libraries from default builds.
+- 3D Tiles, Freenect, KinFu, and orphan tools from the maintained product path.
+- Legacy package/docs surfaces after the default build contract is named.
+
+Raw detail: [architecture recon](analysis-input/architecture-recon.md).
