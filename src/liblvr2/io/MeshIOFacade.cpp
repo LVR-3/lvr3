@@ -5,6 +5,10 @@
 #include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/types/Model.hpp"
 
+#if defined(LVR2_MESH_IO_HAS_ASSIMP)
+#include "lvr2/io/AssimpMeshAdapter.hpp"
+#endif
+
 #include <algorithm>
 #include <cctype>
 #include <exception>
@@ -108,6 +112,50 @@ bool meshHasGeometry(const MeshBufferPtr& mesh)
     return mesh && mesh->numVertices() > 0 && mesh->numFaces() > 0;
 }
 
+bool hasExplicitFormatSuffixMismatch(const std::filesystem::path& path, Format requested)
+{
+    if(requested == Format::Auto)
+    {
+        return false;
+    }
+    const Format suffixFormat = formatFromSuffix(path);
+    return suffixFormat != Format::Auto && suffixFormat != requested;
+}
+
+bool isPrivateBackendLoadFormat(Format format)
+{
+    switch(format)
+    {
+        case Format::Stl:
+        case Format::Dae:
+        case Format::Gltf:
+        case Format::Glb:
+            return true;
+        case Format::Auto:
+        case Format::Obj:
+        case Format::Ply:
+            return false;
+    }
+    return false;
+}
+
+bool isPrivateBackendSaveFormat(Format format)
+{
+    switch(format)
+    {
+        case Format::Obj:
+        case Format::Stl:
+        case Format::Dae:
+        case Format::Gltf:
+        case Format::Glb:
+            return true;
+        case Format::Auto:
+        case Format::Ply:
+            return false;
+    }
+    return false;
+}
+
 Result<MeshBufferPtr> readWithLegacyIo(const std::filesystem::path& path, Format format)
 {
     ModelPtr model;
@@ -200,7 +248,14 @@ Result<MeshBufferPtr> load(const std::filesystem::path& path, const LoadOptions&
                               path,
                               format);
     }
-    if(format != Format::Obj && format != Format::Ply)
+    if(hasExplicitFormatSuffixMismatch(path, options.format))
+    {
+        return makeUnexpected(ErrorCode::UnsupportedFormat,
+                              std::string("Requested mesh format '") + formatName(options.format) + "' conflicts with the path suffix.",
+                              path,
+                              format);
+    }
+    if(format != Format::Obj && format != Format::Ply && !isPrivateBackendLoadFormat(format))
     {
         return makeUnexpected(ErrorCode::UnsupportedFormat,
                               std::string("Loading format '") + formatName(format) + "' is not supported by the mesh facade yet.",
@@ -214,18 +269,29 @@ Result<MeshBufferPtr> load(const std::filesystem::path& path, const LoadOptions&
 
     try
     {
-        return readWithLegacyIo(path, format);
+        if(format == Format::Obj || format == Format::Ply)
+        {
+            return readWithLegacyIo(path, format);
+        }
+#if defined(LVR2_MESH_IO_HAS_ASSIMP)
+        return detail::loadWithPrivateMeshBackend(path, format);
+#else
+        return makeUnexpected(ErrorCode::UnsupportedFormat,
+                              std::string("Loading format '") + formatName(format) + "' requires the optional private mesh backend.",
+                              path,
+                              format);
+#endif
     }
     catch(const std::exception& e)
     {
         return makeUnexpected(ErrorCode::ReadFailed,
-                              std::string("Legacy reader failed: ") + e.what(),
+                              std::string("Mesh reader failed: ") + e.what(),
                               path,
                               format);
     }
     catch(...)
     {
-        return makeUnexpected(ErrorCode::ReadFailed, "Legacy reader failed with an unknown exception.", path, format);
+        return makeUnexpected(ErrorCode::ReadFailed, "Mesh reader failed with an unknown exception.", path, format);
     }
 }
 
@@ -244,6 +310,13 @@ Status save(const MeshBufferPtr& mesh, const std::filesystem::path& path, const 
                                     path,
                                     format);
     }
+    if(hasExplicitFormatSuffixMismatch(path, options.format))
+    {
+        return makeStatusUnexpected(ErrorCode::UnsupportedFormat,
+                                    std::string("Requested mesh format '") + formatName(options.format) + "' conflicts with the path suffix.",
+                                    path,
+                                    format);
+    }
     if(!meshHasGeometry(mesh))
     {
         return makeStatusUnexpected(ErrorCode::MissingMesh,
@@ -251,14 +324,14 @@ Status save(const MeshBufferPtr& mesh, const std::filesystem::path& path, const 
                                     path,
                                     format);
     }
-    if(!options.binary)
+    if(format == Format::Ply && !options.binary)
     {
         return makeStatusUnexpected(ErrorCode::UnsupportedFormat,
-                                    std::string("Text/ASCII saving is not supported for format '") + formatName(format) + "' by the mesh facade yet.",
+                                    "Text/ASCII PLY saving is not supported by the mesh facade yet.",
                                     path,
                                     format);
     }
-    if(format != Format::Ply)
+    if(format != Format::Ply && !isPrivateBackendSaveFormat(format))
     {
         return makeStatusUnexpected(ErrorCode::UnsupportedFormat,
                                     std::string("Saving format '") + formatName(format) + "' is not supported by the mesh facade yet.",
@@ -268,18 +341,31 @@ Status save(const MeshBufferPtr& mesh, const std::filesystem::path& path, const 
 
     try
     {
-        return saveWithLegacyIo(mesh, path, format);
+        if(format == Format::Ply)
+        {
+            return saveWithLegacyIo(mesh, path, format);
+        }
+#if defined(LVR2_MESH_IO_HAS_ASSIMP)
+        SaveOptions resolvedOptions = options;
+        resolvedOptions.format = format;
+        return detail::saveWithPrivateMeshBackend(mesh, path, resolvedOptions);
+#else
+        return makeStatusUnexpected(ErrorCode::UnsupportedFormat,
+                                    std::string("Saving format '") + formatName(format) + "' requires the optional private mesh backend.",
+                                    path,
+                                    format);
+#endif
     }
     catch(const std::exception& e)
     {
         return makeStatusUnexpected(ErrorCode::WriteFailed,
-                                    std::string("Legacy writer failed: ") + e.what(),
+                                    std::string("Mesh writer failed: ") + e.what(),
                                     path,
                                     format);
     }
     catch(...)
     {
-        return makeStatusUnexpected(ErrorCode::WriteFailed, "Legacy writer failed with an unknown exception.", path, format);
+        return makeStatusUnexpected(ErrorCode::WriteFailed, "Mesh writer failed with an unknown exception.", path, format);
     }
 }
 

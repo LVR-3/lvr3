@@ -290,6 +290,16 @@ if(BUILD_SHARED_LIBS)
         $<BUILD_INTERFACE:spdlog::spdlog_header_only>
         $<BUILD_INTERFACE:spdmon::spdmon>
     )
+    if(LVR2_MESH_IO_ASSIMP_AVAILABLE)
+        target_sources(lvr2 PRIVATE io/AssimpMeshAdapter.cpp)
+        if(LVR2_ASSIMP_TARGET)
+            target_link_libraries(lvr2 PRIVATE ${LVR2_ASSIMP_TARGET})
+        else()
+            target_link_libraries(lvr2 PRIVATE ${LVR2_ASSIMP_LIBRARIES})
+            target_include_directories(lvr2 PRIVATE ${LVR2_ASSIMP_INCLUDE_DIRS})
+        endif()
+        target_compile_definitions(lvr2 PRIVATE LVR2_MESH_IO_HAS_ASSIMP=1)
+    endif()
     target_compile_definitions(lvr2
         PUBLIC
         ${LVR2_DEFINITIONS}

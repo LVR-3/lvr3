@@ -84,4 +84,22 @@ if((CHECK_SHAPE STREQUAL "static-only" OR CHECK_SHAPE STREQUAL "dual") AND TARGE
   endif()
 endif()
 
+string(CONCAT _PRIVATE_BACKEND_LOWER "as" "simp")
+string(CONCAT _PRIVATE_BACKEND_UPPER "AS" "SIMP")
+string(CONCAT _PRIVATE_BACKEND_CAMEL "As" "simp")
+set(_PUBLIC_TARGETS lvr2::lvr2 lvr2::lvr2_static lvr3::lvr3 lvr3::lvr3_static)
+set(_PUBLIC_PROPERTIES INTERFACE_LINK_LIBRARIES INTERFACE_INCLUDE_DIRECTORIES INTERFACE_COMPILE_DEFINITIONS)
+foreach(_TARGET IN LISTS _PUBLIC_TARGETS)
+  if(TARGET ${_TARGET})
+    foreach(_PROPERTY IN LISTS _PUBLIC_PROPERTIES)
+      get_target_property(_VALUE ${_TARGET} ${_PROPERTY})
+      if(_VALUE AND ("${_VALUE}" MATCHES "${_PRIVATE_BACKEND_LOWER}" OR
+                     "${_VALUE}" MATCHES "${_PRIVATE_BACKEND_UPPER}" OR
+                     "${_VALUE}" MATCHES "${_PRIVATE_BACKEND_CAMEL}"))
+        message(FATAL_ERROR "${_TARGET} ${_PROPERTY} exposes a private mesh backend token: '${_VALUE}'")
+      endif()
+    endforeach()
+  endif()
+endforeach()
+
 message(STATUS "Package identity smoke check '${CHECK_SHAPE}/${CHECK_ORDER}' passed")

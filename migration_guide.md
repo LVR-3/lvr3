@@ -131,6 +131,30 @@ Current facade coverage remains: OBJ/PLY load and binary PLY save are supported;
 
 Replacement coverage is guarded by `lvr2_removed_public_mesh_io_headers` and the mesh facade GoogleTest coverage (`lvr2_mesh_io_facade_gtest`, including replacement tests).
 
+## Private optional Assimp adapter
+
+`LVR2_WITH_ASSIMP` is a new opt-in build option for a private mesh facade backend. It defaults to `OFF`, so static/default builds continue to configure without searching for or requiring Assimp. For the private Assimp adapter, enabling the backend is intentionally shared-only to keep Assimp out of exported static target interfaces:
+
+```bash
+cmake -S . -B build-assimp \
+  -DLVR2_WITH_ASSIMP=ON \
+  -DBUILD_SHARED_LIBS=ON \
+  -DLVR2_BUILD_STATIC_LIBS=OFF
+```
+
+Assimp remains an implementation detail. Public headers, CMake package configs, target interfaces, C++ namespaces, CLI names, and CLI options do not expose Assimp types, flags, errors, or targets.
+
+Facade behavior with `LVR2_WITH_ASSIMP=OFF` remains unchanged without the Assimp backend: OBJ/PLY load and binary PLY save are supported; STL, DAE/Collada, glTF, glb, and non-PLY saves return structured `ErrorCode::UnsupportedFormat`.
+
+When `LVR2_WITH_ASSIMP=ON` and the shared backend is available, the facade keeps legacy OBJ/PLY load and binary PLY save, and routes the following additional paths through the private backend:
+
+- `load`: STL, DAE/Collada, glTF, and glb.
+- `save`: OBJ, STL, DAE/Collada, glTF, and glb.
+
+Binary PLY remains on the legacy private writer with the private Assimp adapter, and ASCII/text PLY remains unsupported. Distributors who ship binaries with `LVR2_WITH_ASSIMP=ON` must preserve Assimp's license notice and runtime dependency requirements.
+
+Private Assimp adapter coverage is guarded by `lvr2_no_public_assimp_leakage`, package-identity interface checks, and Assimp-enabled mesh facade tests when an Assimp package is available.
+
 ## 25.1.0 -> 25.2.0
 
 
