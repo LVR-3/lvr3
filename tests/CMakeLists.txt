@@ -50,6 +50,47 @@ set_tests_properties(lvr2_removed_public_mesh_io_headers
     LABELS "cpp;io;mesh;header"
 )
 
+add_test(
+  NAME lvr2_no_public_assimp_leakage
+  COMMAND ${CMAKE_COMMAND}
+    -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+    -P ${CMAKE_CURRENT_LIST_DIR}/no_public_assimp_leakage.cmake
+)
+set_tests_properties(lvr2_no_public_assimp_leakage
+  PROPERTIES
+    LABELS "cpp;io;mesh;header;assimp"
+)
+
+if(LVR2_MESH_IO_ASSIMP_AVAILABLE)
+  add_executable(lvr2_assimp_adapter_smoke
+    test_assimp_adapter_smoke.cpp
+    ${PROJECT_SOURCE_DIR}/src/liblvr2/io/AssimpMeshAdapter.cpp
+    ${PROJECT_SOURCE_DIR}/src/liblvr2/types/MeshBuffer.cpp
+    ${PROJECT_SOURCE_DIR}/src/liblvr2/types/CustomChannelTypes.cpp
+    ${PROJECT_SOURCE_DIR}/src/liblvr2/util/Timestamp.cpp
+  )
+  target_include_directories(lvr2_assimp_adapter_smoke PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/src/liblvr2/include
+    ${PROJECT_SOURCE_DIR}/${HIGHFIVE_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
+    ${HDF5_INCLUDE_DIRS}
+  )
+  target_compile_features(lvr2_assimp_adapter_smoke PRIVATE cxx_std_17)
+  target_link_libraries(lvr2_assimp_adapter_smoke PRIVATE Eigen3::Eigen)
+  if(LVR2_ASSIMP_TARGET)
+    target_link_libraries(lvr2_assimp_adapter_smoke PRIVATE ${LVR2_ASSIMP_TARGET})
+  else()
+    target_include_directories(lvr2_assimp_adapter_smoke PRIVATE ${LVR2_ASSIMP_INCLUDE_DIRS})
+    target_link_libraries(lvr2_assimp_adapter_smoke PRIVATE ${LVR2_ASSIMP_LIBRARIES})
+  endif()
+  add_test(NAME lvr2_assimp_adapter_smoke COMMAND lvr2_assimp_adapter_smoke)
+  set_tests_properties(lvr2_assimp_adapter_smoke
+    PROPERTIES
+      LABELS "cpp;io;mesh;assimp"
+  )
+endif()
+
 if(_LVR2_GTEST_MAIN_TARGET)
   add_executable(lvr2_smoke_gtest
     test_smoke_gtest.cpp
@@ -68,6 +109,9 @@ if(_LVR2_GTEST_MAIN_TARGET)
     ${CMAKE_CURRENT_SOURCE_DIR}
   )
   target_compile_features(lvr2_mesh_io_facade_gtest PRIVATE cxx_std_17)
+  if(LVR2_MESH_IO_ASSIMP_AVAILABLE)
+    target_compile_definitions(lvr2_mesh_io_facade_gtest PRIVATE LVR2_MESH_IO_TEST_HAS_ASSIMP=1)
+  endif()
   target_link_libraries(lvr2_mesh_io_facade_gtest PRIVATE
     ${_LVR2_GTEST_MAIN_TARGET}
     lvr2
@@ -82,6 +126,25 @@ if(_LVR2_GTEST_MAIN_TARGET)
     PROPERTIES
       LABELS "cpp;io;mesh"
   )
+
+  if(LVR2_MESH_IO_ASSIMP_AVAILABLE)
+    add_executable(lvr2_mesh_io_assimp_gtest
+      test_mesh_io_assimp.cpp
+    )
+    target_include_directories(lvr2_mesh_io_assimp_gtest PRIVATE
+      ${PROJECT_SOURCE_DIR}/include
+      ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    target_compile_features(lvr2_mesh_io_assimp_gtest PRIVATE cxx_std_17)
+    target_link_libraries(lvr2_mesh_io_assimp_gtest PRIVATE
+      ${_LVR2_GTEST_MAIN_TARGET}
+      lvr2
+    )
+    gtest_discover_tests(lvr2_mesh_io_assimp_gtest
+      PROPERTIES
+        LABELS "cpp;io;mesh;assimp"
+    )
+  endif()
 else()
   message(STATUS "GoogleTest targets not available; skipping C++ smoke test target.")
 endif()

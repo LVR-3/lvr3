@@ -43,6 +43,7 @@ option(LVR2_WITH_OPENCL "Compile with OpenCL support, if available" ON)
 option(LVR2_WITH_PCL "Compile with PCL support" OFF)
 option(LVR2_WITH_FREENECT "Compile with libfreenect grabber" OFF)
 option(LVR2_WITH_CV_NONFREE "Use OpenCV non-free descriptors" OFF)
+option(LVR2_WITH_ASSIMP "Enable private optional Assimp mesh I/O backend" OFF)
 
 # Static-first output policy:
 #  - build static libraries by default
@@ -61,6 +62,13 @@ endif()
 
 if(NOT LVR2_BUILD_STATIC_LIBS AND NOT BUILD_SHARED_LIBS)
   message(FATAL_ERROR "Both static/shared output are disabled. Set either LVR2_BUILD_STATIC_LIBS=ON or BUILD_SHARED_LIBS=ON.")
+endif()
+
+if(LVR2_WITH_ASSIMP AND (NOT BUILD_SHARED_LIBS OR LVR2_BUILD_STATIC_LIBS))
+  message(FATAL_ERROR
+    "LVR2_WITH_ASSIMP=ON is private/shared-only for the private Assimp adapter. Configure with "
+    "-DBUILD_SHARED_LIBS=ON -DLVR2_BUILD_STATIC_LIBS=OFF to avoid exporting "
+    "Assimp through static LVR targets.")
 endif()
 
 include(CTest)
@@ -135,6 +143,25 @@ set(CMAKE_MODULE_PATH
 )
 
 message(STATUS ${CMAKE_MODULE_PATH})
+
+set(LVR2_MESH_IO_ASSIMP_AVAILABLE OFF)
+set(LVR2_ASSIMP_TARGET "")
+set(LVR2_ASSIMP_LIBRARIES "")
+set(LVR2_ASSIMP_INCLUDE_DIRS "")
+if(LVR2_WITH_ASSIMP)
+  find_package(assimp CONFIG QUIET)
+  if(TARGET assimp::assimp)
+    set(LVR2_MESH_IO_ASSIMP_AVAILABLE ON)
+    set(LVR2_ASSIMP_TARGET assimp::assimp)
+  elseif(assimp_FOUND AND ASSIMP_LIBRARIES)
+    set(LVR2_MESH_IO_ASSIMP_AVAILABLE ON)
+    set(LVR2_ASSIMP_LIBRARIES ${ASSIMP_LIBRARIES})
+    set(LVR2_ASSIMP_INCLUDE_DIRS ${ASSIMP_INCLUDE_DIRS})
+  else()
+    message(FATAL_ERROR "LVR2_WITH_ASSIMP=ON requires an assimp CONFIG package with assimp::assimp or ASSIMP_LIBRARIES; no vendored/download fallback is provided.")
+  endif()
+  message(STATUS "Private Assimp mesh I/O backend enabled for shared lvr2 target only")
+endif()
 
 include_directories(include)
 # Build-only include root for private implementation headers removed from the
