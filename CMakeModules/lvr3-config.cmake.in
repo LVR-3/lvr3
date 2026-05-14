@@ -1,0 +1,97 @@
+# -----------------------------------------------------------------
+# lvr3's cmake configuration
+#
+# This package preserves the existing installed artifacts and targets of lvr2,
+# while exposing the modern package identity lvr3.
+#
+# Provided options:
+# - LVR3_USE_STATIC_LIBS to prefer the static library of lvr (if built)
+#
+# Provided interface variables:
+# - LVR3_INCLUDE_DIRS
+# - LVR3_DEFINITIONS
+# - LVR3_LIBRARIES
+# -----------------------------------------------------------------
+@PACKAGE_INIT@
+
+if(LVR3_FOUND)
+  return()
+endif()
+
+include(CMakeFindDependencyMacro)
+
+# Import from existing lvr2 package install if available in the same prefix.
+set(_LVR3_LVR2_CONFIG_DIR "${CMAKE_CURRENT_LIST_DIR}/../lvr2")
+if(NOT TARGET lvr2::lvr2 AND NOT TARGET lvr2::lvr2_static)
+  if(EXISTS "${_LVR3_LVR2_CONFIG_DIR}/lvr2-config.cmake")
+    include("${_LVR3_LVR2_CONFIG_DIR}/lvr2-config.cmake")
+  else()
+    find_dependency(lvr2)
+  endif()
+endif()
+
+if(NOT TARGET lvr2::lvr2 AND NOT TARGET lvr2::lvr2_static)
+  message(FATAL_ERROR "Could not find lvr2 package while configuring lvr3 compatibility facade.")
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/Modules")
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/Modules")
+endif()
+if(EXISTS "${_LVR3_LVR2_CONFIG_DIR}/Modules")
+  list(APPEND CMAKE_MODULE_PATH "${_LVR3_LVR2_CONFIG_DIR}/Modules")
+endif()
+
+set(LVR3_INCLUDE_DIRS "${LVR2_INCLUDE_DIRS}")
+set(LVR3_DEFINITIONS "${LVR2_DEFINITIONS}")
+
+set(_LVR3_INSTALL_HAS_STATIC_TARGET FALSE)
+set(_LVR3_STATIC_ALIAS_TARGET "")
+if(TARGET lvr2::lvr2_static)
+  set(_LVR3_INSTALL_HAS_STATIC_TARGET TRUE)
+  get_target_property(_LVR3_LVR2_STATIC_ALIASED lvr2::lvr2_static ALIASED_TARGET)
+  if(_LVR3_LVR2_STATIC_ALIASED)
+    set(_LVR3_STATIC_ALIAS_TARGET ${_LVR3_LVR2_STATIC_ALIASED})
+  else()
+    set(_LVR3_STATIC_ALIAS_TARGET lvr2::lvr2_static)
+  endif()
+endif()
+
+set(_LVR3_USE_STATIC_DEFAULT ${_LVR3_INSTALL_HAS_STATIC_TARGET})
+if(DEFINED LVR2_USE_STATIC_LIBS)
+  set(_LVR3_USE_STATIC_DEFAULT ${LVR2_USE_STATIC_LIBS})
+endif()
+option(LVR3_USE_STATIC_LIBS "Prefer static lvr3 library when available" ${_LVR3_USE_STATIC_DEFAULT})
+
+if(LVR3_USE_STATIC_LIBS AND _LVR3_INSTALL_HAS_STATIC_TARGET)
+  set(_LVR3_SELECTED_LIBRARY ${_LVR3_STATIC_ALIAS_TARGET})
+elseif(TARGET lvr2::lvr2)
+  if(LVR3_USE_STATIC_LIBS)
+    message(WARNING "No installed static lvr3 target was found; using shared variant instead.")
+  endif()
+  set(_LVR3_SELECTED_LIBRARY lvr2::lvr2)
+else()
+  message(FATAL_ERROR "No installed lvr3 library target is available.")
+endif()
+
+# The canonical modern target mirrors the legacy aggregate target. In dual
+# static/shared installs this keeps lvr3::lvr3 aligned with lvr2::lvr2 while
+# LVR3_LIBRARIES can still honor the static preference variable below.
+if(NOT TARGET lvr3::lvr3)
+  if(TARGET lvr2::lvr2)
+    add_library(lvr3::lvr3 ALIAS lvr2::lvr2)
+  else()
+    add_library(lvr3::lvr3 ALIAS ${_LVR3_SELECTED_LIBRARY})
+  endif()
+endif()
+if(_LVR3_INSTALL_HAS_STATIC_TARGET AND NOT TARGET lvr3::lvr3_static)
+  add_library(lvr3::lvr3_static ALIAS ${_LVR3_STATIC_ALIAS_TARGET})
+endif()
+
+if(LVR3_USE_STATIC_LIBS AND TARGET lvr3::lvr3_static)
+  set(LVR3_LIBRARY lvr3::lvr3_static)
+else()
+  set(LVR3_LIBRARY lvr3::lvr3)
+endif()
+set(LVR3_LIBRARIES ${LVR3_LIBRARY})
+
+set(LVR3_FOUND TRUE)
