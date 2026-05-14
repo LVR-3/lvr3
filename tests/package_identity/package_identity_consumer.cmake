@@ -13,6 +13,7 @@ if(NOT DEFINED CHECK_SHAPE OR CHECK_SHAPE STREQUAL "")
   set(CHECK_SHAPE "requested")
 endif()
 
+list(PREPEND CMAKE_PREFIX_PATH "${CHECK_PREFIX}")
 set(lvr2_DIR "${CHECK_PREFIX}/lib/cmake/lvr2")
 set(lvr3_DIR "${CHECK_PREFIX}/lib/cmake/lvr3")
 

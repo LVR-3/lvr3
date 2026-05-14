@@ -34,6 +34,7 @@ function(_write_fake_prefix _prefix _shape)
   set(_LVR3_CONFIG_DIR "${_prefix}/lib/cmake/lvr3")
   set(_LVR2_MODULES "${_LVR2_CONFIG_DIR}/Modules")
   set(_LVR3_MODULES "${_LVR3_CONFIG_DIR}/Modules")
+  set(_TL_EXPECTED_CONFIG_DIR "${_prefix}/share/cmake/tl-expected")
 
   file(REMOVE_RECURSE "${_prefix}")
   file(MAKE_DIRECTORY
@@ -41,6 +42,7 @@ function(_write_fake_prefix _prefix _shape)
     "${_LVR3_CONFIG_DIR}"
     "${_LVR2_MODULES}"
     "${_LVR3_MODULES}"
+    "${_TL_EXPECTED_CONFIG_DIR}"
     "${_prefix}/include"
     "${_prefix}/lib"
   )
@@ -49,13 +51,17 @@ function(_write_fake_prefix _prefix _shape)
 
   file(WRITE "${_prefix}/lib/liblvr2.a" "")
   file(WRITE "${_prefix}/lib/liblvr2${CMAKE_SHARED_LIBRARY_SUFFIX}" "")
+  file(WRITE "${_TL_EXPECTED_CONFIG_DIR}/tl-expected-config.cmake"
+"if(NOT TARGET tl::expected)\n  add_library(tl::expected INTERFACE IMPORTED)\nendif()\nset(tl-expected_FOUND TRUE)\n")
 
   if(_shape STREQUAL "static-only")
     set(_TARGETS_CONTENT
 "# Fake static-only lvr2 targets for package-identity smoke test
 if(NOT TARGET lvr2::lvr2)
   add_library(lvr2::lvr2 STATIC IMPORTED)
-  set_target_properties(lvr2::lvr2 PROPERTIES IMPORTED_LOCATION \"${_prefix}/lib/liblvr2.a\")
+  set_target_properties(lvr2::lvr2 PROPERTIES
+    IMPORTED_LOCATION \"${_prefix}/lib/liblvr2.a\"
+    INTERFACE_LINK_LIBRARIES \"tl::expected\")
 endif()
 ")
   elseif(_shape STREQUAL "dual")
@@ -63,11 +69,15 @@ endif()
 "# Fake dual static/shared lvr2 targets for package-identity smoke test
 if(NOT TARGET lvr2::lvr2)
   add_library(lvr2::lvr2 SHARED IMPORTED)
-  set_target_properties(lvr2::lvr2 PROPERTIES IMPORTED_LOCATION \"${_prefix}/lib/liblvr2${CMAKE_SHARED_LIBRARY_SUFFIX}\")
+  set_target_properties(lvr2::lvr2 PROPERTIES
+    IMPORTED_LOCATION \"${_prefix}/lib/liblvr2${CMAKE_SHARED_LIBRARY_SUFFIX}\"
+    INTERFACE_LINK_LIBRARIES \"tl::expected\")
 endif()
 if(NOT TARGET lvr2::lvr2_static)
   add_library(lvr2::lvr2_static STATIC IMPORTED)
-  set_target_properties(lvr2::lvr2_static PROPERTIES IMPORTED_LOCATION \"${_prefix}/lib/liblvr2.a\")
+  set_target_properties(lvr2::lvr2_static PROPERTIES
+    IMPORTED_LOCATION \"${_prefix}/lib/liblvr2.a\"
+    INTERFACE_LINK_LIBRARIES \"tl::expected\")
 endif()
 ")
   elseif(_shape STREQUAL "shared-only")
@@ -75,7 +85,9 @@ endif()
 "# Fake shared-only lvr2 targets for package-identity smoke test
 if(NOT TARGET lvr2::lvr2)
   add_library(lvr2::lvr2 SHARED IMPORTED)
-  set_target_properties(lvr2::lvr2 PROPERTIES IMPORTED_LOCATION \"${_prefix}/lib/liblvr2${CMAKE_SHARED_LIBRARY_SUFFIX}\")
+  set_target_properties(lvr2::lvr2 PROPERTIES
+    IMPORTED_LOCATION \"${_prefix}/lib/liblvr2${CMAKE_SHARED_LIBRARY_SUFFIX}\"
+    INTERFACE_LINK_LIBRARIES \"tl::expected\")
 endif()
 ")
   else()
@@ -88,7 +100,9 @@ endif()
 "set(PACKAGE_VERSION \"25.2.3\")\nset(PACKAGE_VERSION_EXACT TRUE)\nset(PACKAGE_VERSION_COMPATIBLE TRUE)\n")
 
   file(WRITE "${_LVR2_CONFIG_DIR}/lvr2-config.cmake"
-"include(\"${_LVR2_CONFIG_DIR}/lvr2-targets.cmake\")
+"include(CMakeFindDependencyMacro)
+find_dependency(tl-expected CONFIG)
+include(\"${_LVR2_CONFIG_DIR}/lvr2-targets.cmake\")
 list(APPEND CMAKE_MODULE_PATH \"${_LVR2_CONFIG_DIR}/Modules\")
 set(LVR2_INCLUDE_DIRS \"${_prefix}/include\")
 set(LVR2_DEFINITIONS \"\")

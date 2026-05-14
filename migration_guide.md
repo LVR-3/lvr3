@@ -64,6 +64,40 @@ cmake -S . -B build -DLVR2_WITH_VCPKG=ON -DLVR2_VCPKG_TOOLCHAIN_FILE=/path/to/vc
 
 `LVR2_IGNORE_SYSTEM_PACKAGES=ON` disables CMake system and system-environment package search paths while still using the configured toolchain, and `CMakeSettings.json` is still kept for compatibility.
 
+## Mesh I/O facade
+
+A narrow public mesh I/O facade is available in the existing `lvr2` C++ namespace:
+
+```cpp
+#include <lvr2/mesh/io.hpp>
+
+lvr2::mesh::LoadOptions loadOptions;
+loadOptions.format = lvr2::mesh::Format::Auto; // infer from file suffix
+
+lvr2::mesh::Result<lvr2::MeshBufferPtr> mesh =
+    lvr2::mesh::load("input.obj", loadOptions);
+if (!mesh) {
+    const lvr2::mesh::Error& error = mesh.error();
+    // inspect error.code, error.message, error.path, and error.format
+}
+
+lvr2::mesh::SaveOptions saveOptions;
+saveOptions.format = lvr2::mesh::Format::Ply;
+saveOptions.binary = true;
+lvr2::mesh::Status saved = lvr2::mesh::save(*mesh, "output.ply", saveOptions);
+```
+
+The facade exposes LVR-owned `Format`, options, `ErrorCode`, `Error`, `Result<T>`, and `Status` vocabulary. `Result<T>` and `Status` are backed by `tl::expected`, so downstream CMake consumers need the `tl-expected` package available through system packages or the guarded vcpkg path. Installed `lvr2` and `lvr3` CMake configs now declare this public dependency.
+
+Current facade support is intentionally conservative while broader writer validation and the private Assimp adapter are deferred to later slices:
+
+- `load`: OBJ and PLY mesh files.
+- `save`: binary PLY mesh files.
+- STL loading/saving, OBJ saving, DAE/Collada, glTF, and glb currently return `ErrorCode::UnsupportedFormat` through the facade.
+- `SaveOptions::binary=false` is not silently ignored; it returns `UnsupportedFormat` until text/ASCII output is implemented and tested.
+
+Existing public readers and writers such as `ModelFactory`, `ModelIOBase`, `ObjIO`, `PLYIO`, and `STLIO` are **not removed** by the initial facade. Their removal is covered by the mesh reader/writer removal notes and guarded by replacement tests.
+
 ## 25.1.0 -> 25.2.0
 
 

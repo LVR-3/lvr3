@@ -19,6 +19,7 @@ if(LVR3_FOUND)
 endif()
 
 include(CMakeFindDependencyMacro)
+find_dependency(tl-expected CONFIG)
 
 # Import from existing lvr2 package install if available in the same prefix.
 set(_LVR3_LVR2_CONFIG_DIR "${CMAKE_CURRENT_LIST_DIR}/../lvr2")

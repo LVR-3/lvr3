@@ -27,6 +27,18 @@ elseif(TARGET GTest::Main)
   set(_LVR2_GTEST_MAIN_TARGET GTest::Main)
 endif()
 
+add_executable(lvr2_mesh_io_facade_header_compile
+  test_mesh_io_facade_header_compile.cpp
+)
+target_include_directories(lvr2_mesh_io_facade_header_compile PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_compile_features(lvr2_mesh_io_facade_header_compile PRIVATE cxx_std_17)
+target_link_libraries(lvr2_mesh_io_facade_header_compile PRIVATE tl::expected)
+add_test(NAME lvr2_mesh_io_facade_header_compile COMMAND lvr2_mesh_io_facade_header_compile)
+set_tests_properties(lvr2_mesh_io_facade_header_compile
+  PROPERTIES
+    LABELS "cpp;io;mesh;header"
+)
+
 if(_LVR2_GTEST_MAIN_TARGET)
   add_executable(lvr2_smoke_gtest
     test_smoke_gtest.cpp
@@ -36,10 +48,27 @@ if(_LVR2_GTEST_MAIN_TARGET)
   target_compile_features(lvr2_smoke_gtest PRIVATE cxx_std_17)
   target_link_libraries(lvr2_smoke_gtest PRIVATE ${_LVR2_GTEST_MAIN_TARGET})
 
+  add_executable(lvr2_mesh_io_facade_gtest
+    test_mesh_io_facade.cpp
+  )
+  target_include_directories(lvr2_mesh_io_facade_gtest PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+  target_compile_features(lvr2_mesh_io_facade_gtest PRIVATE cxx_std_17)
+  target_link_libraries(lvr2_mesh_io_facade_gtest PRIVATE
+    ${_LVR2_GTEST_MAIN_TARGET}
+    lvr2
+  )
+
   include(GoogleTest)
   gtest_discover_tests(lvr2_smoke_gtest
     PROPERTIES
       LABELS "cpp;smoke"
+  )
+  gtest_discover_tests(lvr2_mesh_io_facade_gtest
+    PROPERTIES
+      LABELS "cpp;io;mesh"
   )
 else()
   message(STATUS "GoogleTest targets not available; skipping C++ smoke test target.")

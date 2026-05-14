@@ -60,6 +60,7 @@ set(LVR2_SOURCES
     # io/HDF5IO.cpp
     io/GridIO.cpp
     io/ModelFactory.cpp
+    io/MeshIOFacade.cpp
     # io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
     io/schema/ScanProjectSchemaRaw.cpp
@@ -232,6 +233,7 @@ if(LVR2_BUILD_STATIC_LIBS)
     target_link_libraries(lvr2core
         PUBLIC
         Eigen3::Eigen
+        tl::expected
     )
 
     add_library(lvr2_static STATIC $<TARGET_OBJECTS:lvr2core>)
@@ -243,6 +245,7 @@ if(LVR2_BUILD_STATIC_LIBS)
     )
     target_link_libraries(lvr2_static
         PUBLIC
+        tl::expected
         ${LVR2_INTERNAL_DEPENDENCIES_STATIC}
         ${LVR2_LIB_DEPENDENCIES}
     )
@@ -277,6 +280,7 @@ if(BUILD_SHARED_LIBS)
     target_link_libraries(lvr2
         PUBLIC
         Eigen3::Eigen
+        tl::expected
         ${LVR2_INTERNAL_DEPENDENCIES_SHARED}
         ${LVR2_LIB_DEPENDENCIES}
     )
