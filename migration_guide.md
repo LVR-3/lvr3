@@ -49,6 +49,21 @@ Compatibility guarantees:
 - No package names, install directories (`share/lvr2`, `package.xml`), C++ namespaces,
   CLI/tool names, options, or Debian package names are changed.
 
+## Guarded vcpkg presets
+
+Dependency acquisition policy now uses **system packages by default**.
+The legacy implicit MSVC vcpkg hook was removed.
+To use vcpkg, set `LVR2_WITH_VCPKG=ON` explicitly (optionally via preset):
+
+```bash
+cmake --preset system-release
+cmake --preset vcpkg-release
+cmake --preset vcpkg-ignore-system-release
+cmake -S . -B build -DLVR2_WITH_VCPKG=ON -DLVR2_VCPKG_TOOLCHAIN_FILE=/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake
+```
+
+`LVR2_IGNORE_SYSTEM_PACKAGES=ON` disables CMake system and system-environment package search paths while still using the configured toolchain, and `CMakeSettings.json` is still kept for compatibility.
+
 ## 25.1.0 -> 25.2.0
 
 
