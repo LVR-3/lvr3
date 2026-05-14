@@ -1,5 +1,35 @@
 cmake_minimum_required(VERSION 3.22)
+
+# Dependency acquisition policy
+#  - system packages are default
+option(LVR2_WITH_VCPKG "Use vcpkg for dependency lookup" OFF)
+set(LVR2_VCPKG_TOOLCHAIN_FILE
+    "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    CACHE FILEPATH "Path to vcpkg toolchain file")
+option(LVR2_IGNORE_SYSTEM_PACKAGES "Ignore CMake system/env package search paths" OFF)
+
+if(CMAKE_TOOLCHAIN_FILE)
+  message(STATUS "Using user-supplied CMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}")
+elseif(LVR2_WITH_VCPKG)
+  if(EXISTS "${LVR2_VCPKG_TOOLCHAIN_FILE}")
+    set(CMAKE_TOOLCHAIN_FILE "${LVR2_VCPKG_TOOLCHAIN_FILE}"
+        CACHE FILEPATH "Vcpkg toolchain file" FORCE)
+  else()
+    message(FATAL_ERROR
+      "LVR2_WITH_VCPKG=ON requires a valid vcpkg toolchain file.\n"
+      "Set -DCMAKE_TOOLCHAIN_FILE=<path> or -DLVR2_VCPKG_TOOLCHAIN_FILE=<path> "
+      "to an existing scripts/buildsystems/vcpkg.cmake")
+  endif()
+endif()
+
+if(LVR2_IGNORE_SYSTEM_PACKAGES)
+  message(STATUS "LVR2_IGNORE_SYSTEM_PACKAGES=ON: disabling CMake system/env search")
+  set(CMAKE_FIND_USE_CMAKE_SYSTEM_PATH OFF)
+  set(CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH OFF)
+endif()
+
 project(lvr2 VERSION 25.2.3)
+
 
 # OPTIONS
 option(LVR2_BUILD_EXAMPLES "Build the examples" OFF)
@@ -45,11 +75,6 @@ if (NOT EXISTS ${CMAKE_BINARY_DIR}/CMakeCache.txt)
   if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
   endif()
-endif()
-
-if(MSVC)
-    set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
-        CACHE STRING "Vcpkg toolchain file")
 endif()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS On)

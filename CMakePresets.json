@@ -1,0 +1,57 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 22,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "system-release",
+      "displayName": "System packages (Release)",
+      "description": "Configure with system package search (default policy)",
+      "binaryDir": "${sourceDir}/build-system-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "vcpkg-release",
+      "displayName": "vcpkg (Release)",
+      "description": "Enable vcpkg-backed dependency lookup using LVR2_WITH_VCPKG",
+      "inherits": "system-release",
+      "binaryDir": "${sourceDir}/build-vcpkg-release",
+      "cacheVariables": {
+        "LVR2_WITH_VCPKG": "ON",
+        "LVR2_VCPKG_TOOLCHAIN_FILE": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+      }
+    },
+    {
+      "name": "vcpkg-ignore-system-release",
+      "displayName": "vcpkg with system-path ignore (Release)",
+      "description": "Enable vcpkg and disable CMake system/environment package paths",
+      "inherits": "vcpkg-release",
+      "binaryDir": "${sourceDir}/build-vcpkg-ignore-system-release",
+      "cacheVariables": {
+        "LVR2_IGNORE_SYSTEM_PACKAGES": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "build-system-release",
+      "configurePreset": "system-release",
+      "configuration": "Release"
+    },
+    {
+      "name": "build-vcpkg-release",
+      "configurePreset": "vcpkg-release",
+      "configuration": "Release"
+    },
+    {
+      "name": "build-vcpkg-ignore-system-release",
+      "configurePreset": "vcpkg-ignore-system-release",
+      "configuration": "Release"
+    }
+  ]
+}
