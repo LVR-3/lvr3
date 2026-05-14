@@ -2,7 +2,7 @@
 # lvr's cmake configuration
 #
 # provided options:
-# - LVR2_USE_STATIC_LIBS(=OFF) to link the static libraries of lvr
+# - LVR2_USE_STATIC_LIBS to prefer the static library of lvr (if built)
 #
 # provided interface variables:
 # - LVR2_INCLUDE_DIRS
@@ -19,7 +19,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/lvr2-targets.cmake)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/Modules")
 
-# The following block exists only for backwards compatibility 
+# The following block exists only for backwards compatibility
 # and marked as obsolete via the migration guide 25.1.0 -> 25.2.0
 
 #########################
@@ -28,14 +28,44 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/Modules")
 set(LVR2_INCLUDE_DIRS @LVR2_INSTALL_INCLUDE_DIRS@)
 set(LVR2_DEFINITIONS @LVR2_DEFINITIONS@)
 
-option(LVR2_USE_STATIC_LIBS OFF)
-if(LVR2_USE_STATIC_LIBS)
-  set(LVR2_LIBRARY lvr2::lvr2_static)
-  set(LVR2_LIBRARIES ${LVR2_LIBRARY})
-else()
-  set(LVR2_LIBRARY lvr2::lvr2)
-  set(LVR2_LIBRARIES ${LVR2_LIBRARY})
+set(_LVR2_INSTALL_HAS_STATIC_TARGET FALSE)
+if(TARGET lvr2::lvr2_static)
+  set(_LVR2_INSTALL_HAS_STATIC_TARGET TRUE)
 endif()
+
+# For historical installs where only lvr2::lvr2 was emitted in static-only builds,
+# infer the aggregate library type and add a compatibility alias when appropriate.
+if(NOT _LVR2_INSTALL_HAS_STATIC_TARGET AND TARGET lvr2::lvr2)
+  get_target_property(_LVR2_AGGREGATE_TYPE lvr2::lvr2 TYPE)
+  if(_LVR2_AGGREGATE_TYPE STREQUAL "STATIC_LIBRARY")
+    if(NOT TARGET lvr2::lvr2_static)
+      add_library(lvr2::lvr2_static ALIAS lvr2::lvr2)
+    endif()
+    set(_LVR2_INSTALL_HAS_STATIC_TARGET TRUE)
+  endif()
+endif()
+
+if(TARGET lvr2::lvr2cuda AND NOT TARGET lvr2::lvr2cuda_static)
+  get_target_property(_LVR2_CUDA_TYPE lvr2::lvr2cuda TYPE)
+  if(_LVR2_CUDA_TYPE STREQUAL "STATIC_LIBRARY")
+    add_library(lvr2::lvr2cuda_static ALIAS lvr2::lvr2cuda)
+  endif()
+endif()
+
+option(LVR2_USE_STATIC_LIBS "Prefer static lvr2 library when available" ${_LVR2_INSTALL_HAS_STATIC_TARGET})
+
+if(LVR2_USE_STATIC_LIBS AND TARGET lvr2::lvr2_static)
+  set(LVR2_LIBRARY lvr2::lvr2_static)
+elseif(TARGET lvr2::lvr2)
+  if(LVR2_USE_STATIC_LIBS)
+    message(WARNING "No installed static lvr2 target was found; using shared library instead.")
+  endif()
+  set(LVR2_LIBRARY lvr2::lvr2)
+else()
+  message(FATAL_ERROR "No installed lvr2 library target is available. Rebuild lvr2 with LVR2_BUILD_STATIC_LIBS or BUILD_SHARED_LIBS enabled.")
+endif()
+
+set(LVR2_LIBRARIES ${LVR2_LIBRARY})
 
 ## OBSOLETE END
 #########################

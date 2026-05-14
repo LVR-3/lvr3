@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.22)
 project(lvr2 VERSION 25.2.3)
 
 # OPTIONS
@@ -14,9 +14,20 @@ option(LVR2_WITH_PCL "Compile with PCL support" OFF)
 option(LVR2_WITH_FREENECT "Compile with libfreenect grabber" OFF)
 option(LVR2_WITH_CV_NONFREE "Use OpenCV non-free descriptors" OFF)
 
+# Static-first output policy:
+#  - build static libraries by default
+#  - build shared libraries only when explicitly enabled
+option(LVR2_BUILD_STATIC_LIBS "Build static lvr2 libraries" ON)
+option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+
+if(NOT LVR2_BUILD_STATIC_LIBS AND NOT BUILD_SHARED_LIBS)
+  message(FATAL_ERROR "Both static/shared output are disabled. Set either LVR2_BUILD_STATIC_LIBS=ON or BUILD_SHARED_LIBS=ON.")
+endif()
+
 ## Compile as C++17
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # DEFAULT RELEASE
 if (NOT EXISTS ${CMAKE_BINARY_DIR}/CMakeCache.txt)
@@ -103,7 +114,6 @@ endif(CMAKE_COMPILER_IS_GNUCC)
 
 if(MSVC)
   list(APPEND LVR2_DEFINITIONS -DNOMINMAX)
-    set(CMAKE_CXX_STANDARD 17)
     set(HAVE_CXX_ATOMICS64_WITHOUT_LIB True)
     set(HAVE_CXX_ATOMICS_WITHOUT_LIB True)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
@@ -113,9 +123,6 @@ if(MSVC)
   add_compile_definitions(_USE_MATH_DEFINES)
 else(MSVC)
   add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
-  # with cmake 3.3
-  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-std=c++1z>)
-  set(CMAKE_CXX_STANDARD 17)
 endif(MSVC)
 
 find_package(MPI)
@@ -674,11 +681,13 @@ set(LVR2_LIB_DEPENDENCIES
     ${OpenMP_CXX_LIBRARIES}
     ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES}
     Eigen3::Eigen
-    lvr2rply
-    lvr2rply_static
-    lvr2las
-    lvr2las_static 
     )
+if(LVR2_BUILD_STATIC_LIBS)
+    list(APPEND LVR2_LIB_DEPENDENCIES lvr2rply_static lvr2las_static)
+endif()
+if(BUILD_SHARED_LIBS)
+    list(APPEND LVR2_LIB_DEPENDENCIES lvr2rply lvr2las)
+endif()
 else()
 set(LVR2_LIB_DEPENDENCIES
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
