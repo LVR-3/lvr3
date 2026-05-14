@@ -1,5 +1,7 @@
 #include "lvr2/io/kernels/DirectoryKernel.hpp"
 
+#include "lvr2/io/ModelFactory.hpp"
+
 #include <boost/range/iterator_range.hpp>
 
 namespace lvr2

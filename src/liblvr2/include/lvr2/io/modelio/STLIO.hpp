@@ -1,3 +1,5 @@
+// Private implementation header retained for in-tree legacy dispatch.
+// Not installed as public API; use <lvr2/mesh/io.hpp> in downstream code.
 /**
  * Copyright (c) 2018, University Osnabrück
  * All rights reserved.
@@ -26,67 +28,43 @@
  */
 
 /*
- * ObjIO.hpp
+ * STLIO.hpp
  *
- *  @date 07.11.2011
- *  @author Florian Otte (fotte@uos.de)
- *  @author Kim Rinnewitz (krinnewitz@uos.de)
- *  @author Sven Schalk (sschalk@uos.de)
- *  @author Denis Meyer (denmeyer@uos.de)
+ *  Created on: Dec 9, 2016
+ *      Author: robot
  */
 
-#ifndef LVR2_OBJIO_HPP_
-#define LVR2_OBJIO_HPP_
+#ifndef STLIO_HPP
+#define STLIO_HPP
+
 #include "lvr2/io/modelio/ModelIOBase.hpp"
-#include <fstream>
-#include <set>
-#include <map>
 
 namespace lvr2
 {
 
-/**
- * @brief A basic implementation of the obj file format.
+/****
+ * @brief 	Reader / Writer for STL file. Currently only binary STL files
+ * 			are supported.
  */
-class ObjIO : public ModelIOBase
+class STLIO : public ModelIOBase
 {
 public:
+	STLIO();
+	virtual ~STLIO();
 
+	virtual void save( string filename );
+	virtual void save( ModelPtr model, string filename );
     /**
-     * @brief Constructor.
-     **/
-    ObjIO()
-    {
-        m_model.reset();
-    }
-
-    ~ObjIO() { };
-
-    /**
-     * \brief   Parse the given file and load supported elements.
+     * @brief Parse the given file and load supported elements.
      *
-     * @param filename  The file to read.
+     * @param 	filename  The file to read.
+     * @return	A new model. If the file could not be parsed, an empty model
+     * 			is returned.
      */
-    ModelPtr read( std::string filename );
-
-    /**
-     * @brief     Writes the mesh to an obj file.
-     *
-     * @param  model     The model containing all mesh data
-     * @param  filename  The file name to use
-     */
-    void save( std::string filename );
-
-
-private:
-
-    void parseMtlFile(std::map<string, int>& matNames,
-            std::vector<Material>& materials,
-            std::vector<Texture>& textures,
-            std::string mtlname);
+    virtual ModelPtr read(string filename );
 
 };
 
-} // namespace lvr2
+} /* namespace lvr2 */
 
-#endif /* OBJIO_H_ */
+#endif // STLIO

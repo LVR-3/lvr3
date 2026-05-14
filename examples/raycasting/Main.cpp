@@ -9,7 +9,6 @@
 // lvr2 includes
 #include "lvr2/util/Synthetic.hpp"
 #include "lvr2/types/MeshBuffer.hpp"
-#include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 
 #include "lvr2/algorithm/raycasting/RaycasterBase.hpp"
