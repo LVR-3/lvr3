@@ -20,9 +20,20 @@ option(LVR2_WITH_CV_NONFREE "Use OpenCV non-free descriptors" OFF)
 option(LVR2_BUILD_STATIC_LIBS "Build static lvr2 libraries" ON)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
+# Test options
+option(LVR2_BUILD_TESTS "Build lvr2 tests" OFF)
+if(NOT DEFINED BUILD_TESTING)
+  set(BUILD_TESTING ${LVR2_BUILD_TESTS} CACHE BOOL "Enable testing")
+endif()
+if(LVR2_BUILD_TESTS AND NOT BUILD_TESTING)
+  set(BUILD_TESTING ON CACHE BOOL "Enable testing" FORCE)
+endif()
+
 if(NOT LVR2_BUILD_STATIC_LIBS AND NOT BUILD_SHARED_LIBS)
   message(FATAL_ERROR "Both static/shared output are disabled. Set either LVR2_BUILD_STATIC_LIBS=ON or BUILD_SHARED_LIBS=ON.")
 endif()
+
+include(CTest)
 
 ## Compile as C++17
 set(CMAKE_CXX_STANDARD 17)
@@ -764,6 +775,10 @@ endif(3DTILES_FOUND)
 ###############################################################################
 
 add_subdirectory(src/liblvr2)
+
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
 
 ###############################################################################
 # BINARIES
