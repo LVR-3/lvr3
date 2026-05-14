@@ -28,7 +28,11 @@ elseif(TARGET GTest::Main)
 endif()
 
 if(_LVR2_GTEST_MAIN_TARGET)
-  add_executable(lvr2_smoke_gtest test_smoke_gtest.cpp)
+  add_executable(lvr2_smoke_gtest
+    test_smoke_gtest.cpp
+    test_fixtures_seeds_metrics.cpp
+  )
+  target_include_directories(lvr2_smoke_gtest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
   target_compile_features(lvr2_smoke_gtest PRIVATE cxx_std_17)
   target_link_libraries(lvr2_smoke_gtest PRIVATE ${_LVR2_GTEST_MAIN_TARGET})
 
