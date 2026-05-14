@@ -9,20 +9,28 @@ mark_as_advanced(RPLY_INCLUDE_DIR RPLY_INSTALL_INCLUDE_DIR)
 
 include_directories(${RPLY_INCLUDE_DIR})
 
-add_library(lvr2rply_static STATIC rply.c)
+set(_RPLY_TARGETS)
 
-add_library(lvr2rply SHARED rply.c)
+if(LVR2_BUILD_STATIC_LIBS)
+  add_library(lvr2rply_static STATIC rply.c)
+  list(APPEND _RPLY_TARGETS lvr2rply_static)
+endif()
 
-set_target_properties(lvr2rply
-  PROPERTIES
-    SOVERSION ${lvr2_VERSION_MAJOR}
-    VERSION ${lvr2_VERSION}
-)
+if(BUILD_SHARED_LIBS)
+  add_library(lvr2rply SHARED rply.c)
+  set_target_properties(lvr2rply
+    PROPERTIES
+      SOVERSION ${lvr2_VERSION_MAJOR}
+      VERSION ${lvr2_VERSION}
+  )
+  list(APPEND _RPLY_TARGETS lvr2rply)
+endif()
 
-install(DIRECTORY . DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lvr2/ext/rply
-  FILES_MATCHING PATTERN "*.h")
-
-install(TARGETS lvr2rply_static lvr2rply
-  EXPORT lvr2-targets
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+if(_RPLY_TARGETS)
+  install(DIRECTORY . DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lvr2/ext/rply
+    FILES_MATCHING PATTERN "*.h")
+  install(TARGETS ${_RPLY_TARGETS}
+    EXPORT lvr2-targets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endif()

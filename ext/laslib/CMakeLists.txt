@@ -1,4 +1,3 @@
-
 # set include dirs
 set(LASLIB_INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/lvr2/ext/laslib)
 find_path(LASLIB_INCLUDE_DIR lasreader.hpp PATH inc)
@@ -43,19 +42,28 @@ set(LASLIB_SOURCES
 	src/arithmeticmodel.cpp
 	src/fopen_compressed.cpp)
 
-add_library(lvr2las_static STATIC ${LASLIB_SOURCES})
+set(_LASLIB_TARGETS)
 
-add_library(lvr2las SHARED ${LASLIB_SOURCES})
+if(LVR2_BUILD_STATIC_LIBS)
+  add_library(lvr2las_static STATIC ${LASLIB_SOURCES})
+  list(APPEND _LASLIB_TARGETS lvr2las_static)
+endif()
 
-set_target_properties(lvr2las
-  PROPERTIES
-    SOVERSION ${lvr2_VERSION_MAJOR}
-    VERSION ${lvr2_VERSION}
-)
+if(BUILD_SHARED_LIBS)
+  add_library(lvr2las SHARED ${LASLIB_SOURCES})
+  set_target_properties(lvr2las
+    PROPERTIES
+      SOVERSION ${lvr2_VERSION_MAJOR}
+      VERSION ${lvr2_VERSION}
+  )
+  list(APPEND _LASLIB_TARGETS lvr2las)
+endif()
 
 install(DIRECTORY inc/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lvr2/ext/laslib)
 
-install(TARGETS lvr2las_static lvr2las
-  EXPORT lvr2-targets
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+if(_LASLIB_TARGETS)
+  install(TARGETS ${_LASLIB_TARGETS}
+    EXPORT lvr2-targets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endif()

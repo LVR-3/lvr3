@@ -6,13 +6,11 @@ set(LVR2_SOURCES
     algorithm/UtilAlgorithms.cpp
     algorithm/pmp/DifferentialGeometry.cpp
     algorithm/pmp/DistancePointTriangle.cpp
-    algorithm/pmp/DifferentialGeometry.cpp
     algorithm/pmp/SurfaceFactory.cpp
     algorithm/pmp/SurfaceGeodesic.cpp
     algorithm/pmp/SurfaceParameterization.cpp
     algorithm/pmp/SurfaceSmoothing.cpp
     algorithm/pmp/TriangleKdTree.cpp
-    algorithm/pmp/DistancePointTriangle.cpp
     algorithm/pmp/SurfaceFairing.cpp
     algorithm/pmp/SurfaceHoleFilling.cpp
     algorithm/pmp/SurfaceRemeshing.cpp
@@ -117,7 +115,6 @@ set(LVR2_SOURCES
 
 if(PCL_FOUND)
     list(APPEND LVR2_SOURCES
-        io/modelio/PCDIO.cpp
         reconstruction/PCLFiltering.cpp)
 endif(PCL_FOUND)
 
@@ -183,14 +180,27 @@ endif()
 # Setup dependencies to external libraries
 #####################################################################################
 
-set(LVR2_INTERNAL_DEPENDENCIES_STATIC
-    lvr2rply_static
-    lvr2las_static
-    )
+set(LVR2_INTERNAL_DEPENDENCIES_STATIC "")
+if(LVR2_BUILD_STATIC_LIBS)
+  set(LVR2_INTERNAL_DEPENDENCIES_STATIC
+      lvr2rply_static
+      lvr2las_static)
+endif()
 
-set(LVR2_INTERNAL_DEPENDENCIES_SHARED
-    lvr2rply
-    lvr2las)
+set(LVR2_INTERNAL_DEPENDENCIES_SHARED "")
+if(BUILD_SHARED_LIBS)
+  set(LVR2_INTERNAL_DEPENDENCIES_SHARED
+      lvr2rply
+      lvr2las)
+endif()
+
+# Export name for the default aggregate target in this build mode.
+set(_LVR2_STATIC_EXPORT_NAME lvr2_static)
+if(BUILD_SHARED_LIBS)
+  set(_LVR2_STATIC_EXPORT_NAME lvr2_static)
+else()
+  set(_LVR2_STATIC_EXPORT_NAME lvr2)
+endif()
 
 #####################################################################################
 # Set c++0x flags for gcc compilers (needed for boctree io)
@@ -202,104 +212,122 @@ if(UNIX)
 endif(UNIX)
 
 #####################################################################################
-# Compile object files for static and dynamic library
+# Build static and shared libraries
 #####################################################################################
 
-add_library(lvr2core OBJECT ${LVR2_SOURCES})
-if(WITH_3DTILES)
-    add_dependencies(lvr2core cesium-native)
-endif(WITH_3DTILES)
+set(_LVR2_LIBRARY_TARGETS)
 
-target_link_libraries(lvr2core
-    PRIVATE
-    $<BUILD_INTERFACE:spdlog::spdlog_header_only>
-    $<BUILD_INTERFACE:spdmon::spdmon>
-)
-target_link_libraries(lvr2core
-    PUBLIC
-    Eigen3::Eigen
-)
+if(LVR2_BUILD_STATIC_LIBS)
+    message(STATUS "Building static library")
+    add_library(lvr2core OBJECT ${LVR2_SOURCES})
+    if(WITH_3DTILES)
+        add_dependencies(lvr2core cesium-native)
+    endif(WITH_3DTILES)
 
-#####################################################################################
-# Build static library
-#####################################################################################
+    target_link_libraries(lvr2core
+        PRIVATE
+        $<BUILD_INTERFACE:spdlog::spdlog_header_only>
+        $<BUILD_INTERFACE:spdmon::spdmon>
+    )
+    target_link_libraries(lvr2core
+        PUBLIC
+        Eigen3::Eigen
+    )
 
-message(STATUS "Building static library")
-add_library(lvr2_static STATIC $<TARGET_OBJECTS:lvr2core>)
-target_include_directories(lvr2_static PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/${HIGHFIVE_INCLUDE_DIRS}>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-    ${HDF5_INCLUDE_DIRS}
-)
-target_link_libraries(lvr2_static
-    PUBLIC
-    ${LVR2_INTERNAL_DEPENDENCIES_STATIC} 
-    ${LVR2_LIB_DEPENDENCIES}
-)
-target_link_libraries(lvr2_static
-    PRIVATE
-    $<BUILD_INTERFACE:spdlog::spdlog_header_only>
-    $<BUILD_INTERFACE:spdmon::spdmon>
-)
-target_compile_definitions(lvr2_static
-    PUBLIC
-    ${LVR2_DEFINITIONS}
-)
-set_target_properties(lvr2_static
-    PROPERTIES
-    EXPORT_NAME lvr2_static
-    CXX_STANDARD 17
-)
+    add_library(lvr2_static STATIC $<TARGET_OBJECTS:lvr2core>)
+    target_include_directories(lvr2_static PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/${HIGHFIVE_INCLUDE_DIRS}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+        ${HDF5_INCLUDE_DIRS}
+    )
+    target_link_libraries(lvr2_static
+        PUBLIC
+        ${LVR2_INTERNAL_DEPENDENCIES_STATIC}
+        ${LVR2_LIB_DEPENDENCIES}
+    )
+    target_link_libraries(lvr2_static
+        PRIVATE
+        $<BUILD_INTERFACE:spdlog::spdlog_header_only>
+        $<BUILD_INTERFACE:spdmon::spdmon>
+    )
+    target_compile_definitions(lvr2_static
+        PUBLIC
+        ${LVR2_DEFINITIONS}
+    )
+    set_target_properties(lvr2_static
+        PROPERTIES
+        EXPORT_NAME ${_LVR2_STATIC_EXPORT_NAME}
+        CXX_STANDARD 17
+    )
 
-#####################################################################################
-# Build shared library
-#####################################################################################
+    list(APPEND _LVR2_LIBRARY_TARGETS lvr2_static)
+endif()
 
-message(STATUS "Building shared library")
-add_library(lvr2 SHARED ${LVR2_SOURCES})
-target_include_directories(lvr2 PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/${HIGHFIVE_INCLUDE_DIRS}>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-    ${Boost_INCLUDE_DIRS}
-    ${HDF5_INCLUDE_DIRS}
-)
-target_link_libraries(lvr2
-    PUBLIC
-    Eigen3::Eigen
-    ${LVR2_INTERNAL_DEPENDENCIES_SHARED} 
-    ${LVR2_LIB_DEPENDENCIES}
-)
+if(BUILD_SHARED_LIBS)
+    message(STATUS "Building shared library")
+    add_library(lvr2 SHARED ${LVR2_SOURCES})
+    target_include_directories(lvr2 PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/${HIGHFIVE_INCLUDE_DIRS}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+        ${Boost_INCLUDE_DIRS}
+        ${HDF5_INCLUDE_DIRS}
+    )
+    target_link_libraries(lvr2
+        PUBLIC
+        Eigen3::Eigen
+        ${LVR2_INTERNAL_DEPENDENCIES_SHARED}
+        ${LVR2_LIB_DEPENDENCIES}
+    )
 
-target_link_libraries(lvr2
-    PRIVATE
-    $<BUILD_INTERFACE:spdlog::spdlog_header_only>
-    $<BUILD_INTERFACE:spdmon::spdmon>
-)
-target_compile_definitions(lvr2 
-    PUBLIC
-    ${LVR2_DEFINITIONS}
-    -DLVR2_BUILDING_SHARED
-)
-set_target_properties(lvr2
-    PROPERTIES
-    EXPORT_NAME lvr2
-    SOVERSION ${lvr2_VERSION_MAJOR}
-    VERSION ${lvr2_VERSION}
-    CXX_STANDARD 17
-    VISIBILITY_INLINES_HIDDEN ON
-)
+    target_link_libraries(lvr2
+        PRIVATE
+        $<BUILD_INTERFACE:spdlog::spdlog_header_only>
+        $<BUILD_INTERFACE:spdmon::spdmon>
+    )
+    target_compile_definitions(lvr2
+        PUBLIC
+        ${LVR2_DEFINITIONS}
+        -DLVR2_BUILDING_SHARED
+    )
+    set_target_properties(lvr2
+        PROPERTIES
+        EXPORT_NAME lvr2
+        SOVERSION ${lvr2_VERSION_MAJOR}
+        VERSION ${lvr2_VERSION}
+        CXX_STANDARD 17
+        VISIBILITY_INLINES_HIDDEN ON
+    )
 
-#####################################################################################
-# Install static and shared library
-#####################################################################################
+    list(APPEND _LVR2_LIBRARY_TARGETS lvr2)
+endif()
 
-install(TARGETS lvr2_static lvr2
-  EXPORT lvr2-targets
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
+if(LVR2_BUILD_STATIC_LIBS AND NOT BUILD_SHARED_LIBS)
+    # Static-only builds keep the aggregate in-tree target available.
+    add_library(lvr2 ALIAS lvr2_static)
+endif()
+
+if(NOT LVR2_BUILD_STATIC_LIBS AND BUILD_SHARED_LIBS)
+    # In-tree compatibility for consumers hard-linking to lvr2_static.
+    add_library(lvr2_static ALIAS lvr2)
+
+    # Static dependency aliases for consumers hard-linking to static variants.
+    if(TARGET lvr2rply)
+        add_library(lvr2rply_static ALIAS lvr2rply)
+    endif()
+    if(TARGET lvr2las)
+        add_library(lvr2las_static ALIAS lvr2las)
+    endif()
+endif()
+
+if(_LVR2_LIBRARY_TARGETS)
+    install(TARGETS ${_LVR2_LIBRARY_TARGETS}
+      EXPORT lvr2-targets
+      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
+endif()
 
 #####################################################################################
 # CUDA
@@ -351,63 +379,89 @@ if(CUDA_FOUND)
     if(NOT CUDA_NVRTC_LIBRARY)
         message(FATAL_ERROR "Required library 'nvrtc' not found.")
     endif(NOT CUDA_NVRTC_LIBRARY)
-    
-    message(STATUS "Building static LVR CUDA library")
-    add_library(lvr2cuda_static STATIC ${LVR2_CUDA_SRC})
 
-    # Add dependency to avoid that both targets
-    # are build concurrently in parallel builds
-    add_dependencies(lvr2cuda_static 
-        lvr2_static)
+    set(_LVR2_CUDA_TARGETS)
 
-    target_link_libraries(lvr2cuda_static
-        lvr2_static
-        ${CUDA_LIBRARIES}
-        ${CUDA_DRIVER_LIBRARY}
-        ${CUDA_NVRTC_LIBRARY}
-    )
+    set(_LVR2_CUDA_STATIC_EXPORT_NAME lvr2cuda_static)
+    if(NOT BUILD_SHARED_LIBS)
+        set(_LVR2_CUDA_STATIC_EXPORT_NAME lvr2cuda)
+    endif()
 
-    set_target_properties(lvr2cuda_static
-    PROPERTIES
-        SOVERSION ${lvr2_VERSION_MAJOR}
-        VERSION ${lvr2_VERSION}
-        CUDA_SEPARABLE_COMPILATION ON
-    )
+    if(LVR2_BUILD_STATIC_LIBS)
+        message(STATUS "Building static LVR CUDA library")
+        add_library(lvr2cuda_static STATIC ${LVR2_CUDA_SRC})
 
-    message(STATUS "Building shared LVR CUDA library")
+        # Add dependency to avoid that both targets
+        # are build concurrently in parallel builds
+        add_dependencies(lvr2cuda_static
+            lvr2_static)
 
-    add_library(lvr2cuda SHARED ${LVR2_CUDA_CPP_SRC} ${LVR2_CUDA_SRC})
-
-    target_include_directories(lvr2cuda
-        PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/lvr2>
-            ${CUDA_INCLUDE_DIRS}
+        target_link_libraries(lvr2cuda_static
+            lvr2_static
+            ${CUDA_LIBRARIES}
+            ${CUDA_DRIVER_LIBRARY}
+            ${CUDA_NVRTC_LIBRARY}
         )
 
-    target_link_libraries(lvr2cuda PUBLIC
-        lvr2
-        ${CUDA_LIBRARIES}
-        ${CUDA_DRIVER_LIBRARY}
-        ${CUDA_NVRTC_LIBRARY}
-    )
-
-    add_dependencies(lvr2cuda 
-        lvr2)
-
-    set_target_properties(lvr2cuda
+        set_target_properties(lvr2cuda_static
         PROPERTIES
+            EXPORT_NAME ${_LVR2_CUDA_STATIC_EXPORT_NAME}
             SOVERSION ${lvr2_VERSION_MAJOR}
             VERSION ${lvr2_VERSION}
             CUDA_SEPARABLE_COMPILATION ON
-    )
+        )
 
-    install(
-        TARGETS lvr2cuda lvr2cuda_static
-        EXPORT lvr2-targets
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    )
+        list(APPEND _LVR2_CUDA_TARGETS lvr2cuda_static)
+
+        if(NOT BUILD_SHARED_LIBS)
+            add_library(lvr2cuda ALIAS lvr2cuda_static)
+        endif()
+    endif()
+
+    if(BUILD_SHARED_LIBS)
+        message(STATUS "Building shared LVR CUDA library")
+
+        add_library(lvr2cuda SHARED ${LVR2_CUDA_CPP_SRC} ${LVR2_CUDA_SRC})
+
+        target_include_directories(lvr2cuda
+            PUBLIC
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/lvr2>
+                ${CUDA_INCLUDE_DIRS}
+            )
+
+        target_link_libraries(lvr2cuda PUBLIC
+            lvr2
+            ${CUDA_LIBRARIES}
+            ${CUDA_DRIVER_LIBRARY}
+            ${CUDA_NVRTC_LIBRARY}
+        )
+
+        add_dependencies(lvr2cuda
+            lvr2)
+
+        set_target_properties(lvr2cuda
+            PROPERTIES
+                SOVERSION ${lvr2_VERSION_MAJOR}
+                VERSION ${lvr2_VERSION}
+                CUDA_SEPARABLE_COMPILATION ON
+        )
+
+        list(APPEND _LVR2_CUDA_TARGETS lvr2cuda)
+
+        if(NOT LVR2_BUILD_STATIC_LIBS)
+            add_library(lvr2cuda_static ALIAS lvr2cuda)
+        endif()
+    endif()
+
+    if(_LVR2_CUDA_TARGETS)
+        install(
+            TARGETS ${_LVR2_CUDA_TARGETS}
+            EXPORT lvr2-targets
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
+    endif()
 
 endif()
 
