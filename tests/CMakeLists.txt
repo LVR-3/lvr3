@@ -71,3 +71,15 @@ if(LVR2_ENABLE_PYTEST)
     message(STATUS "Python3 interpreter not found; skipping Python smoke test registration.")
   endif()
 endif()
+
+# Package identity helper checks for lvr2/lvr3 compatibility and load order.
+add_test(
+  NAME lvr2_lvr3_package_identity_smoke
+  COMMAND ${CMAKE_COMMAND}
+    -P ${CMAKE_CURRENT_LIST_DIR}/package_identity/package_identity_verify.cmake
+)
+set_tests_properties(
+  lvr2_lvr3_package_identity_smoke
+  PROPERTIES
+    LABELS "cpp;smoke;package-identity"
+)

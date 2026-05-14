@@ -879,14 +879,27 @@ endif(LVR2_BUILD_VIEWER)
 include(CMakePackageConfigHelpers)
 set(SYSCONFIG_INSTALL_DIR etc/lvr2/)
 
+set(_LVR_CMAKE_MODULES
+    CMakeModules/FindFLANN.cmake
+    CMakeModules/FindLZ4.cmake
+    CMakeModules/FindOpenNI.cmake
+    CMakeModules/FindOpenNI2.cmake
+    CMakeModules/FindQVTK.cmake
+)
+
 install(EXPORT lvr2-targets
     FILE lvr2-targets.cmake
     NAMESPACE lvr2::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2)
 
-
 write_basic_package_version_file(
   ${CMAKE_CURRENT_BINARY_DIR}/lvr2-config-version.cmake
+  VERSION ${lvr2_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/lvr3-config-version.cmake
   VERSION ${lvr2_VERSION}
   COMPATIBILITY SameMajorVersion
 )
@@ -896,6 +909,11 @@ configure_package_config_file(CMakeModules/lvr2-config.cmake.in
     INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2
 )
 
+configure_package_config_file(CMakeModules/lvr3-config.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/lvr3-config.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr3
+)
+
 install(
   FILES
     ${CMAKE_CURRENT_BINARY_DIR}/lvr2-config.cmake
@@ -903,16 +921,23 @@ install(
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2
 )
 
+install(
+  FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/lvr3-config.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/lvr3-config-version.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr3
+)
+
 # install package.xml for ROS
 install(FILES package.xml DESTINATION share/lvr2)
 
 install(FILES
-    CMakeModules/FindFLANN.cmake
-    CMakeModules/FindLZ4.cmake
-    CMakeModules/FindOpenNI.cmake
-    CMakeModules/FindOpenNI2.cmake
-    CMakeModules/FindQVTK.cmake
+    ${_LVR_CMAKE_MODULES}
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2/Modules)
+
+install(FILES
+    ${_LVR_CMAKE_MODULES}
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr3/Modules)
 
 # Installation of HighFive headers
 # need to do it like this sind add_subdirectory to "ext/HighFive" crashs
