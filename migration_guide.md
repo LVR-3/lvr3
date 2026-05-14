@@ -98,6 +98,39 @@ Current facade support is intentionally conservative while broader writer valida
 
 Existing public readers and writers such as `ModelFactory`, `ModelIOBase`, `ObjIO`, `PLYIO`, and `STLIO` are **not removed** by the initial facade. Their removal is covered by the mesh reader/writer removal notes and guarded by replacement tests.
 
+## Mesh reader/writer removal
+
+The mesh-asset-specific legacy reader/writer headers are no longer installed as public C++ API:
+
+- `#include <lvr2/io/ModelFactory.hpp>` / `lvr2::ModelFactory`
+- `#include <lvr2/io/modelio/ObjIO.hpp>` / `lvr2::ObjIO`
+- `#include <lvr2/io/modelio/PLYIO.hpp>` / `lvr2::PLYIO`
+- `#include <lvr2/io/modelio/STLIO.hpp>` / `lvr2::STLIO`
+
+Use the mesh facade instead:
+
+```cpp
+#include <lvr2/mesh/io.hpp>
+
+lvr2::mesh::LoadOptions loadOptions;
+loadOptions.format = lvr2::mesh::Format::Auto;
+auto mesh = lvr2::mesh::load("input.obj", loadOptions);
+if (!mesh) {
+    // Handle mesh.error().code, message, path, and format.
+}
+
+lvr2::mesh::SaveOptions saveOptions;
+saveOptions.format = lvr2::mesh::Format::Ply;
+saveOptions.binary = true;
+auto saved = lvr2::mesh::save(*mesh, "output.ply", saveOptions);
+```
+
+Internal LVR tools still keep a private implementation bridge so CLI names, options, and current tool dispatch behavior are unchanged. That private bridge is not installed and must not be included by downstream code.
+
+Current facade coverage remains: OBJ/PLY load and binary PLY save are supported; STL load/save, OBJ save, DAE/Collada, glTF, and glb return structured `ErrorCode::UnsupportedFormat` until later test-backed slices. `ModelIOBase` and non-mesh/point-cloud/scan `modelio` classes remain public for now and are deferred to later I/O/streaming slices.
+
+Replacement coverage is guarded by `lvr2_removed_public_mesh_io_headers` and the mesh facade GoogleTest coverage (`lvr2_mesh_io_facade_gtest`, including replacement tests).
+
 ## 25.1.0 -> 25.2.0
 
 

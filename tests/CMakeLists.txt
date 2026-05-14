@@ -39,6 +39,17 @@ set_tests_properties(lvr2_mesh_io_facade_header_compile
     LABELS "cpp;io;mesh;header"
 )
 
+add_test(
+  NAME lvr2_removed_public_mesh_io_headers
+  COMMAND ${CMAKE_COMMAND}
+    -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+    -P ${CMAKE_CURRENT_LIST_DIR}/removed_public_mesh_io_headers.cmake
+)
+set_tests_properties(lvr2_removed_public_mesh_io_headers
+  PROPERTIES
+    LABELS "cpp;io;mesh;header"
+)
+
 if(_LVR2_GTEST_MAIN_TARGET)
   add_executable(lvr2_smoke_gtest
     test_smoke_gtest.cpp
@@ -50,6 +61,7 @@ if(_LVR2_GTEST_MAIN_TARGET)
 
   add_executable(lvr2_mesh_io_facade_gtest
     test_mesh_io_facade.cpp
+    test_mesh_io_replacement.cpp
   )
   target_include_directories(lvr2_mesh_io_facade_gtest PRIVATE
     ${PROJECT_SOURCE_DIR}/include

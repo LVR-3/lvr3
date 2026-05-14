@@ -38,7 +38,6 @@ using std::unordered_map;
 
 #include "lvr2/algorithm/Materializer.hpp"
 #include "lvr2/types/MeshBuffer.hpp"
-#include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/algorithm/FinalizeAlgorithms.hpp"
 
 
@@ -70,8 +69,7 @@ void writeDebugMesh(
     auto buffer = finalize.apply(mesh);
 
     // Save mesh
-//    auto m = boost::make_shared<Model>(buffer);
-//    ModelFactory::saveModel(m, filename);
+//    Debug mesh saving through the removed legacy public writer API is disabled.
 }
 
 template<typename BaseVecT>
@@ -137,8 +135,7 @@ writeDebugContourMesh(
     // Save mesh
     std::cout << "IMPLEMENT ME " << std::endl;
 
-    //auto m = boost::make_shared<Model>(buffer);
-    //ModelFactory::saveModel(m, filename);
+    // Debug mesh saving through the removed legacy public writer API is disabled.
 }
 
 } // namespace lvr2

@@ -33,6 +33,7 @@
 #include "lvr2/io/baseio/ArrayIO.hpp"
 #include "lvr2/io/baseio/VariantChannelIO.hpp"
 #include "lvr2/io/Tiles3dIO.hpp"
+#include "lvr2/mesh/io.hpp"
 #include "lvr2/reconstruction/VirtualGrid.hpp"
 #include "lvr2/reconstruction/BigGridKdTree.hpp"
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
@@ -904,8 +905,14 @@ namespace lvr2
             lvr2::SimpleFinalizer<BaseVecT> finalize;
             auto meshBuffer = finalize.apply(mesh);
 
-            auto m = ModelPtr(new Model(meshBuffer));
-            ModelFactory::saveModel(m, "largeScale_test_" + std::to_string(voxelSize) + ".ply");
+            const auto chunkPath = "largeScale_test_" + std::to_string(voxelSize) + ".ply";
+            const auto saved = lvr2::mesh::save(meshBuffer, chunkPath, {lvr2::mesh::Format::Ply, true});
+            if (!saved)
+            {
+                lvr2::logout::get() << lvr2::warning
+                    << "[LargeScaleReconstruction] Could not write chunk mesh '"
+                    << chunkPath << "': " << saved.error().message << lvr2::endl;
+            }
         }
             return mesh;
 

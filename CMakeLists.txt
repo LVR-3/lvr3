@@ -137,6 +137,9 @@ set(CMAKE_MODULE_PATH
 message(STATUS ${CMAKE_MODULE_PATH})
 
 include_directories(include)
+# Build-only include root for private implementation headers removed from the
+# installed public API. Do not add this path to install/export interfaces.
+include_directories(src/liblvr2/include)
 
 ###############################################################################
 # Compiler specific settings

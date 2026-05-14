@@ -1,3 +1,5 @@
+// Private implementation header retained for in-tree legacy dispatch.
+// Not installed as public API; use <lvr2/mesh/io.hpp> in downstream code.
 /**
  * Copyright (c) 2018, University Osnabrück
  * All rights reserved.
@@ -25,44 +27,51 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * STLIO.hpp
+ /**
+ * IOFactory.h
  *
- *  Created on: Dec 9, 2016
- *      Author: robot
+ *  @date 24.08.2011
+ *  @author Thomas Wiemann
  */
 
-#ifndef STLIO_HPP
-#define STLIO_HPP
+#ifndef IOFACTORY_H_
+#define IOFACTORY_H_
 
-#include "lvr2/io/modelio/ModelIOBase.hpp"
+#include "lvr2/types/Model.hpp"
+#include "lvr2/util/CoordinateTransform.hpp"
+
+#include <string>
+#include <vector>
+#include <array>
+#include <map>
+
+#include <boost/shared_ptr.hpp>
+
 
 namespace lvr2
 {
 
-/****
- * @brief 	Reader / Writer for STL file. Currently only binary STL files
- * 			are supported.
+/**
+ * @brief Factory class extract point cloud and mesh information
+ *        from supported file formats. The instantiated MeshLoader
+ *        and PointLoader instances are persistent, i.e. they will
+ *        not be freed in the destructor of this class to prevent
+ *        side effects.
  */
-class STLIO : public ModelIOBase
+class ModelFactory
 {
-public:
-	STLIO();
-	virtual ~STLIO();
+    public:
 
-	virtual void save( string filename );
-	virtual void save( ModelPtr model, string filename );
-    /**
-     * @brief Parse the given file and load supported elements.
-     *
-     * @param 	filename  The file to read.
-     * @return	A new model. If the file could not be parsed, an empty model
-     * 			is returned.
-     */
-    virtual ModelPtr read(string filename );
+        static ModelPtr readModel( std::string filename );
+
+        static void saveModel( ModelPtr m, std::string file);
+
+        static CoordinateTransform<float> m_transform;
 
 };
 
-} /* namespace lvr2 */
+typedef boost::shared_ptr<ModelFactory> ModelFactoryPtr;
 
-#endif // STLIO
+} // namespace lvr2
+
+#endif /* IOFACTORY_H_ */

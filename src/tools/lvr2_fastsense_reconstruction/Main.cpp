@@ -21,7 +21,7 @@
 #include "lvr2/algorithm/FinalizeAlgorithms.hpp"
 #include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
 
-#include "lvr2/io/PLYIO.hpp"
+#include "lvr2/io/modelio/PLYIO.hpp"
 
 #include "lvr2/algorithm/NormalAlgorithms.hpp"
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"

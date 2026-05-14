@@ -1,3 +1,5 @@
+// Private implementation header retained for in-tree legacy dispatch.
+// Not installed as public API; use <lvr2/mesh/io.hpp> in downstream code.
 /**
  * Copyright (c) 2018, University Osnabrück
  * All rights reserved.
@@ -25,51 +27,68 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
- /**
- * IOFactory.h
+/*
+ * ObjIO.hpp
  *
- *  @date 24.08.2011
- *  @author Thomas Wiemann
+ *  @date 07.11.2011
+ *  @author Florian Otte (fotte@uos.de)
+ *  @author Kim Rinnewitz (krinnewitz@uos.de)
+ *  @author Sven Schalk (sschalk@uos.de)
+ *  @author Denis Meyer (denmeyer@uos.de)
  */
 
-#ifndef IOFACTORY_H_
-#define IOFACTORY_H_
-
-#include "lvr2/types/Model.hpp"
-#include "lvr2/util/CoordinateTransform.hpp"
-
-#include <string>
-#include <vector>
-#include <array>
+#ifndef LVR2_OBJIO_HPP_
+#define LVR2_OBJIO_HPP_
+#include "lvr2/io/modelio/ModelIOBase.hpp"
+#include <fstream>
+#include <set>
 #include <map>
-
-#include <boost/shared_ptr.hpp>
-
 
 namespace lvr2
 {
 
 /**
- * @brief Factory class extract point cloud and mesh information
- *        from supported file formats. The instantiated MeshLoader
- *        and PointLoader instances are persistent, i.e. they will
- *        not be freed in the destructor of this class to prevent
- *        side effects.
+ * @brief A basic implementation of the obj file format.
  */
-class ModelFactory
+class ObjIO : public ModelIOBase
 {
-    public:
+public:
 
-        static ModelPtr readModel( std::string filename );
+    /**
+     * @brief Constructor.
+     **/
+    ObjIO()
+    {
+        m_model.reset();
+    }
 
-        static void saveModel( ModelPtr m, std::string file);
+    ~ObjIO() { };
 
-        static CoordinateTransform<float> m_transform;
+    /**
+     * \brief   Parse the given file and load supported elements.
+     *
+     * @param filename  The file to read.
+     */
+    ModelPtr read( std::string filename );
+
+    /**
+     * @brief     Writes the mesh to an obj file.
+     *
+     * @param  model     The model containing all mesh data
+     * @param  filename  The file name to use
+     */
+    void save( std::string filename );
+
+
+private:
+
+    void parseMtlFile(std::map<string, int>& matNames,
+            std::vector<Material>& materials,
+            std::vector<Texture>& textures,
+            std::string mtlname);
 
 };
 
-typedef boost::shared_ptr<ModelFactory> ModelFactoryPtr;
-
 } // namespace lvr2
 
-#endif /* IOFACTORY_H_ */
+#endif /* OBJIO_H_ */
