@@ -26,21 +26,19 @@ https://github.com/uos/lvr2 - develop
 
 ## Linux (Ubuntu 18.04, 20.04, 22.04, 24.04)
 
-### Step 1: Install all required package dependencies: 
+### Step 1: Install build tools and vcpkg dependencies
+
+A C++17 compiler and CMake 3.22 or newer are required. Dependencies are resolved primarily through the `vcpkg.json` manifest:
 
 ```bash
-sudo apt-get install build-essential \
-     cmake cmake-curses-gui libflann-dev \
-     libgsl-dev libeigen3-dev libopenmpi-dev \
-     openmpi-bin opencl-c-headers ocl-icd-opencl-dev \
-     libvtk7-dev libvtk7-qt-dev libboost-all-dev \
-     freeglut3-dev libhdf5-dev qtbase5-dev \
-     qt5-default libqt5opengl5-dev liblz4-dev \
-     libopencv-dev libyaml-cpp-dev \
-     libembree-dev
+git clone https://github.com/microsoft/vcpkg.git ~/vcpkg
+~/vcpkg/bootstrap-vcpkg.sh
+export VCPKG_ROOT=~/vcpkg
+cmake --preset vcpkg-release
+cmake --build --preset build-vcpkg-release
 ```
 
-A C++17 compiler is required.
+For distro/ROS packaging, vcpkg can be disabled with `cmake --preset system-optout-release` or `-DLVR2_WITH_VCPKG=OFF`; individual package escape hatches use `LVR2_USE_SYSTEM_<PKG>=ON` when mixing system packages with a vcpkg toolchain. See `migration_guide.md` for the vcpkg-first dependency policy.
 
 ### Optional for NVIDIA graphics cards users
 
@@ -48,22 +46,25 @@ If you want to compile with CUDA support install the latest version of the CUDA 
 
 ### Step 2: Configure and build from sources:
 
+The vcpkg example above configures and builds the default Release preset. For manual configuration, pass the vcpkg toolchain explicitly:
+
 ```bash
-mkdir build
-cd build
-cmake .. && make
+cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake
+cmake --build build
 ```
 
 ## MacOS
 
-Install the required libraries using [Homebrew](https://brew.sh):
+Install build tools using [Homebrew](https://brew.sh), then use the vcpkg manifest:
 
 ```bash
-brew install boost boost-mpi cmake eigen flann gcc glew gsl hdf5 opencv lz4 qt vtk 
+brew install cmake git
 
-mkdir build
-cd build
-cmake .. && make
+git clone https://github.com/microsoft/vcpkg.git ~/vcpkg
+~/vcpkg/bootstrap-vcpkg.sh
+export VCPKG_ROOT=~/vcpkg
+cmake --preset vcpkg-release
+cmake --build --preset build-vcpkg-release
 ```
 
 # Usage

@@ -2,9 +2,15 @@
 option(LVR2_FETCH_GTEST "Download GoogleTest when a system package is unavailable" OFF)
 option(LVR2_ENABLE_PYTEST "Register pytest helper tests when Python and pytest are available" ON)
 
-find_package(GTest CONFIG QUIET)
+if(NOT COMMAND lvr2_find_package)
+  macro(lvr2_find_package)
+    find_package(${ARGV})
+  endmacro()
+endif()
+
+lvr2_find_package(GTest CONFIG QUIET)
 if(NOT GTest_FOUND)
-  find_package(GTest QUIET)
+  lvr2_find_package(GTest QUIET)
 endif()
 
 if(NOT GTest_FOUND)
@@ -61,6 +67,28 @@ set_tests_properties(lvr2_no_public_assimp_leakage
     LABELS "cpp;io;mesh;header;assimp"
 )
 
+add_test(
+  NAME lvr2_no_vendored_dependencies
+  COMMAND ${CMAKE_COMMAND}
+    -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+    -P ${CMAKE_CURRENT_LIST_DIR}/no_vendored_dependencies.cmake
+)
+set_tests_properties(lvr2_no_vendored_dependencies
+  PROPERTIES
+    LABELS "cmake;dependencies"
+)
+
+add_test(
+  NAME lvr2_system_optout_semantics
+  COMMAND ${CMAKE_COMMAND}
+    -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+    -P ${CMAKE_CURRENT_LIST_DIR}/system_optout_semantics.cmake
+)
+set_tests_properties(lvr2_system_optout_semantics
+  PROPERTIES
+    LABELS "cmake;dependencies"
+)
+
 if(LVR2_MESH_IO_ASSIMP_AVAILABLE)
   add_executable(lvr2_assimp_adapter_smoke
     test_assimp_adapter_smoke.cpp
@@ -72,12 +100,11 @@ if(LVR2_MESH_IO_ASSIMP_AVAILABLE)
   target_include_directories(lvr2_assimp_adapter_smoke PRIVATE
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/src/liblvr2/include
-    ${PROJECT_SOURCE_DIR}/${HIGHFIVE_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
     ${HDF5_INCLUDE_DIRS}
   )
   target_compile_features(lvr2_assimp_adapter_smoke PRIVATE cxx_std_17)
-  target_link_libraries(lvr2_assimp_adapter_smoke PRIVATE Eigen3::Eigen)
+  target_link_libraries(lvr2_assimp_adapter_smoke PRIVATE Eigen3::Eigen ${LVR2_HIGHFIVE_TARGET})
   if(LVR2_ASSIMP_TARGET)
     target_link_libraries(lvr2_assimp_adapter_smoke PRIVATE ${LVR2_ASSIMP_TARGET})
   else()
@@ -150,7 +177,7 @@ else()
 endif()
 
 if(LVR2_ENABLE_PYTEST)
-  find_package(Python3 COMPONENTS Interpreter QUIET)
+  lvr2_find_package(Python3 COMPONENTS Interpreter QUIET)
   if(Python3_Interpreter_FOUND)
     execute_process(
       COMMAND ${Python3_EXECUTABLE} -m pytest --version

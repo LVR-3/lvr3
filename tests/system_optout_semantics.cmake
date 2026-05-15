@@ -1,0 +1,53 @@
+if(NOT DEFINED LVR2_SOURCE_DIR)
+  get_filename_component(LVR2_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
+endif()
+
+include("${LVR2_SOURCE_DIR}/CMakeModules/Lvr2DependencyPolicy.cmake")
+
+set(_dependency_policy_tmp "$ENV{TMPDIR}")
+if(NOT _dependency_policy_tmp)
+  set(_dependency_policy_tmp "$ENV{TEMP}")
+endif()
+if(NOT _dependency_policy_tmp)
+  set(_dependency_policy_tmp "$ENV{TMP}")
+endif()
+if(NOT _dependency_policy_tmp)
+  set(_dependency_policy_tmp "${CMAKE_CURRENT_BINARY_DIR}")
+endif()
+string(MD5 _dependency_policy_source_hash "${LVR2_SOURCE_DIR}")
+set(_dependency_policy_root "${_dependency_policy_tmp}/lvr2-system-optout-${_dependency_policy_source_hash}")
+file(REMOVE_RECURSE "${_dependency_policy_root}")
+set(_dependency_policy_vcpkg_prefix "${_dependency_policy_root}/vcpkg_installed/x64-test")
+set(_dependency_policy_system_prefix "${_dependency_policy_root}/system")
+
+foreach(_dependency_policy_pkg IN ITEMS OptOutPkg DefaultPkg)
+  file(MAKE_DIRECTORY "${_dependency_policy_vcpkg_prefix}/share/${_dependency_policy_pkg}")
+  file(MAKE_DIRECTORY "${_dependency_policy_system_prefix}/share/${_dependency_policy_pkg}")
+  string(TOUPPER "${_dependency_policy_pkg}" _dependency_policy_pkg_upper)
+  file(WRITE "${_dependency_policy_vcpkg_prefix}/share/${_dependency_policy_pkg}/${_dependency_policy_pkg}Config.cmake"
+    "set(${_dependency_policy_pkg_upper}_SOURCE vcpkg)\nset(${_dependency_policy_pkg}_FOUND TRUE)\n")
+  file(WRITE "${_dependency_policy_system_prefix}/share/${_dependency_policy_pkg}/${_dependency_policy_pkg}Config.cmake"
+    "set(${_dependency_policy_pkg_upper}_SOURCE system)\nset(${_dependency_policy_pkg}_FOUND TRUE)\n")
+endforeach()
+
+set(LVR2_WITH_VCPKG ON)
+set(VCPKG_INSTALLED_DIR "${_dependency_policy_root}/vcpkg_installed")
+set(VCPKG_TARGET_TRIPLET x64-test)
+set(CMAKE_PREFIX_PATH "${_dependency_policy_vcpkg_prefix};${_dependency_policy_system_prefix}")
+set(CMAKE_FIND_USE_CMAKE_SYSTEM_PATH OFF)
+set(CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH OFF)
+
+set(LVR2_USE_SYSTEM_OPTOUTPKG ON)
+lvr2_find_package(OptOutPkg CONFIG REQUIRED)
+if(NOT OPTOUTPKG_SOURCE STREQUAL "system")
+  message(FATAL_ERROR "LVR2_USE_SYSTEM_OPTOUTPKG did not bypass vcpkg prefix; got '${OPTOUTPKG_SOURCE}'")
+endif()
+
+lvr2_find_package(DefaultPkg CONFIG REQUIRED)
+if(NOT DEFAULTPKG_SOURCE STREQUAL "vcpkg")
+  message(FATAL_ERROR "Default vcpkg-first lookup did not prefer vcpkg prefix; got '${DEFAULTPKG_SOURCE}'")
+endif()
+
+file(REMOVE_RECURSE "${_dependency_policy_root}")
+
+message(STATUS "System package opt-out semantics guard passed")

@@ -1,32 +1,94 @@
 cmake_minimum_required(VERSION 3.22)
 
 # Dependency acquisition policy
-#  - system packages are default
-option(LVR2_WITH_VCPKG "Use vcpkg for dependency lookup" OFF)
+#  - vcpkg manifest/toolchain is the default dependency path
+#  - system package escapes are explicit and per-package via LVR2_USE_SYSTEM_<PKG>
+set(_LVR2_DEFAULT_VCPKG_TOOLCHAIN_FILE "")
+if(DEFINED ENV{VCPKG_ROOT} AND EXISTS "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
+  set(_LVR2_DEFAULT_VCPKG_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
+elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
+  set(_LVR2_DEFAULT_VCPKG_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
+endif()
+
+option(LVR2_WITH_VCPKG "Use vcpkg manifest/toolchain dependency lookup" ON)
 set(LVR2_VCPKG_TOOLCHAIN_FILE
-    "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    "${_LVR2_DEFAULT_VCPKG_TOOLCHAIN_FILE}"
     CACHE FILEPATH "Path to vcpkg toolchain file")
-option(LVR2_IGNORE_SYSTEM_PACKAGES "Ignore CMake system/env package search paths" OFF)
+if(NOT DEFINED LVR2_IGNORE_SYSTEM_PACKAGES)
+  set(LVR2_IGNORE_SYSTEM_PACKAGES ${LVR2_WITH_VCPKG}
+      CACHE BOOL "Ignore CMake system/env package search paths unless a package-specific system opt-out is enabled")
+endif()
 
 if(CMAKE_TOOLCHAIN_FILE)
   message(STATUS "Using user-supplied CMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}")
 elseif(LVR2_WITH_VCPKG)
   if(EXISTS "${LVR2_VCPKG_TOOLCHAIN_FILE}")
     set(CMAKE_TOOLCHAIN_FILE "${LVR2_VCPKG_TOOLCHAIN_FILE}"
-        CACHE FILEPATH "Vcpkg toolchain file" FORCE)
+        CACHE FILEPATH "vcpkg toolchain file" FORCE)
   else()
     message(FATAL_ERROR
-      "LVR2_WITH_VCPKG=ON requires a valid vcpkg toolchain file.\n"
-      "Set -DCMAKE_TOOLCHAIN_FILE=<path> or -DLVR2_VCPKG_TOOLCHAIN_FILE=<path> "
-      "to an existing scripts/buildsystems/vcpkg.cmake")
+      "vcpkg-first dependency policy makes vcpkg the primary LVR dependency path. No vcpkg toolchain was found.\n"
+      "Set VCPKG_ROOT, set -DCMAKE_TOOLCHAIN_FILE=<path>/scripts/buildsystems/vcpkg.cmake, "
+      "or set -DLVR2_VCPKG_TOOLCHAIN_FILE=<path>.\n"
+      "For a system-package escape hatch, configure -DLVR2_WITH_VCPKG=OFF and enable "
+      "only the needed -DLVR2_USE_SYSTEM_<PKG>=ON options documented in migration_guide.md.")
   endif()
 endif()
 
 if(LVR2_IGNORE_SYSTEM_PACKAGES)
-  message(STATUS "LVR2_IGNORE_SYSTEM_PACKAGES=ON: disabling CMake system/env search")
+  message(STATUS "LVR2_IGNORE_SYSTEM_PACKAGES=ON: disabling CMake system/env search by default")
   set(CMAKE_FIND_USE_CMAKE_SYSTEM_PATH OFF)
   set(CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH OFF)
 endif()
+
+set(_LVR2_SYSTEM_PACKAGE_OPTOUTS
+  tl-expected
+  TBB
+  TIFF
+  GDAL
+  OpenCV
+  FLANN
+  LZ4
+  GSL
+  Eigen3
+  Boost
+  HDF5
+  OpenGL
+  GLUT
+  yaml-cpp
+  spdlog
+  HighFive
+  rply
+  LASlib
+  assimp
+  embree
+  MPI
+  CUDAToolkit
+  CUDA
+  RDB
+  OpenCL2
+  VTK
+  PCL
+  OpenMP
+  RiVLib
+  Draco
+  Qt5
+  QVTK
+  Curses
+  Doxygen
+  GTest
+  Python3
+  PkgConfig
+)
+foreach(_LVR2_PACKAGE IN LISTS _LVR2_SYSTEM_PACKAGE_OPTOUTS)
+  string(REGEX REPLACE "[^A-Za-z0-9]" "_" _LVR2_PACKAGE_OPTION "${_LVR2_PACKAGE}")
+  string(TOUPPER "${_LVR2_PACKAGE_OPTION}" _LVR2_PACKAGE_OPTION)
+  option(LVR2_USE_SYSTEM_${_LVR2_PACKAGE_OPTION}
+         "Use a system-installed ${_LVR2_PACKAGE} package instead of the vcpkg-provided package"
+         OFF)
+endforeach()
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/Lvr2DependencyPolicy.cmake)
 
 project(lvr2 VERSION 25.2.3)
 
@@ -118,7 +180,7 @@ endif()
 #------------------------------------------------------------------------------
 # Searching for Embree: needs to be placed above "set(CMAKE_MODULE_PATH)".
 #------------------------------------------------------------------------------
-find_package(embree 4 QUIET)
+lvr2_find_package(embree 4 QUIET)
 if(embree_FOUND)
   message(STATUS "Found Embree")
   include_directories(${EMBREE_INCLUDE_DIRS})
@@ -126,7 +188,7 @@ if(embree_FOUND)
   list(APPEND LVR2_DEFINITIONS -DLVR2_EMBREE_VERSION=4)
   set(LVR2_EMBREE_VERSION 4)
 else(embree_FOUND)
-  find_package(embree 3 QUIET)
+  lvr2_find_package(embree 3 QUIET)
   if(embree_FOUND)
     message(STATUS "Found Embree")
     include_directories(${EMBREE_INCLUDE_DIRS})
@@ -138,7 +200,6 @@ endif(embree_FOUND)
 
 set(CMAKE_MODULE_PATH
   ${PROJECT_SOURCE_DIR}/CMakeModules
-  ${PROJECT_SOURCE_DIR}/ext/kintinuous/cmake/Modules
   ${CMAKE_MODULE_PATH}
 )
 
@@ -149,7 +210,7 @@ set(LVR2_ASSIMP_TARGET "")
 set(LVR2_ASSIMP_LIBRARIES "")
 set(LVR2_ASSIMP_INCLUDE_DIRS "")
 if(LVR2_WITH_ASSIMP)
-  find_package(assimp CONFIG QUIET)
+  lvr2_find_package(assimp CONFIG QUIET)
   if(TARGET assimp::assimp)
     set(LVR2_MESH_IO_ASSIMP_AVAILABLE ON)
     set(LVR2_ASSIMP_TARGET assimp::assimp)
@@ -191,7 +252,7 @@ else(MSVC)
   add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
 endif(MSVC)
 
-find_package(MPI)
+lvr2_find_package(MPI)
 if(MPI_FOUND)
     message(STATUS "Found MPI")
     include_directories(${MPI_CXX_INCLUDE_PATH})
@@ -204,12 +265,12 @@ endif(MPI_FOUND)
 #------------------------------------------------------------------------------
 # Searching for tl-expected (public result vocabulary dependency)
 #------------------------------------------------------------------------------
-find_package(tl-expected CONFIG REQUIRED)
+lvr2_find_package(tl-expected CONFIG REQUIRED)
 
 #------------------------------------------------------------------------------
 # Searching for Thread Building Blocks library
 #------------------------------------------------------------------------------
-find_package(TBB REQUIRED)
+lvr2_find_package(TBB REQUIRED)
 if(TBB_FOUND)
     message(STATUS "Found TBB library")
 endif(TBB_FOUND)
@@ -217,22 +278,22 @@ endif(TBB_FOUND)
 #------------------------------------------------------------------------------
 # Searching for TIFF
 #------------------------------------------------------------------------------
-find_package(TIFF REQUIRED)
+lvr2_find_package(TIFF REQUIRED)
 include_directories(${TIFF_INCLUDE_DIRS})
 
 #------------------------------------------------------------------------------
 # Searching for GDAL
 #------------------------------------------------------------------------------
-find_package(GDAL REQUIRED)
+lvr2_find_package(GDAL REQUIRED)
 include_directories(${GDAL_INCLUDE_DIR})
 
 #------------------------------------------------------------------------------
 # Searching for OpenCV
 #------------------------------------------------------------------------------
 set(OPEN_CV_COMPONENTS "core;imgproc;imgcodecs;features2d;calib3d")
-find_package( OpenCV 3 QUIET COMPONENTS ${OPEN_CV_COMPONENTS} )
+lvr2_find_package(OpenCV 3 QUIET COMPONENTS ${OPEN_CV_COMPONENTS})
 if (NOT OpenCV_FOUND)
-  find_package( OpenCV 4 COMPONENTS ${OPEN_CV_COMPONENTS})
+  lvr2_find_package(OpenCV 4 COMPONENTS ${OPEN_CV_COMPONENTS})
   if(OpenCV_FOUND)
 	message(STATUS "Found OpenCV 4")
   endif()
@@ -248,28 +309,28 @@ endif(LVR2_WITH_CV_NONFREE)
 #------------------------------------------------------------------------------
 # Searching for FLANN
 #------------------------------------------------------------------------------
-find_package(FLANN REQUIRED)
+lvr2_find_package(FLANN REQUIRED)
 message(STATUS "Found FLANN library: ${FLANN_INCLUDE_DIR}")
 include_directories(${FLANN_INCLUDE_DIR})
 
 #------------------------------------------------------------------------------
 # Searching for LZ4
 #------------------------------------------------------------------------------
-find_package(LZ4 REQUIRED)
+lvr2_find_package(LZ4 REQUIRED)
 include_directories(${LZ4_INCLUDE_DIR})
 message(STATUS "Found LZ4 library: ${LZ4_INCLUDE_DIR}")
 
 #------------------------------------------------------------------------------
 # Searching for GSL
 #------------------------------------------------------------------------------
-find_package(GSL REQUIRED)
+lvr2_find_package(GSL REQUIRED)
 include_directories(${GSL_INCLUDE_DIRS})
 message(STATUS "Found GSL")
 
 #------------------------------------------------------------------------------
 # Searching for Eigen3
 #------------------------------------------------------------------------------
-find_package(Eigen3 REQUIRED)
+lvr2_find_package(Eigen3 REQUIRED)
 # include_directories(${EIGEN3_INCLUDE_DIR})
 # message(STATUS "Found Eigen3: ${EIGEN3_INCLUDE_DIR}")
 
@@ -292,7 +353,7 @@ if(MPI_FOUND)
   message(STATUS "Found MPI. Adding Boost MPI library to required components.")
 endif()
 
-find_package(Boost COMPONENTS ${Boost_COMPONENTS} CONFIG REQUIRED QUIET)
+lvr2_find_package(Boost COMPONENTS ${Boost_COMPONENTS} CONFIG REQUIRED QUIET)
 message(STATUS "Found Boost libraries")
 
 link_directories(${Boost_LIBRARY_DIR})
@@ -302,14 +363,14 @@ add_definitions(${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
 #------------------------------------------------------------------------------
 # Searching for HDF5
 #------------------------------------------------------------------------------
-find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
+lvr2_find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
 include_directories(${HDF5_INCLUDE_DIRS})
 message(STATUS "Found HDF5")
 
 #------------------------------------------------------------------------------
 # Searching for OpenGL
 #------------------------------------------------------------------------------
-find_package(OpenGL COMPONENTS OpenGL)
+lvr2_find_package(OpenGL COMPONENTS OpenGL)
 include_directories(${OPENGL_INCLUDE_DIR})
 message(STATUS "Found OpenGL: ${OPENGL_INCLUDE_DIR}")
 
@@ -324,12 +385,12 @@ endif(APPLE)
 #------------------------------------------------------------------------------
 ## Searching for glut
 #------------------------------------------------------------------------------
-find_package(GLUT)
+lvr2_find_package(GLUT)
 if(GLUT_FOUND)
   message(STATUS "Found OpenGL Utility Toolkit via cmake: ${GLUT_INCLUDE_DIRS}" )
   include_directories(${GLUT_INCLUDE_DIRS})
 else(GLUT_FOUND)
-  find_package(PkgConfig REQUIRED)
+  lvr2_find_package(PkgConfig REQUIRED)
   pkg_check_modules(GLUT glut freeglut FREEGLUT REQUIRED)
   message(STATUS "Found OpenGL Utility Toolkit via pkg_config: ${GLUT_LIBDIR} ${FREEGLUT_LIBDIR}" )
   include_directories(${GLUT_INCLUDEDIR})
@@ -383,7 +444,7 @@ if(LVR2_WITH_CUDA)
   include(CheckLanguage)
   check_language(CUDA)
   if(CMAKE_CUDA_COMPILER)
-      find_package(CUDAToolkit QUIET)
+      lvr2_find_package(CUDAToolkit QUIET)
       if(CUDAToolkit_FOUND)
           enable_language(CUDA)
           set(CUDA_FOUND True)
@@ -397,7 +458,7 @@ if(LVR2_WITH_CUDA)
           set(CUDA_CUDA_LIBRARY CUDA::cuda_driver)
           set(CUDA_NVRTC_LIBRARY CUDA::nvrtc)
       else()
-          find_package(CUDA)
+          lvr2_find_package(CUDA)
           if(CUDA_FOUND)
               enable_language(CUDA)
               set(CUDA_DRIVER_LIBRARY cuda)
@@ -418,7 +479,7 @@ endif(LVR2_WITH_CUDA)
 #------------------------------------------------------------------------------
 # Searching for RDB
 #------------------------------------------------------------------------------
-find_package(RDB)
+lvr2_find_package(RDB)
 if(RDB_FOUND)
     include_directories(${RDB_INCLUDE_DIRS})
     message(STATUS "Found LibRDB at ${RDB_INCLUDE_DIRS}, ${RDB_LIBRARIES}.")
@@ -436,7 +497,7 @@ endif(RDB_FOUND)
 # Searching for OpenCl
 #------------------------------------------------------------------------------
 if(LVR2_WITH_OPENCL)
-  find_package(OpenCL2)
+  lvr2_find_package(OpenCL2)
   if(OPENCL_FOUND)
     message(STATUS "Found OpenCL")
       include_directories(${OPENCL_INCLUDE_DIR})
@@ -454,19 +515,25 @@ if(LVR2_BUILD_VIEWER)
   # Searching for VTK
   #------------------------------------------------------------------------------
   set(VTK_QT_VERSION 5)
-  find_package(VTK REQUIRED)
+  lvr2_find_package(VTK REQUIRED)
 
-  if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "8")
-    # patched QVTKOpenGL header because of name clash with signals.
-    add_subdirectory(ext/QVTKOpenGLWidget)
-    include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
-    list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${QVTK_PATCHED_INCLUDE_DIR})
-    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK8)
-  elseif(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_EQUAL "9")
-    add_subdirectory(ext/QVTKOpenGLWidget)
-    include_directories(BEFORE ${QVTK_PATCHED_INCLUDE_DIR} )
-    list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${QVTK_PATCHED_INCLUDE_DIR})
-    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK9)
+  if(DEFINED VTK_MAJOR_VERSION AND
+     (VTK_MAJOR_VERSION VERSION_EQUAL "8" OR VTK_MAJOR_VERSION VERSION_EQUAL "9"))
+    find_path(QVTK_OPENGL_WIDGET_INCLUDE_DIR
+      NAMES QVTKOpenGLWidget.h QVTKOpenGLNativeWidget.h
+      HINTS ${VTK_INCLUDE_DIRS})
+    if(NOT QVTK_OPENGL_WIDGET_INCLUDE_DIR)
+      message(FATAL_ERROR
+        "LVR2_BUILD_VIEWER with VTK ${VTK_MAJOR_VERSION} requires package-provided "
+        "QVTKOpenGLWidget/QVTKOpenGLNativeWidget headers. The vendored patched "
+        "QVTKOpenGLWidget copy was removed in vcpkg-first dependency policy.")
+    endif()
+    include_directories(BEFORE ${QVTK_OPENGL_WIDGET_INCLUDE_DIR})
+    if(VTK_MAJOR_VERSION VERSION_EQUAL "8")
+      list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK8)
+    else()
+      list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK9)
+    endif()
   endif()
   if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_LESS "6")
     list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK5)
@@ -504,10 +571,10 @@ endif(LVR2_BUILD_VIEWER)
 ## Searching for PCL
 #------------------------------------------------------------------------------
 if(LVR2_WITH_PCL)
-    find_package(PCL)
+    lvr2_find_package(PCL)
     if(PCL_FOUND)
         # PCL only results in linker error due to internal mpi dependency
-        find_package(MPI)
+        lvr2_find_package(MPI)
         if(MPI_FOUND)
             message(STATUS "PCL and MPI found. Compile with PCL support.")
             include_directories(${PCL_INCLUDE_DIRS})
@@ -527,7 +594,7 @@ endif(LVR2_WITH_PCL)
 #------------------------------------------------------------------------------
 # Searching for OpenMP
 #------------------------------------------------------------------------------
-find_package(OpenMP)
+lvr2_find_package(OpenMP)
 if(OPENMP_FOUND)
   message(STATUS "Found OpenMP")
   link_directories(${OpenMP_LIBRARY_DIRS})
@@ -545,8 +612,8 @@ endif(OPENMP_FOUND)
 #------------------------------------------------------------------------------
 ## Searching for libfreenect
 #------------------------------------------------------------------------------
-find_package(PkgConfig REQUIRED)
 if(LVR2_WITH_FREENECT)
+  lvr2_find_package(PkgConfig REQUIRED)
   pkg_check_modules(LIBFREENECT libfreenect)
   if(LIBFREENECT_FOUND)
     message(STATUS "Found Freenect")
@@ -558,101 +625,95 @@ endif(LVR2_WITH_FREENECT)
 # USED THIRD PARTY STUFF
 ###############################################################################
 
-# spdlog
-add_subdirectory(ext/spdlog)
+# spdlog (package-backed; no vendored fallback)
+lvr2_find_package(spdlog CONFIG REQUIRED)
+if(TARGET spdlog::spdlog_header_only)
+  set(LVR2_SPDLOG_TARGET spdlog::spdlog_header_only)
+elseif(TARGET spdlog::spdlog)
+  set(LVR2_SPDLOG_TARGET spdlog::spdlog)
+else()
+  message(FATAL_ERROR "spdlog package did not provide spdlog::spdlog_header_only or spdlog::spdlog")
+endif()
 
-# spdmon
-set(spdmon_BUILD_EXECUTABLE OFF CACHE BOOL "Build the spdmon example")
-set(spdmon_BUILD_HEADERS_ONLY ON CACHE BOOL "Build spdmon header only lib")
-set(spdmon_ENABLE_UNIT_TESTING OFF CACHE BOOL "Build spdmon unit tests")
-set(spdmon_ENABLE_BENCHMARKING OFF CACHE BOOL "Build spdmon benchmark")
-add_subdirectory(ext/spdmon)
+# HighFive is used by public headers, so the package target is part of the
+# installed lvr2/lvr3 dependency surface.
+lvr2_find_package(HighFive CONFIG REQUIRED)
+if(TARGET HighFive)
+  set(LVR2_HIGHFIVE_TARGET HighFive)
+elseif(TARGET HighFive::HighFive)
+  set(LVR2_HIGHFIVE_TARGET HighFive::HighFive)
+else()
+  message(FATAL_ERROR "HighFive package did not provide HighFive or HighFive::HighFive")
+endif()
 
-# NanoFLANN
-add_subdirectory(ext/nanoflann)
-include_directories( ${NANOFLANN_INCLUDE_DIR} )
-list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${NANOFLANN_INSTALL_INCLUDE_DIR})
+# RPLY and LASlib replace the old vendored mesh/point-cloud I/O helper builds.
+lvr2_find_package(rply CONFIG REQUIRED)
+if(TARGET rply::rply)
+  set(LVR2_RPLY_TARGET rply::rply)
+elseif(TARGET rply)
+  set(LVR2_RPLY_TARGET rply)
+else()
+  message(FATAL_ERROR "rply package did not provide rply::rply or rply")
+endif()
 
-# PSIMPL
-add_subdirectory(ext/psimpl)
-include_directories( ${PSIMPL_INCLUDE_DIR} )
-list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${PSIMPL_INSTALL_INCLUDE_DIR})
+lvr2_find_package(laslib CONFIG QUIET)
+if(NOT TARGET LASlib AND NOT TARGET LASlib::LASlib)
+  lvr2_find_package(LASlib CONFIG QUIET)
+endif()
+if(TARGET LASlib)
+  set(LVR2_LASLIB_TARGET LASlib)
+elseif(TARGET LASlib::LASlib)
+  set(LVR2_LASLIB_TARGET LASlib::LASlib)
+else()
+  message(FATAL_ERROR "LASlib/lastools package did not provide LASlib or LASlib::LASlib")
+endif()
 
-# RPLY
-add_subdirectory(ext/rply)
-include_directories( ${RPLY_INCLUDE_DIR} )
-list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${RPLY_INSTALL_INCLUDE_DIR})
-
-# LASLIB
-add_subdirectory(ext/laslib)
-include_directories( ${LASLIB_INCLUDE_DIR} )
-list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${LASLIB_INSTALL_INCLUDE_DIR})
-
-# HighFive
-set(HIGHFIVE_INCLUDE_DIRS "ext/HighFive/include")
-include_directories(${HIGHFIVE_INCLUDE_DIRS})
+# Compatibility aliases for in-tree tools that still link the historical helper
+# target names. They resolve to package targets and are not installed/exported.
+if(NOT TARGET lvr2rply_static)
+  add_library(lvr2rply_static ALIAS ${LVR2_RPLY_TARGET})
+endif()
+if(NOT TARGET lvr2rply)
+  add_library(lvr2rply ALIAS ${LVR2_RPLY_TARGET})
+endif()
+if(NOT TARGET lvr2las_static)
+  add_library(lvr2las_static ALIAS ${LVR2_LASLIB_TARGET})
+endif()
+if(NOT TARGET lvr2las)
+  add_library(lvr2las ALIAS ${LVR2_LASLIB_TARGET})
+endif()
 
 # yaml-cpp
-find_package(yaml-cpp REQUIRED)
+lvr2_find_package(yaml-cpp REQUIRED)
 # no found variable
 include_directories(${YAML_CPP_INCLUDE_DIR})
 
-# CTPL
-add_subdirectory(ext/CTPL)
-include_directories(${CTPL_INCLUDE_DIR})
-list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${CTPL_INSTALL_INCLUDE_DIR})
-
-# RiVLib
-set(RiVLib_DIR ext/rivlib/cmake)
-if(EXISTS ${PROJECT_SOURCE_DIR}/${RiVLib_DIR})
+# RiVLib remains optional but must come from a package path, not ext/.
+set(RiVLib_DIR "" CACHE PATH "Path to a package-provided RiVLib config directory")
+if(RiVLib_DIR OR LVR2_USE_SYSTEM_RIVLIB)
     set(RiVLib_USE_STATIC_RUNTIME ON)
-    find_package(RiVLib COMPONENTS scanifc)
+    lvr2_find_package(RiVLib COMPONENTS scanifc QUIET)
     if(RiVLib_FOUND)
         include_directories(${RiVLib_INCLUDE_DIRS})
         list(APPEND LVR2_DEFINITIONS -DLVR2_USE_RIVLIB)
         message(STATUS "Found RiVLib")
+    elseif(RiVLib_DIR)
+        message(FATAL_ERROR "RiVLib_DIR was set but RiVLib was not found")
     endif(RiVLib_FOUND)
 endif()
 
-# Cesium-native
+# 3D Tiles support needs a package-backed Cesium Native integration. The old
+# ExternalProject download fallback was removed with the vendored dependencies.
 if(LVR2_WITH_3DTILES)
-  include(ExternalProject)
-  ExternalProject_Add(cesium-native
-    PREFIX cesium-native
-    GIT_REPOSITORY "https://github.com/CesiumGS/cesium-native"
-    GIT_TAG "v0.16.0"
-    LOG_CONFIGURE ON
-    LOG_INSTALL ON # Hide cmake output (creates a lot of spam on every build)
-    LOG_BUILD ON
-    LOG_OUTPUT_ON_FAILURE ON
-    CMAKE_ARGS
-        "-DCMAKE_INSTALL_PREFIX=install"  # install into the build directory rather than /usr/local/... (which would require sudo)
-                                          # this is in quotes because otherwise cmake adds a random "x86_64-linux-gnu" to lib paths. No idea why.
-        -DCESIUM_TESTS_ENABLED=OFF        # don't build the tests
-        -DDRACO_TRANSCODER_SUPPORTED=ON   # enable Gltf support for draco
-        -DCMAKE_CXX_FLAGS=-fPIC           # tell cmake to compile as shared libraries
-  )
-  ExternalProject_Get_Property(cesium-native BINARY_DIR)
-  include_directories(${BINARY_DIR}/install/include)
-  link_directories(${BINARY_DIR}/install/lib)
-
-  ExternalProject_Get_Property(cesium-native SOURCE_DIR)
-  include_directories(${SOURCE_DIR}/extern/draco/src
-                      ${SOURCE_DIR}/extern/draco/third_party/tinygltf
-                      ${BINARY_DIR}    # draco generates include files in BINARY_DIR
-  )
-  set(draco_FOUND ON)
-  set(draco_LIBRARIES draco)
-
-  list(APPEND LVR2_DEFINITIONS -DLVR2_USE_3DTILES -DLVR2_USE_DRACO)
-
-  set(3DTILES_LIBRARIES Cesium3DTiles Cesium3DTilesWriter CesiumGltf CesiumGltfWriter CesiumJsonWriter)
-
+  message(FATAL_ERROR
+    "LVR2_WITH_3DTILES requires package-backed Cesium Native/Draco support. "
+    "The old ExternalProject download fallback was removed in vcpkg-first dependency policy; keep this "
+    "option OFF until a non-vendored package path is added.")
 else(LVR2_WITH_3DTILES)
   #------------------------------------------------------------------------------
   # Searching for Draco
   #------------------------------------------------------------------------------
-  find_package(Draco)
+  lvr2_find_package(Draco)
   if(draco_FOUND)
     message(STATUS "Found Draco")
     include_directories(${draco_INCLUDE_DIRS})
@@ -753,12 +814,6 @@ set(LVR2_LIB_DEPENDENCIES
     ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES}
     Eigen3::Eigen
     )
-if(LVR2_BUILD_STATIC_LIBS)
-    list(APPEND LVR2_LIB_DEPENDENCIES lvr2rply_static lvr2las_static)
-endif()
-if(BUILD_SHARED_LIBS)
-    list(APPEND LVR2_LIB_DEPENDENCIES lvr2rply lvr2las)
-endif()
 else()
 set(LVR2_LIB_DEPENDENCIES
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
@@ -883,7 +938,6 @@ if(LVR2_BUILD_TOOLS_EXPERIMENTAL)
   endif()
 
   if(CUDA_FOUND)
-  #    cuda_include_directories(ext/CTPL)
       add_subdirectory(src/tools/lvr2_cuda_normals)
   endif()
 
@@ -910,10 +964,10 @@ if(LVR2_BUILD_VIEWER)
     include(${VTK_USE_FILE})
   endif()
 
-  find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
+  lvr2_find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
   if(Qt5_FOUND)
       message(STATUS "Found QT5")
-      find_package(QVTK)
+      lvr2_find_package(QVTK)
       if(QVTK_FOUND)
         message(STATUS "Found QVTK ${QVTK_INCLUDE_DIR}")
         include_directories(${QVTK_INCLUDE_DIR})
@@ -923,7 +977,7 @@ if(LVR2_BUILD_VIEWER)
       endif(QVTK_FOUND)
   endif(Qt5_FOUND)
 
-  find_package(Curses)
+  lvr2_find_package(Curses)
   if(CURSES_FOUND)
       include_directories( ${CURSES_INCLUDE_DIRS} )
   endif()
@@ -999,13 +1053,6 @@ install(FILES
     ${_LVR_CMAKE_MODULES}
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr3/Modules)
 
-# Installation of HighFive headers
-# need to do it like this sind add_subdirectory to "ext/HighFive" crashs
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ext/HighFive/include/
-    DESTINATION include
-    PATTERN "*.in" EXCLUDE)
-
-
 ###############################################################################
 # Uninstall
 ###############################################################################
@@ -1024,7 +1071,7 @@ endif()
 ###############################################################################
 # DOCUMENTATION
 ###############################################################################
-find_package( Doxygen )
+lvr2_find_package(Doxygen)
 if( NOT DOXYGEN_FOUND )
   message( WARNING "Could not find Doxygen. "
       "You will not be able to build the documentation." )

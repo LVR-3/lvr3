@@ -152,7 +152,7 @@ endif(draco_FOUND)
 # 3D Tiles
 #####################################################################################
 
-if(WITH_3DTILES)
+if(LVR2_WITH_3DTILES)
     list(APPEND LVR2_SOURCES
         io/Tiles3dIO.cpp
         io/modelio/B3dmIO.cpp)
@@ -181,19 +181,8 @@ endif()
 # Setup dependencies to external libraries
 #####################################################################################
 
-set(LVR2_INTERNAL_DEPENDENCIES_STATIC "")
-if(LVR2_BUILD_STATIC_LIBS)
-  set(LVR2_INTERNAL_DEPENDENCIES_STATIC
-      lvr2rply_static
-      lvr2las_static)
-endif()
-
-set(LVR2_INTERNAL_DEPENDENCIES_SHARED "")
-if(BUILD_SHARED_LIBS)
-  set(LVR2_INTERNAL_DEPENDENCIES_SHARED
-      lvr2rply
-      lvr2las)
-endif()
+set(LVR2_INTERNAL_DEPENDENCIES_STATIC ${LVR2_RPLY_TARGET} ${LVR2_LASLIB_TARGET})
+set(LVR2_INTERNAL_DEPENDENCIES_SHARED ${LVR2_RPLY_TARGET} ${LVR2_LASLIB_TARGET})
 
 # Export name for the default aggregate target in this build mode.
 set(_LVR2_STATIC_EXPORT_NAME lvr2_static)
@@ -221,38 +210,35 @@ set(_LVR2_LIBRARY_TARGETS)
 if(LVR2_BUILD_STATIC_LIBS)
     message(STATUS "Building static library")
     add_library(lvr2core OBJECT ${LVR2_SOURCES})
-    if(WITH_3DTILES)
-        add_dependencies(lvr2core cesium-native)
-    endif(WITH_3DTILES)
-
     target_link_libraries(lvr2core
         PRIVATE
-        $<BUILD_INTERFACE:spdlog::spdlog_header_only>
-        $<BUILD_INTERFACE:spdmon::spdmon>
+        ${LVR2_SPDLOG_TARGET}
+        ${LVR2_RPLY_TARGET}
+        ${LVR2_LASLIB_TARGET}
     )
     target_link_libraries(lvr2core
         PUBLIC
         Eigen3::Eigen
         tl::expected
+        ${LVR2_HIGHFIVE_TARGET}
     )
 
     add_library(lvr2_static STATIC $<TARGET_OBJECTS:lvr2core>)
     target_include_directories(lvr2_static PUBLIC
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/${HIGHFIVE_INCLUDE_DIRS}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         ${HDF5_INCLUDE_DIRS}
     )
     target_link_libraries(lvr2_static
         PUBLIC
         tl::expected
+        ${LVR2_HIGHFIVE_TARGET}
         ${LVR2_INTERNAL_DEPENDENCIES_STATIC}
         ${LVR2_LIB_DEPENDENCIES}
     )
     target_link_libraries(lvr2_static
         PRIVATE
-        $<BUILD_INTERFACE:spdlog::spdlog_header_only>
-        $<BUILD_INTERFACE:spdmon::spdmon>
+        ${LVR2_SPDLOG_TARGET}
     )
     target_compile_definitions(lvr2_static
         PUBLIC
@@ -272,7 +258,6 @@ if(BUILD_SHARED_LIBS)
     add_library(lvr2 SHARED ${LVR2_SOURCES})
     target_include_directories(lvr2 PUBLIC
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/${HIGHFIVE_INCLUDE_DIRS}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         ${Boost_INCLUDE_DIRS}
         ${HDF5_INCLUDE_DIRS}
@@ -281,14 +266,14 @@ if(BUILD_SHARED_LIBS)
         PUBLIC
         Eigen3::Eigen
         tl::expected
+        ${LVR2_HIGHFIVE_TARGET}
         ${LVR2_INTERNAL_DEPENDENCIES_SHARED}
         ${LVR2_LIB_DEPENDENCIES}
     )
 
     target_link_libraries(lvr2
         PRIVATE
-        $<BUILD_INTERFACE:spdlog::spdlog_header_only>
-        $<BUILD_INTERFACE:spdmon::spdmon>
+        ${LVR2_SPDLOG_TARGET}
     )
     if(LVR2_MESH_IO_ASSIMP_AVAILABLE)
         target_sources(lvr2 PRIVATE io/AssimpMeshAdapter.cpp)
@@ -326,13 +311,6 @@ if(NOT LVR2_BUILD_STATIC_LIBS AND BUILD_SHARED_LIBS)
     # In-tree compatibility for consumers hard-linking to lvr2_static.
     add_library(lvr2_static ALIAS lvr2)
 
-    # Static dependency aliases for consumers hard-linking to static variants.
-    if(TARGET lvr2rply)
-        add_library(lvr2rply_static ALIAS lvr2rply)
-    endif()
-    if(TARGET lvr2las)
-        add_library(lvr2las_static ALIAS lvr2las)
-    endif()
 endif()
 
 if(_LVR2_LIBRARY_TARGETS)

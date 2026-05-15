@@ -1,0 +1,58 @@
+{
+  "name": "lvr3",
+  "version-string": "25.2.3",
+  "description": "LVR3 surface reconstruction dependencies for the vcpkg-first build path.",
+  "dependencies": [
+    "boost-date-time",
+    "boost-filesystem",
+    "boost-iostreams",
+    "boost-mpi",
+    "boost-program-options",
+    "boost-serialization",
+    "boost-thread",
+    "boost-timer",
+    "eigen3",
+    "flann",
+    "freeglut",
+    "gdal",
+    "gsl",
+    "hdf5",
+    "highfive",
+    "lastools",
+    "lz4",
+    "tiff",
+    "opencv4",
+    "rply",
+    "spdlog",
+    "tbb",
+    "tl-expected",
+    "yaml-cpp"
+  ],
+  "features": {
+    "assimp": {
+      "description": "Private shared-library mesh I/O backend.",
+      "dependencies": [
+        "assimp"
+      ]
+    },
+    "draco": {
+      "description": "Optional Draco support for supported I/O paths.",
+      "dependencies": [
+        "draco"
+      ]
+    },
+    "pcl": {
+      "description": "Optional PCL-enabled tools.",
+      "dependencies": [
+        "pcl"
+      ]
+    },
+    "viewer": {
+      "description": "Optional Qt/VTK viewer dependencies.",
+      "dependencies": [
+        "qt5-base",
+        "vtk"
+      ]
+    }
+  }
+}

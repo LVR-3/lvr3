@@ -15,11 +15,39 @@
 # -----------------------------------------------------------------
 @PACKAGE_INIT@
 include(CMakeFindDependencyMacro)
-find_dependency(tl-expected CONFIG)
 include(${CMAKE_CURRENT_LIST_DIR}/lvr2-config-version.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/lvr2-targets.cmake)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/Modules")
+
+# Public/exported dependencies must exist before lvr2-targets.cmake is loaded.
+find_dependency(tl-expected CONFIG)
+find_dependency(spdlog CONFIG)
+find_dependency(HighFive CONFIG)
+find_dependency(rply CONFIG)
+find_package(laslib CONFIG QUIET)
+if(NOT TARGET LASlib AND NOT TARGET LASlib::LASlib)
+  find_package(LASlib CONFIG REQUIRED)
+endif()
+
+find_dependency(TBB)
+find_dependency(MPI)
+find_dependency(TIFF)
+find_dependency(GDAL)
+find_dependency(OpenCV)
+find_dependency(FLANN)
+find_dependency(LZ4)
+find_dependency(GSL)
+find_dependency(Eigen3)
+find_dependency(yaml-cpp)
+# find_dependency(Boost)
+find_package(Boost COMPONENTS @Boost_COMPONENTS@ REQUIRED QUIET)
+# find_dependency(HDF5)
+find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
+# find_dependency(OpenGL)
+find_package(OpenGL COMPONENTS OpenGL)
+find_dependency(GLUT)
+
+include(${CMAKE_CURRENT_LIST_DIR}/lvr2-targets.cmake)
 
 # The following block exists only for backwards compatibility
 # and marked as obsolete via the migration guide 25.1.0 -> 25.2.0
@@ -71,25 +99,6 @@ set(LVR2_LIBRARIES ${LVR2_LIBRARY})
 
 ## OBSOLETE END
 #########################
-
-find_dependency(TBB)
-find_dependency(MPI)
-find_dependency(TIFF)
-find_dependency(GDAL)
-find_dependency(OpenCV)
-
-find_dependency(FLANN)
-find_dependency(LZ4)
-find_dependency(GSL)
-find_dependency(Eigen3)
-find_dependency(yaml-cpp)
-# find_dependency(Boost)
-find_package(Boost COMPONENTS @Boost_COMPONENTS@ REQUIRED QUIET)
-# find_dependency(HDF5)
-find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
-# find_dependency(OpenGL)
-find_package(OpenGL COMPONENTS OpenGL)
-find_dependency(GLUT)
 
 #####################
 ##  OPTIONAL DEPS  ##

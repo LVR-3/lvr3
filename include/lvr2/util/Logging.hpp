@@ -5,6 +5,7 @@
 #include <sstream>
 #include <iostream>
 #include <memory>
+#include <string>
 
 /* Forward declaration for logging backend */
 namespace spdlog
@@ -12,13 +13,10 @@ namespace spdlog
     struct logger;
 }
 
-namespace spdmon
-{
-    struct Progress;
-}
-
 namespace lvr2
 {
+
+struct MonitorState;
 
 enum class LogLevel: uint8_t {
     trace,
@@ -30,7 +28,7 @@ enum class LogLevel: uint8_t {
 
 
 /**
- * @brief A simple wrapper class using spdmon to provide log output
+ * @brief A simple wrapper class using spdlog to provide log output
  *        streams. Implemented as a singleton to produce consistent 
  *        log output
  * 
@@ -138,8 +136,8 @@ public:
     void terminate();
 
 private:
-    /// @brief SPD mon onject
-    std::shared_ptr<spdmon::Progress> m_monitor;
+    /// @brief Package-free monitor state
+    std::shared_ptr<MonitorState> m_monitor;
 
     /// @brief Prefix text
     std::string m_prefixText;
