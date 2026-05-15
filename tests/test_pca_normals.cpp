@@ -9,7 +9,10 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <fstream>
+#include <limits>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace
@@ -55,11 +58,35 @@ lvr2::PointBufferPtr makePointBuffer(const std::vector<Vec>& points)
     return std::make_shared<lvr2::PointBuffer>(raw, points.size());
 }
 
+void setNormals(lvr2::PointBufferPtr buffer, const std::vector<Vec>& normals)
+{
+    boost::shared_array<float> raw(new float[normals.size() * 3]);
+    for(std::size_t i = 0; i < normals.size(); ++i)
+    {
+        raw[i * 3 + 0] = normals[i].x;
+        raw[i * 3 + 1] = normals[i].y;
+        raw[i * 3 + 2] = normals[i].z;
+    }
+    buffer->setNormalArray(raw, normals.size());
+}
+
+std::string writePoseFile(const std::string& name, const std::vector<Vec>& poses)
+{
+    const std::string path = ::testing::TempDir() + name;
+    std::ofstream out(path);
+    for(const Vec& pose : poses)
+    {
+        out << pose.x << ' ' << pose.y << ' ' << pose.z << '\n';
+    }
+    return path;
+}
+
 lvr2::PointBufferPtr estimateNormals(
     const std::vector<Vec>& points,
     int method,
     std::uint32_t seed = 0u,
-    int neighbors = 8
+    int neighbors = 8,
+    const std::string& poseFile = ""
 )
 {
     auto buffer = makePointBuffer(points);
@@ -70,7 +97,7 @@ lvr2::PointBufferPtr estimateNormals(
         0,
         neighbors,
         method,
-        "",
+        poseFile,
         seed
     );
     surface.calculateSurfaceNormals();
@@ -174,6 +201,36 @@ std::vector<Vec> makeHorizontalPlaneWithOutliersFixture()
     points.emplace_back(0.3f, -0.5f, 1.8f);
 
     return points;
+}
+
+std::vector<Vec> makePoseOrientedVerticalPlaneFixture()
+{
+    std::vector<Vec> points;
+    points.emplace_back(0.0f, -0.5f, -0.5f);
+    points.emplace_back(-0.05f, 0.0f, 0.0f);
+    for(int y = -2; y <= 2; ++y)
+    {
+        for(int z = -2; z <= 2; ++z)
+        {
+            if(y == -1 && z == -1)
+            {
+                continue;
+            }
+            points.emplace_back(0.0f, static_cast<float>(y) * 0.25f, static_cast<float>(z) * 0.25f);
+        }
+    }
+    return points;
+}
+
+std::vector<Vec> translated(const std::vector<Vec>& points, const Vec& offset)
+{
+    std::vector<Vec> result;
+    result.reserve(points.size());
+    for(const Vec& point : points)
+    {
+        result.emplace_back(point.x + offset.x, point.y + offset.y, point.z + offset.z);
+    }
+    return result;
 }
 
 } // namespace
@@ -285,4 +342,122 @@ TEST(RansacNormals, DegenerateNeighborhoodsFallBackToFiniteNormals)
     {
         expectFiniteUnitNormal(normalAt(normals, i));
     }
+}
+
+TEST(NormalOrientation, ScanPoseIdsIndexStoredPosePositions)
+{
+    const auto points = makePoseOrientedVerticalPlaneFixture();
+    const std::string poseFile = writePoseFile(
+        "normal_pose_orientation.txt",
+        {Vec(100.0f, 0.0f, 0.0f), Vec(5.0f, 0.0f, 0.0f)}
+    );
+
+    const auto buffer = estimateNormals(points, 0, 0u, 8, poseFile);
+    const auto normals = buffer->getNormalArray();
+    ASSERT_NE(normals.get(), nullptr);
+
+    const Vec expected(1.0f, 0.0f, 0.0f);
+    for(std::size_t i = 2; i < points.size(); ++i)
+    {
+        const Vec normal = normalAt(normals, i);
+        expectFiniteUnitNormal(normal);
+        EXPECT_GT(normalized(normal).dot(expected), minCosineForDegrees(2.0f));
+    }
+}
+
+TEST(NormalOrientation, ScanPoseOrientationIsTranslationInvariant)
+{
+    const Vec offset(2.0f, -3.0f, 1.5f);
+    const auto points = translated(makePoseOrientedVerticalPlaneFixture(), offset);
+    const std::string poseFile = writePoseFile(
+        "normal_pose_orientation_translated.txt",
+        translated({Vec(100.0f, 0.0f, 0.0f), Vec(5.0f, 0.0f, 0.0f)}, offset)
+    );
+
+    const auto buffer = estimateNormals(points, 0, 0u, 8, poseFile);
+    const auto normals = buffer->getNormalArray();
+    ASSERT_NE(normals.get(), nullptr);
+
+    const Vec expected(1.0f, 0.0f, 0.0f);
+    for(std::size_t i = 2; i < points.size(); ++i)
+    {
+        const Vec normal = normalAt(normals, i);
+        expectFiniteUnitNormal(normal);
+        EXPECT_GT(normalized(normal).dot(expected), minCosineForDegrees(2.0f));
+    }
+}
+
+TEST(NormalInterpolation, OrientsNeighborsAndSkipsInvalidNormals)
+{
+    const std::vector<Vec> points{
+        Vec(0.0f, 0.0f, 0.0f),
+        Vec(0.1f, 0.0f, 0.0f),
+        Vec(-0.1f, 0.0f, 0.0f),
+        Vec(0.0f, 0.1f, 0.0f),
+        Vec(0.0f, -0.1f, 0.0f)
+    };
+    auto buffer = makePointBuffer(points);
+    setNormals(
+        buffer,
+        {
+            Vec(0.0f, 0.0f, 0.0f),
+            Vec(1.0f, 0.0f, 0.0f),
+            Vec(-1.0f, 0.0f, 0.0f),
+            Vec(std::numeric_limits<float>::quiet_NaN(), 0.0f, 0.0f),
+            Vec(-1.0f, 0.0f, 0.0f)
+        }
+    );
+
+    lvr2::AdaptiveKSearchSurface<Vec> surface(buffer, "lvr2", 4, 5, 4, 0);
+    const auto directlyQueried = surface.getInterpolatedNormal(points[0]);
+    const Vec directlyInterpolated(directlyQueried.x, directlyQueried.y, directlyQueried.z);
+    expectFiniteUnitNormal(directlyInterpolated);
+    EXPECT_GT(absUnitDot(directlyInterpolated, Vec(1.0f, 0.0f, 0.0f)), minCosineForDegrees(1.0f));
+
+    surface.interpolateSurfaceNormals();
+    const auto normals = buffer->getNormalArray();
+    ASSERT_NE(normals.get(), nullptr);
+
+    const Vec interpolated = normalAt(normals, 0);
+    expectFiniteUnitNormal(interpolated);
+    EXPECT_GT(absUnitDot(interpolated, Vec(1.0f, 0.0f, 0.0f)), minCosineForDegrees(1.0f));
+
+    const auto queried = surface.getInterpolatedNormal(points[0]);
+    const Vec queriedInterpolated(queried.x, queried.y, queried.z);
+    expectFiniteUnitNormal(queriedInterpolated);
+    EXPECT_GT(absUnitDot(queriedInterpolated, Vec(1.0f, 0.0f, 0.0f)), minCosineForDegrees(1.0f));
+}
+
+TEST(NormalInterpolation, AllInvalidNeighborsFallBackToFiniteUnitNormal)
+{
+    const std::vector<Vec> points{
+        Vec(0.0f, 0.0f, 0.0f),
+        Vec(0.1f, 0.0f, 0.0f),
+        Vec(0.0f, 0.1f, 0.0f)
+    };
+    auto buffer = makePointBuffer(points);
+    setNormals(
+        buffer,
+        {
+            Vec(0.0f, 0.0f, 0.0f),
+            Vec(std::numeric_limits<float>::quiet_NaN(), 0.0f, 0.0f),
+            Vec(0.0f, 0.0f, 0.0f)
+        }
+    );
+
+    lvr2::AdaptiveKSearchSurface<Vec> surface(buffer, "lvr2", 3, 3, 3, 0);
+    const auto directlyQueried = surface.getInterpolatedNormal(points[0]);
+    expectFiniteUnitNormal(Vec(directlyQueried.x, directlyQueried.y, directlyQueried.z));
+
+    surface.interpolateSurfaceNormals();
+    const auto normals = buffer->getNormalArray();
+    ASSERT_NE(normals.get(), nullptr);
+
+    for(std::size_t i = 0; i < points.size(); ++i)
+    {
+        expectFiniteUnitNormal(normalAt(normals, i));
+    }
+
+    const auto queried = surface.getInterpolatedNormal(points[0]);
+    expectFiniteUnitNormal(Vec(queried.x, queried.y, queried.z));
 }

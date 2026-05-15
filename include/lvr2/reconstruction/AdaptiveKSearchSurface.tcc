@@ -106,26 +106,25 @@ void AdaptiveKSearchSurface<BaseVecT>::parseScanPoses(string posefile)
 
     // Read vertex information
     float x, y, z;
-    std::vector<BaseVecT> v;
-    while(in.good())
+    m_scanPoses.clear();
+    while(in >> x >> y >> z)
     {
-        in >> x >> y >> z;
-        v.push_back(BaseVecT(x, y, z));
+        m_scanPoses.push_back(BaseVecT(x, y, z));
     }
 
-    if(v.size() > 0)
+    if(m_scanPoses.size() > 0)
     {
         PointBufferPtr loader (new PointBuffer);
-        floatArr points(new float[3 * v.size()]);
-        for(size_t i = 0; i < v.size(); i++)
+        floatArr points(new float[3 * m_scanPoses.size()]);
+        for(size_t i = 0; i < m_scanPoses.size(); i++)
         {
-            points[3 * i]       = v[i][0];
-            points[3 * i + 1]   = v[i][1];
-            points[3 * i + 2]   = v[i][2];
+            points[3 * i]       = m_scanPoses[i][0];
+            points[3 * i + 1]   = m_scanPoses[i][1];
+            points[3 * i + 2]   = m_scanPoses[i][2];
         }
 
-        loader->setPointArray(points, v.size());
-        size_t n = v.size();
+        loader->setPointArray(points, m_scanPoses.size());
+        size_t n = m_scanPoses.size();
 
         lvr2::logout::get() << lvr2::info <<  "[AdaptiveKSearchSurface]  Creating pose search tree(" << m_searchTreeName << ") with "
             << n << " poses." << lvr2::endl;
@@ -252,13 +251,13 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
         bool normalCorrected = false;
 
         // Flip normals towards the center of the scene or nearest scan pose
-        if(m_poseTree)
+        if(m_poseTree && !m_scanPoses.empty())
         {
             std::vector<size_t> nearestPoseIds;
             m_poseTree->kSearch(queryPoint, 1, nearestPoseIds);
-            if(nearestPoseIds.size() == 1)
+            if(nearestPoseIds.size() == 1 && nearestPoseIds[0] < m_scanPoses.size())
             {
-                BaseVecT nearest = m_points[nearestPoseIds[0]];
+                const BaseVecT nearest = m_scanPoses[nearestPoseIds[0]];
                 if(normal.dot(nearest - queryPoint) < 0)
                 {
                     normal = -normal;
@@ -318,12 +317,82 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
 
         this->m_searchTree->kSearch(m_points[i], this->m_ki, id);
 
-        BaseVecT mean = normals[i];
-        for(auto& index : id)
+        auto isValidNormal = [](const BaseVecT& normal) {
+            return std::isfinite(normal.x)
+                && std::isfinite(normal.y)
+                && std::isfinite(normal.z)
+                && normal.length2() > std::numeric_limits<typename BaseVecT::CoordType>::epsilon();
+        };
+
+        auto normalizedNormal = [](BaseVecT normal) {
+            normal /= normal.length();
+            return normal;
+        };
+
+        BaseVecT reference = normals[i];
+        size_t referenceIndex = i;
+        bool hasReference = isValidNormal(reference);
+        if(hasReference)
         {
-            mean += normals[index];
+            reference = normalizedNormal(reference);
         }
-        tmp[i] = mean.normalized();
+        else
+        {
+            for(const auto& index : id)
+            {
+                if(index >= numPoints)
+                {
+                    continue;
+                }
+
+                const BaseVecT candidate = normals[index];
+                if(isValidNormal(candidate))
+                {
+                    reference = normalizedNormal(candidate);
+                    referenceIndex = index;
+                    hasReference = true;
+                    break;
+                }
+            }
+        }
+
+        if(!hasReference)
+        {
+            tmp[i] = Normal<typename BaseVecT::CoordType>(0, 0, 1);
+            ++monitor;
+            continue;
+        }
+
+        BaseVecT mean = reference;
+        for(const auto& index : id)
+        {
+            if(index >= numPoints || index == referenceIndex)
+            {
+                continue;
+            }
+
+            BaseVecT normal = normals[index];
+            if(!isValidNormal(normal))
+            {
+                continue;
+            }
+
+            normal = normalizedNormal(normal);
+            if(normal.dot(reference) < 0)
+            {
+                normal *= static_cast<typename BaseVecT::CoordType>(-1);
+            }
+            mean += normal;
+        }
+
+        if(isValidNormal(mean))
+        {
+            tmp[i] = normalizedNormal(mean);
+        }
+        else
+        {
+            tmp[i] = reference;
+        }
 
         ++monitor;
     }

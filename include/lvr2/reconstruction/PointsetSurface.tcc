@@ -60,17 +60,84 @@ PointsetSurface<BaseVecT>::PointsetSurface(PointBufferPtr pointBuffer)
 template<typename BaseVecT>
 Normal<float> PointsetSurface<BaseVecT>::getInterpolatedNormal(const BaseVecT& position) const
 {
-    FloatChannelOptional normals = m_pointBuffer->getFloatChannel("normals"); 
-    std::vector<size_t> indices;
-    Normal<float> result;
-    m_searchTree->kSearch(position, m_ki, indices);
-    for (int i = 0; i < m_ki; i++)
+    FloatChannelOptional normals = m_pointBuffer->getFloatChannel("normals");
+    if(!normals)
     {
-        Normal<float> n = (*normals)[indices[i]];
-        result += n;
+        return Normal<float>(0.0f, 0.0f, 1.0f);
     }
-    result /= m_ki;
-    return Normal<float>(result);
+
+    std::vector<size_t> indices;
+    m_searchTree->kSearch(position, m_ki, indices);
+
+    auto isValidNormal = [](const BaseVecT& normal) {
+        return std::isfinite(normal.x)
+            && std::isfinite(normal.y)
+            && std::isfinite(normal.z)
+            && normal.length2() > std::numeric_limits<typename BaseVecT::CoordType>::epsilon();
+    };
+
+    auto normalizedNormal = [](BaseVecT normal) {
+        normal /= normal.length();
+        return normal;
+    };
+
+    BaseVecT reference;
+    std::size_t referenceIndex = m_points.numElements();
+    bool hasReference = false;
+    for(const auto& index : indices)
+    {
+        if(index >= m_points.numElements())
+        {
+            continue;
+        }
+
+        const BaseVecT candidate = (*normals)[index];
+        if(isValidNormal(candidate))
+        {
+            reference = normalizedNormal(candidate);
+            referenceIndex = index;
+            hasReference = true;
+            break;
+        }
+    }
+
+    if(!hasReference)
+    {
+        return Normal<float>(0.0f, 0.0f, 1.0f);
+    }
+
+    BaseVecT result = reference;
+    for(const auto& index : indices)
+    {
+        if(index >= m_points.numElements() || index == referenceIndex)
+        {
+            continue;
+        }
+
+        BaseVecT normal = (*normals)[index];
+        if(!isValidNormal(normal))
+        {
+            continue;
+        }
+
+        normal = normalizedNormal(normal);
+        if(normal.dot(reference) < 0)
+        {
+            normal *= static_cast<typename BaseVecT::CoordType>(-1);
+        }
+        result += normal;
+    }
+
+    if(!isValidNormal(result))
+    {
+        result = reference;
+    }
+
+    return Normal<float>(
+        static_cast<float>(result.x),
+        static_cast<float>(result.y),
+        static_cast<float>(result.z)
+    );
 }
 
 template<typename BaseVecT>
