@@ -111,12 +111,17 @@ option(LVR2_WITH_CV_NONFREE "Use OpenCV non-free descriptors" OFF)
 option(LVR2_BUILD_STATIC_LIBS "Build static lvr2 libraries" ON)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
-# Test options
+# Test and diagnostics options
 option(LVR2_BUILD_TESTS "Build lvr2 tests" OFF)
+option(LVR2_ENABLE_SANITIZERS "Opt in to compiler sanitizer instrumentation for developer/CI diagnostics" OFF)
+set(LVR2_SANITIZERS "address;undefined" CACHE STRING "Semicolon-separated sanitizer list: address;undefined;leak;thread;memory")
+option(LVR2_ENABLE_FUZZING "Build opt-in fuzz targets and seed-corpus CTest hooks" OFF)
+option(LVR2_FUZZ_WITH_LIBFUZZER "Link fuzz targets with Clang libFuzzer instead of the standalone seed runner" OFF)
+option(LVR2_ENABLE_PERFORMANCE_BASELINES "Register non-gating performance baseline recording tests" OFF)
 if(NOT DEFINED BUILD_TESTING)
   set(BUILD_TESTING ${LVR2_BUILD_TESTS} CACHE BOOL "Enable testing")
 endif()
-if(LVR2_BUILD_TESTS AND NOT BUILD_TESTING)
+if((LVR2_BUILD_TESTS OR LVR2_ENABLE_FUZZING OR LVR2_ENABLE_PERFORMANCE_BASELINES) AND NOT BUILD_TESTING)
   set(BUILD_TESTING ON CACHE BOOL "Enable testing" FORCE)
 endif()
 
@@ -137,6 +142,9 @@ include(CTest)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/Lvr2SanitizerFuzz.cmake)
+lvr2_configure_sanitizer_hooks()
 
 # DEFAULT RELEASE
 if (NOT EXISTS ${CMAKE_BINARY_DIR}/CMakeCache.txt)

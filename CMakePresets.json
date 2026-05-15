@@ -58,6 +58,50 @@
         "LVR2_USE_SYSTEM_RPLY": "ON",
         "LVR2_USE_SYSTEM_LASLIB": "ON"
       }
+    },
+    {
+      "name": "sanitizer-vcpkg-debug",
+      "displayName": "vcpkg-first sanitizer diagnostics (Debug)",
+      "description": "Opt-in AddressSanitizer/UndefinedBehaviorSanitizer diagnostics; not used by default smoke presets",
+      "inherits": "vcpkg-release",
+      "binaryDir": "${sourceDir}/build-vcpkg-sanitizer-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "LVR2_BUILD_TESTS": "ON",
+        "LVR2_ENABLE_SANITIZERS": "ON",
+        "LVR2_SANITIZERS": "address;undefined",
+        "LVR2_WITH_CUDA": "OFF",
+        "LVR2_WITH_OPENCL": "OFF",
+        "LVR2_WITH_PCL": "OFF",
+        "LVR2_WITH_KINFU": "OFF"
+      }
+    },
+    {
+      "name": "fuzz-vcpkg-debug",
+      "displayName": "vcpkg-first standalone fuzz seed runner (Debug)",
+      "description": "Opt-in fuzz target and seed-corpus CTest hook; uses standalone runner unless LVR2_FUZZ_WITH_LIBFUZZER is overridden with Clang",
+      "inherits": "sanitizer-vcpkg-debug",
+      "binaryDir": "${sourceDir}/build-vcpkg-fuzz-debug",
+      "cacheVariables": {
+        "LVR2_ENABLE_FUZZING": "ON",
+        "LVR2_FUZZ_WITH_LIBFUZZER": "OFF"
+      }
+    },
+    {
+      "name": "performance-baseline-vcpkg-release",
+      "displayName": "vcpkg-first non-gating performance baselines (Release)",
+      "description": "Opt-in baseline artifact recording; not used by default smoke presets",
+      "inherits": "vcpkg-release",
+      "binaryDir": "${sourceDir}/build-vcpkg-performance-baseline-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "LVR2_BUILD_TESTS": "ON",
+        "LVR2_ENABLE_PERFORMANCE_BASELINES": "ON",
+        "LVR2_WITH_CUDA": "OFF",
+        "LVR2_WITH_OPENCL": "OFF",
+        "LVR2_WITH_PCL": "OFF",
+        "LVR2_WITH_KINFU": "OFF"
+      }
     }
   ],
   "buildPresets": [
@@ -79,6 +123,21 @@
     {
       "name": "build-system-optout-release",
       "configurePreset": "system-optout-release",
+      "configuration": "Release"
+    },
+    {
+      "name": "build-vcpkg-sanitizer-debug",
+      "configurePreset": "sanitizer-vcpkg-debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "build-vcpkg-fuzz-debug",
+      "configurePreset": "fuzz-vcpkg-debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "build-vcpkg-performance-baseline-release",
+      "configurePreset": "performance-baseline-vcpkg-release",
       "configuration": "Release"
     }
   ]
