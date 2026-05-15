@@ -188,6 +188,19 @@ if(_LVR2_GTEST_MAIN_TARGET)
     lvr2
   )
 
+  add_executable(lvr2_search_grid_contracts_gtest
+    test_search_grid_contracts.cpp
+  )
+  target_include_directories(lvr2_search_grid_contracts_gtest PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+  target_compile_features(lvr2_search_grid_contracts_gtest PRIVATE cxx_std_17)
+  target_link_libraries(lvr2_search_grid_contracts_gtest PRIVATE
+    ${_LVR2_GTEST_MAIN_TARGET}
+    lvr2
+  )
+
   include(GoogleTest)
   gtest_discover_tests(lvr2_smoke_gtest
     PROPERTIES
@@ -200,6 +213,10 @@ if(_LVR2_GTEST_MAIN_TARGET)
   gtest_discover_tests(lvr2_pca_normals_gtest
     PROPERTIES
       LABELS "cpp;geometry;normals"
+  )
+  gtest_discover_tests(lvr2_search_grid_contracts_gtest
+    PROPERTIES
+      LABELS "cpp;geometry;search;grid"
   )
 
   add_executable(lvr2_mesh_io_assimp_gtest

@@ -76,12 +76,16 @@ public:
     ) const = 0;
 
     /**
-     * @brief Returns all points within the radius `r` of `qp`.
+     * @brief Returns up to `k` nearest points within the radius `r` of `qp`.
 
      * @param qp          The query point.
+     * @param k           Maximum number of neighbours to return.
      * @param r           Radius.
      * @param indices     A vector that will be filled with the indices of
      *                    the points that were found.
+     * @param distances   A vector that stores the distances for the neighbours
+     *                    that are found.
+     * @returns           The number of neighbours found.
      */
     virtual int radiusSearch(
         const BaseVecT& qp,

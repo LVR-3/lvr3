@@ -104,10 +104,24 @@ size_t KDTree<PointT, N>::knnSearch(const InPointT& inPoint,
                                     std::vector<FloatT>& distances,
                                     double maxDistance) const
 {
+    if (k == 0)
+    {
+        neighbors.clear();
+        distances.clear();
+        return 0;
+    }
+
     QueryPoint point = toQueryPoint(inPoint);
     double worstDistSq = maxDistance * maxDistance;
     Queue queue;
     m_tree->knnInternal(point, k, queue, worstDistSq);
+
+    if (queue.empty())
+    {
+        neighbors.clear();
+        distances.clear();
+        return 0;
+    }
 
     neighbors.resize(queue.size());
     distances.resize(queue.size());
@@ -132,10 +146,22 @@ size_t KDTree<PointT, N>::knnSearch(const InPointT& inPoint,
                                     std::vector<PointT*>& neighbors,
                                     double maxDistance) const
 {
+    if (k == 0)
+    {
+        neighbors.clear();
+        return 0;
+    }
+
     QueryPoint point = toQueryPoint(inPoint);
     double worstDistSq = maxDistance * maxDistance;
     Queue queue;
     m_tree->knnInternal(point, k, queue, worstDistSq);
+
+    if (queue.empty())
+    {
+        neighbors.clear();
+        return 0;
+    }
 
     neighbors.resize(queue.size());
     // Fill the return vector from the back
@@ -178,7 +204,7 @@ public:
         double cmpDistSq = std::pow(point[axis] - split, 2);
         auto [ first, second ] = childOrder(point);
         first->nnInternal(point, neighbor);
-        if (cmpDistSq < neighbor.distanceSq)
+        if (cmpDistSq <= neighbor.distanceSq)
         {
             second->nnInternal(point, neighbor);
         }
@@ -188,7 +214,7 @@ public:
         double cmpDistSq = std::pow(point[axis] - split, 2);
         auto [ first, second ] = childOrder(point);
         first->knnInternal(point, k, neighbors, worstDistSq);
-        if (cmpDistSq < worstDistSq)
+        if (cmpDistSq <= worstDistSq)
         {
             second->knnInternal(point, k, neighbors, worstDistSq);
         }
@@ -217,7 +243,7 @@ public:
             {
                 distanceSq += std::pow(point[i] - (*iter)[i], 2);
             }
-            if (distanceSq < neighbor.distanceSq)
+            if (distanceSq <= neighbor.distanceSq)
             {
                 neighbor.point = iter;
                 neighbor.distanceSq = distanceSq;
@@ -234,7 +260,7 @@ public:
             {
                 p.distanceSq += std::pow(point[i] - (*iter)[i], 2);
             }
-            if (p.distanceSq < worstDistSq)
+            if (p.distanceSq <= worstDistSq)
             {
                 p.point = iter;
                 neighbors.push(p);
@@ -336,8 +362,15 @@ int SearchKDTree<BaseVecT>::kSearch(
     std::vector<CoordT>& distances
 ) const
 {
+    if (k <= 0)
+    {
+        indices.clear();
+        distances.clear();
+        return 0;
+    }
+
     std::vector<PointT*> neighbors;
-    size_t n = this->knnSearch(qp, k, neighbors, distances);
+    size_t n = this->knnSearch(qp, static_cast<size_t>(k), neighbors, distances);
 
     indices.resize(n);
     for (size_t i = 0; i < n; i++)
@@ -354,8 +387,14 @@ int SearchKDTree<BaseVecT>::kSearch(
     std::vector<size_t>& indices
 ) const
 {
+    if (k <= 0)
+    {
+        indices.clear();
+        return 0;
+    }
+
     std::vector<PointT*> neighbors;
-    size_t n = this->knnSearch(qp, k, neighbors);
+    size_t n = this->knnSearch(qp, static_cast<size_t>(k), neighbors);
 
     indices.resize(n);
     for (size_t i = 0; i < n; i++)
@@ -374,8 +413,15 @@ int SearchKDTree<BaseVecT>::radiusSearch(
     std::vector<CoordT>& distances
 ) const
 {
+    if (k <= 0 || r < 0.0f)
+    {
+        indices.clear();
+        distances.clear();
+        return 0;
+    }
+
     std::vector<PointT*> neighbors;
-    size_t n = this->knnSearch(qp, k, neighbors, distances, r);
+    size_t n = this->knnSearch(qp, static_cast<size_t>(k), neighbors, distances, r);
 
     indices.resize(n);
     for (size_t i = 0; i < n; i++)
