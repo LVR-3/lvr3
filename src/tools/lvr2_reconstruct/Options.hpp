@@ -35,6 +35,7 @@
 #ifndef OPTIONS_H_
 #define OPTIONS_H_
 
+#include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -155,6 +156,11 @@ public:
      * 
      */
     int     getNormalEstimation() const;
+
+    /**
+     * @brief Returns the seed used for stochastic normal estimation methods.
+     */
+    std::uint32_t getNormalSeed() const;
 
     /**
      * @brief   Returns the number of neighbors
@@ -398,8 +404,11 @@ private:
     /// The number of used default values
     int                             m_numberOfDefaults;
 
-    /// The number of neighbors for distance function evaluation
+    /// The selected normal estimation method
     int                             m_normalEstimation;
+
+    /// The seed used by stochastic normal estimation methods
+    std::uint32_t                   m_normalSeed;
 
     /// The number of neighbors for distance function evaluation
     int                             m_kd;
@@ -552,6 +561,7 @@ inline ostream& operator<<(ostream& os, const Options &o)
     cout << "##### Number of threads \t: "    << o.getNumThreads()      << endl;
     cout << "##### Point cloud manager \t: " << o.getPCM()             << endl;
     cout << "##### Normal Estimation:  \t: " << o.getNormalEstimation() << endl;
+    cout << "##### Normal seed \t\t: " << o.getNormalSeed() << endl;
 
     cout << "##### Voxel decomposition: \t: " << o.getDecomposition()   << endl;
     cout << "##### Classifier:\t\t: "         << o.getClassifier()      << endl;

@@ -85,7 +85,7 @@ cmake -S . -B build-system -DLVR2_WITH_VCPKG=OFF
 
 Common package escape hatches follow the `LVR2_USE_SYSTEM_<PKG>` pattern, including `LVR2_USE_SYSTEM_TL_EXPECTED`, `LVR2_USE_SYSTEM_TBB`, `LVR2_USE_SYSTEM_SPDLOG`, `LVR2_USE_SYSTEM_HIGHFIVE`, `LVR2_USE_SYSTEM_RPLY`, `LVR2_USE_SYSTEM_LASLIB`, `LVR2_USE_SYSTEM_OPENCV`, `LVR2_USE_SYSTEM_HDF5`, and `LVR2_USE_SYSTEM_EIGEN3`. `CMakeSettings.json` is still kept for compatibility. Assimp is required privately for mesh I/O and is intentionally not exposed as a package-specific LVR option.
 
-## Corrected PCA normals
+## Corrected PCA and RANSAC normals
 
 The default `lvr2_reconstruct --nem 0` normal estimator now performs true
 covariance PCA over the local neighborhood and uses the eigenvector with the
@@ -95,6 +95,13 @@ advertising the mode as PCA. That legacy behavior is not preserved as a fallback
 so reconstructed surfaces can change for vertical, tilted, noisy, or otherwise
 axis-biased point neighborhoods. Degenerate neighborhoods now produce finite
 fallback normals instead of propagating NaN values.
+
+The RANSAC normal estimator selected with `--nem 1` now samples only from each
+query point's local neighborhood, initializes its success state, rejects
+degenerate triples, refits the winning inliers with the corrected PCA plane, and
+falls back to finite PCA normals when no valid RANSAC plane can be found. Use
+`--normalSeed <uint32>` to make the stochastic RANSAC path reproducible; the
+default seed is `0`.
 
 ## Mesh I/O facade
 

@@ -71,6 +71,7 @@ Options::Options(int argc, char** argv)
         ("intersections,i", value<int>(&m_intersections)->default_value(-1), "Number of intersections used for reconstruction. If other than -1, voxelsize will calculated automatically.")
         ("pcm,p", value<string>(&m_pcm)->default_value("LVR2"), "Point cloud manager used for point handling and normal estimation. Choose from {FLANN, PCL, LVR2, LBVH_CUDA}.")
         ("nem", value<int>(&m_normalEstimation)->default_value(0), "Method for estimating point normals / planes. 0: PCA (default), 1: RANSAC, 2: IPCA ilikebigbits, 3: IPCA exact. Make sure the computing device is supporting the respective method.")
+        ("normalSeed", value<std::uint32_t>(&m_normalSeed)->default_value(0u), "Seed for stochastic normal estimation methods such as RANSAC.")
         ("decomposition,d", value<string>(&m_pcm)->default_value("PMC"), "Defines the type of decomposition that is used for the voxels (Standard Marching Cubes (MC), Planar Marching Cubes (PMC), Standard Marching Cubes with sharp feature detection (SF), Dual Marching Cubes with an adaptive Octree (DMC) or Tetraeder (MT) decomposition. Choose from {MC, PMC, MT, SF}")
         ("optimizePlanes,o", "Shift all triangle vertices of a cluster onto their shared plane")
         ("clusterPlanes,c", "Cluster planar regions based on normal threshold, do not shift vertices into regression plane.")
@@ -350,6 +351,11 @@ float Options::getNormalThreshold() const
 int Options::getNormalEstimation() const
 {
     return m_variables["nem"].as<int>();
+}
+
+std::uint32_t Options::getNormalSeed() const
+{
+    return m_variables["normalSeed"].as<std::uint32_t>();
 }
 
 int Options::getSmallRegionThreshold() const

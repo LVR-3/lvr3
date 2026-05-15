@@ -8,6 +8,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -54,20 +55,31 @@ lvr2::PointBufferPtr makePointBuffer(const std::vector<Vec>& points)
     return std::make_shared<lvr2::PointBuffer>(raw, points.size());
 }
 
-lvr2::PointBufferPtr estimatePcaNormals(const std::vector<Vec>& points)
+lvr2::PointBufferPtr estimateNormals(
+    const std::vector<Vec>& points,
+    int method,
+    std::uint32_t seed = 0u,
+    int neighbors = 8
+)
 {
     auto buffer = makePointBuffer(points);
     lvr2::AdaptiveKSearchSurface<Vec> surface(
         buffer,
         "lvr2",
-        8,
+        neighbors,
         0,
-        8,
-        0,
-        ""
+        neighbors,
+        method,
+        "",
+        seed
     );
     surface.calculateSurfaceNormals();
     return buffer;
+}
+
+lvr2::PointBufferPtr estimatePcaNormals(const std::vector<Vec>& points)
+{
+    return estimateNormals(points, 0);
 }
 
 Vec normalAt(const boost::shared_array<float>& normals, std::size_t index)
@@ -139,6 +151,31 @@ std::vector<Vec> makeSpherePatchFixture()
     return points;
 }
 
+constexpr std::size_t kPlaneOutlierInlierCount = 49;
+
+std::vector<Vec> makeHorizontalPlaneWithOutliersFixture()
+{
+    std::vector<Vec> points;
+    for(int x = -3; x <= 3; ++x)
+    {
+        for(int y = -3; y <= 3; ++y)
+        {
+            const float fx = static_cast<float>(x) * 0.2f;
+            const float fy = static_cast<float>(y) * 0.2f;
+            const float noise = static_cast<float>(((x + 3) * 7 + (y + 3) * 11) % 5 - 2) * 0.001f;
+            points.emplace_back(fx, fy, noise);
+        }
+    }
+
+    points.emplace_back(-0.4f, -0.4f, 1.5f);
+    points.emplace_back(0.0f, -0.2f, -1.4f);
+    points.emplace_back(0.4f, 0.2f, 1.6f);
+    points.emplace_back(-0.2f, 0.5f, -1.7f);
+    points.emplace_back(0.3f, -0.5f, 1.8f);
+
+    return points;
+}
+
 } // namespace
 
 TEST(PcaNormals, DefaultMethodHandlesVerticalPlanes)
@@ -192,6 +229,55 @@ TEST(PcaNormals, DefaultMethodKeepsDegenerateNormalsFinite)
 {
     const std::vector<Vec> points(8, Vec(1.0f, -2.0f, 0.5f));
     const auto buffer = estimatePcaNormals(points);
+    const auto normals = buffer->getNormalArray();
+    ASSERT_NE(normals.get(), nullptr);
+
+    for(std::size_t i = 0; i < points.size(); ++i)
+    {
+        expectFiniteUnitNormal(normalAt(normals, i));
+    }
+}
+
+TEST(RansacNormals, MethodHandlesPlaneWithOutliersUsingAngularTolerance)
+{
+    const auto points = makeHorizontalPlaneWithOutliersFixture();
+    const auto buffer = estimateNormals(points, 1, 1234u, 12);
+    const auto normals = buffer->getNormalArray();
+    ASSERT_NE(normals.get(), nullptr);
+
+    const Vec expected(0.0f, 0.0f, 1.0f);
+    for(std::size_t i = 0; i < kPlaneOutlierInlierCount; ++i)
+    {
+        const Vec normal = normalAt(normals, i);
+        expectFiniteUnitNormal(normal);
+        EXPECT_GT(absUnitDot(normal, expected), minCosineForDegrees(5.0f));
+    }
+}
+
+TEST(RansacNormals, SameSeedIsReproducible)
+{
+    const auto points = makeHorizontalPlaneWithOutliersFixture();
+    const auto first = estimateNormals(points, 1, 77u, 12)->getNormalArray();
+    const auto second = estimateNormals(points, 1, 77u, 12)->getNormalArray();
+    ASSERT_NE(first.get(), nullptr);
+    ASSERT_NE(second.get(), nullptr);
+
+    for(std::size_t i = 0; i < points.size(); ++i)
+    {
+        const Vec firstNormal = normalAt(first, i);
+        const Vec secondNormal = normalAt(second, i);
+        expectFiniteUnitNormal(firstNormal);
+        expectFiniteUnitNormal(secondNormal);
+        EXPECT_FLOAT_EQ(firstNormal.x, secondNormal.x);
+        EXPECT_FLOAT_EQ(firstNormal.y, secondNormal.y);
+        EXPECT_FLOAT_EQ(firstNormal.z, secondNormal.z);
+    }
+}
+
+TEST(RansacNormals, DegenerateNeighborhoodsFallBackToFiniteNormals)
+{
+    const std::vector<Vec> points(8, Vec(1.0f, -2.0f, 0.5f));
+    const auto buffer = estimateNormals(points, 1, 99u, 3);
     const auto normals = buffer->getNormalArray();
     ASSERT_NE(normals.get(), nullptr);
 
