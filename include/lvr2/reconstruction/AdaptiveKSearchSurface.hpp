@@ -44,6 +44,8 @@
 #include <string>
 #include <chrono>
 #include <cmath>
+#include <cstddef>
+#include <cstdint>
 
 #include "SearchTreeFlann.hpp"
 #include "PointsetSurface.hpp"
@@ -103,7 +105,8 @@ public:
         int ki = 10,
         int kd = 10,
         int calcMethod = 0,
-        string poseFile = ""
+        string poseFile = "",
+        std::uint32_t ransacSeed = 0u
     );
 
     /**
@@ -270,6 +273,7 @@ private:
     Plane<BaseVecT> calcPlaneRANSAC(
         const BaseVecT &queryPoint,
         const vector<size_t> &id,
+        std::size_t queryIndex,
         bool &ok
     );
 
@@ -302,6 +306,9 @@ private:
     // boost::shared_ptr<Model>    m_model;
 
     // size_t                      m_numPoints;
+
+    /// Seed used to make stochastic RANSAC normal estimation reproducible.
+    std::uint32_t m_ransacSeed;
 
     /// Search tree for scan poses
     std::shared_ptr<SearchTree<BaseVecT> > m_poseTree;

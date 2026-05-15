@@ -61,11 +61,13 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
     int ki,
     int kd,
     int calcMethod,
-    std::string posefile
+    std::string posefile,
+    std::uint32_t ransacSeed
 ) :
     PointsetSurface<BaseVecT>(buffer),
-    m_searchTreeName(searchTreeName),
-    m_calcMethod(calcMethod)
+    m_calcMethod(calcMethod),
+    m_ransacSeed(ransacSeed),
+    m_searchTreeName(searchTreeName)
 {
     this->setKi(ki);
     this->setKn(kn);
@@ -224,7 +226,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
 
         if(m_calcMethod == 1)
         {
-            p = calcPlaneRANSAC(queryPoint, id, ransac_ok);
+            p = calcPlaneRANSAC(queryPoint, id, i, ransac_ok);
             // Fallback if RANSAC failed
             if(!ransac_ok)
             {
@@ -739,94 +741,132 @@ template<typename BaseVecT>
 Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlaneRANSAC(
     const BaseVecT &queryPoint,
     const vector<size_t> &id,
+    std::size_t queryIndex,
     bool &ok
 )
 {
-    FloatChannel normals = *(this->m_pointBuffer->getFloatChannel("normals"));
-    size_t numPoints     = m_points.numElements();
+    ok = false;
 
-   Plane<BaseVecT> p;
+    const auto fallbackPlane = [this, &queryPoint, &id]() {
+        return calcPlane(queryPoint, id);
+    };
 
-   //representation of best regression plane by point and normal
-   BaseVecT bestPoint;
-   Normal<typename BaseVecT::CoordType> bestNorm(0, 0, 1);
+    const size_t numPoints = m_points.numElements();
+    std::vector<size_t> validIds;
+    validIds.reserve(id.size());
 
-   float bestdist = numeric_limits<float>::max();
-   float dist     = 0;
+    Eigen::Vector3f minPoint = Eigen::Vector3f::Constant(std::numeric_limits<float>::max());
+    Eigen::Vector3f maxPoint = Eigen::Vector3f::Constant(std::numeric_limits<float>::lowest());
 
-   int iterations              = 0;
-   int nonimproving_iterations = 0;
+    const auto toEigen = [](const BaseVecT& point) {
+        return Eigen::Vector3f(point.x, point.y, point.z);
+    };
 
-   //  int max_nonimproving = max(5, k / 2);
-   int max_interations  = 10;
-
-   std::unordered_set<size_t> ids;
-   std::default_random_engine generator;
-   std::uniform_int_distribution<size_t> distribution(0, id.size() - 1);
-   auto number = std::bind(distribution, generator);
-
-   while((nonimproving_iterations < 5) && (iterations < max_interations))
-   {
-       // randomly choose 3 disjoint points
-        int c = 0;
-
-        ids.clear();
-        do
+    for(const size_t index : id)
+    {
+        if(index >= numPoints)
         {
-            ids.insert(number());
-            c++;
-            if (c == 20)
+            continue;
+        }
+
+        const Eigen::Vector3f point = toEigen(m_points[index]);
+        if(!point.allFinite())
+        {
+            continue;
+        }
+
+        validIds.push_back(index);
+        minPoint = minPoint.cwiseMin(point);
+        maxPoint = maxPoint.cwiseMax(point);
+    }
+
+    if(validIds.size() < 3)
+    {
+        return fallbackPlane();
+    }
+
+    const float bboxDiagonal = (maxPoint - minPoint).norm();
+    const float inlierThreshold = std::max(1.0e-4f, bboxDiagonal * 0.01f);
+
+    const std::uint64_t querySeed = static_cast<std::uint64_t>(queryIndex);
+    std::seed_seq seed{
+        m_ransacSeed,
+        static_cast<std::uint32_t>(querySeed & 0xffffffffu),
+        static_cast<std::uint32_t>((querySeed >> 32u) & 0xffffffffu),
+        static_cast<std::uint32_t>(validIds.size())
+    };
+    std::mt19937 generator(seed);
+    std::uniform_int_distribution<size_t> distribution(0, validIds.size() - 1);
+
+    std::vector<size_t> bestInliers;
+    float bestMeanDistance = std::numeric_limits<float>::max();
+
+    constexpr int maxIterations = 64;
+    for(int iteration = 0; iteration < maxIterations; ++iteration)
+    {
+        const size_t index0 = validIds[distribution(generator)];
+        const size_t index1 = validIds[distribution(generator)];
+        const size_t index2 = validIds[distribution(generator)];
+
+        if(index0 == index1 || index0 == index2 || index1 == index2)
+        {
+            continue;
+        }
+
+        const Eigen::Vector3f point0 = toEigen(m_points[index0]);
+        const Eigen::Vector3f point1 = toEigen(m_points[index1]);
+        const Eigen::Vector3f point2 = toEigen(m_points[index2]);
+        Eigen::Vector3f normal = (point1 - point0).cross(point2 - point0);
+        const float normalNorm = normal.norm();
+        if(!std::isfinite(normalNorm) || normalNorm <= std::numeric_limits<float>::epsilon())
+        {
+            continue;
+        }
+        normal /= normalNorm;
+
+        std::vector<size_t> inliers;
+        inliers.reserve(validIds.size());
+        float inlierDistanceSum = 0.0f;
+
+        for(const size_t index : validIds)
+        {
+            const Eigen::Vector3f point = toEigen(m_points[index]);
+            const float distance = std::abs((point - point0).dot(normal));
+            if(distance <= inlierThreshold)
             {
-                lvr2::logout::get() << lvr2::warning << "[AdaptiveKSearchSurface] Deadlock" << lvr2::endl;
+                inliers.push_back(index);
+                inlierDistanceSum += distance;
             }
-        } 
-        while (ids.size() < 3 && c <= 20);
+        }
 
-       auto it = ids.begin();
+        if(inliers.size() < 3)
+        {
+            continue;
+        }
 
-       BaseVecT point1 = m_points[*it];
-       BaseVecT point2 = m_points[*(++it)];
-       BaseVecT point3 = m_points[*(++it)];
+        const float meanDistance = inlierDistanceSum / static_cast<float>(inliers.size());
+        if(inliers.size() > bestInliers.size()
+            || (inliers.size() == bestInliers.size() && meanDistance < bestMeanDistance))
+        {
+            bestInliers = std::move(inliers);
+            bestMeanDistance = meanDistance;
+        }
+    }
 
-       auto n0 = (point1 - point2).cross(point1 - point3).normalized();
+    if(bestInliers.size() < 3)
+    {
+        return fallbackPlane();
+    }
 
-       //compute error to at most 50 other randomly chosen points
-       dist = 0;
-       int n = std::min(50, (int)id.size());
-       for(int i = 0; i < n; i++)
-       {
-           int index = id[number()];
-           BaseVecT refpoint = m_points[index];
-           dist += fabs(refpoint.dot(n0) - point1.dot(n0));
-       }
-       if(n != 0) dist /= n;
+    Plane<BaseVecT> plane = calcPlane(queryPoint, bestInliers);
+    const Eigen::Vector3f normal(plane.normal.x, plane.normal.y, plane.normal.z);
+    if(!normal.allFinite() || normal.squaredNorm() <= std::numeric_limits<float>::epsilon())
+    {
+        return fallbackPlane();
+    }
 
-       //a new optimum is found
-       if(dist < bestdist)
-       {
-           bestdist = dist;
-
-           bestPoint = point1;
-           bestNorm = n0;
-
-           nonimproving_iterations = 0;
-       }
-       else
-       {
-           nonimproving_iterations++;
-       }
-
-       iterations++;
-   }
-
-   // Save plane parameters
-   // p.a = 0;
-   // p.b = 0;
-   // p.c = 0;
-   p.normal = bestNorm;
-   p.pos = bestPoint;
-
-   return p;
+    ok = true;
+    return plane;
 }
 
 

@@ -304,7 +304,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
             options.getKi(),
             options.getKd(),
             plane_fit_method,
-            options.getScanPoseFile()
+            options.getScanPoseFile(),
+            options.getNormalSeed()
         );
     }
     else if(pcm_name == "LBVH_CUDA")
