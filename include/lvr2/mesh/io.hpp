@@ -11,6 +11,7 @@
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 namespace lvr2
@@ -69,6 +70,31 @@ template<class T>
 using Result = tl::expected<T, Error>;
 
 using Status = tl::expected<void, Error>;
+
+static_assert(std::is_enum<Format>::value,
+              "mesh::Format must remain a closed enum vocabulary");
+static_assert(!std::is_convertible<Format, int>::value,
+              "mesh::Format must not implicitly convert to integer values");
+static_assert(std::is_enum<ErrorCode>::value,
+              "mesh::ErrorCode must remain a closed enum vocabulary");
+static_assert(!std::is_convertible<ErrorCode, int>::value,
+              "mesh::ErrorCode must not implicitly convert to integer values");
+static_assert(std::is_same<Result<MeshBufferPtr>, tl::expected<MeshBufferPtr, Error>>::value,
+              "mesh::Result<T> must stay backed by tl::expected<T, Error>");
+static_assert(std::is_same<Status, tl::expected<void, Error>>::value,
+              "mesh::Status must stay backed by tl::expected<void, Error>");
+static_assert(std::is_default_constructible<LoadOptions>::value,
+              "mesh load options must remain default constructible");
+static_assert(std::is_copy_constructible<LoadOptions>::value,
+              "mesh load options must remain copyable");
+static_assert(std::is_default_constructible<SaveOptions>::value,
+              "mesh save options must remain default constructible");
+static_assert(std::is_copy_constructible<SaveOptions>::value,
+              "mesh save options must remain copyable");
+static_assert([] { return LoadOptions{}.format == Format::Auto; }(),
+              "mesh load options must default to suffix-based format detection");
+static_assert([] { return SaveOptions{}.format == Format::Auto && SaveOptions{}.binary; }(),
+              "mesh save options must default to suffix detection and binary output");
 
 inline tl::unexpected<Error> unexpected(Error error)
 {

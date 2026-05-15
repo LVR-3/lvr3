@@ -173,6 +173,41 @@ using Matrix6d = Eigen::Matrix<double, 6, 6>;
 /// 6D vector double precision
 using Vector6d = Eigen::Matrix<double, 6, 1>;
 
+static_assert(Matrix4fRM::RowsAtCompileTime == 4 && Matrix4fRM::ColsAtCompileTime == 4,
+              "Matrix4fRM must remain a compile-time 4x4 matrix");
+static_assert(Matrix4fRM::IsRowMajor,
+              "Matrix4fRM must remain row-major for serialized row-major transforms");
+static_assert(Matrix4dRM::RowsAtCompileTime == 4 && Matrix4dRM::ColsAtCompileTime == 4,
+              "Matrix4dRM must remain a compile-time 4x4 matrix");
+static_assert(Matrix4dRM::IsRowMajor,
+              "Matrix4dRM must remain row-major for serialized row-major transforms");
+static_assert(Matrix3fRM::RowsAtCompileTime == 3 && Matrix3fRM::ColsAtCompileTime == 3,
+              "Matrix3fRM must remain a compile-time 3x3 matrix");
+static_assert(Matrix3fRM::IsRowMajor,
+              "Matrix3fRM must remain row-major for serialized row-major rotations");
+static_assert(Matrix3dRM::RowsAtCompileTime == 3 && Matrix3dRM::ColsAtCompileTime == 3,
+              "Matrix3dRM must remain a compile-time 3x3 matrix");
+static_assert(Matrix3dRM::IsRowMajor,
+              "Matrix3dRM must remain row-major for serialized row-major rotations");
+static_assert(Transformf::RowsAtCompileTime == 4 && Transformf::ColsAtCompileTime == 4,
+              "Transformf must remain a compile-time 4x4 transform");
+static_assert(Transformd::RowsAtCompileTime == 4 && Transformd::ColsAtCompileTime == 4,
+              "Transformd must remain a compile-time 4x4 transform");
+static_assert(Rotationf::RowsAtCompileTime == 3 && Rotationf::ColsAtCompileTime == 3,
+              "Rotationf must remain a compile-time 3x3 rotation");
+static_assert(Vector3f::RowsAtCompileTime == 3 && Vector3f::ColsAtCompileTime == 1,
+              "Vector3f must remain a 3D column vector");
+static_assert(Vector6f::RowsAtCompileTime == 6 && Vector6f::ColsAtCompileTime == 1,
+              "Vector6f must remain a 6D column vector");
+static_assert(Vector6d::RowsAtCompileTime == 6 && Vector6d::ColsAtCompileTime == 1,
+              "Vector6d must remain a 6D column vector");
+static_assert(Matrix6f::RowsAtCompileTime == 6 && Matrix6f::ColsAtCompileTime == 6,
+              "Matrix6f must remain a compile-time 6x6 matrix");
+static_assert(Distortionf::RowsAtCompileTime == 6 && Distortionf::ColsAtCompileTime == 1,
+              "Distortionf must remain a six-parameter column vector");
+static_assert(Distortiond::RowsAtCompileTime == 6 && Distortiond::ColsAtCompileTime == 1,
+              "Distortiond must remain a six-parameter column vector");
+
 template<typename T> 
 Vector3<T> multiply(const Transform<T>& transform, const Vector3<T>& p)
 {

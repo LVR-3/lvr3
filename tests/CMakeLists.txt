@@ -45,6 +45,18 @@ set_tests_properties(lvr2_mesh_io_facade_header_compile
     LABELS "cpp;io;mesh;header"
 )
 
+add_executable(lvr2_static_assert_contracts_compile
+  test_static_assert_contracts.cpp
+)
+target_include_directories(lvr2_static_assert_contracts_compile PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_compile_features(lvr2_static_assert_contracts_compile PRIVATE cxx_std_17)
+target_link_libraries(lvr2_static_assert_contracts_compile PRIVATE Eigen3::Eigen tl::expected)
+add_test(NAME lvr2_static_assert_contracts_compile COMMAND lvr2_static_assert_contracts_compile)
+set_tests_properties(lvr2_static_assert_contracts_compile
+  PROPERTIES
+    LABELS "cpp;contracts;header"
+)
+
 add_test(
   NAME lvr2_removed_public_mesh_io_headers
   COMMAND ${CMAKE_COMMAND}
