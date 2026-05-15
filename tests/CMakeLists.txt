@@ -175,6 +175,19 @@ if(_LVR2_GTEST_MAIN_TARGET)
     lvr2
   )
 
+  add_executable(lvr2_pca_normals_gtest
+    test_pca_normals.cpp
+  )
+  target_include_directories(lvr2_pca_normals_gtest PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+  target_compile_features(lvr2_pca_normals_gtest PRIVATE cxx_std_17)
+  target_link_libraries(lvr2_pca_normals_gtest PRIVATE
+    ${_LVR2_GTEST_MAIN_TARGET}
+    lvr2
+  )
+
   include(GoogleTest)
   gtest_discover_tests(lvr2_smoke_gtest
     PROPERTIES
@@ -183,6 +196,10 @@ if(_LVR2_GTEST_MAIN_TARGET)
   gtest_discover_tests(lvr2_mesh_io_facade_gtest
     PROPERTIES
       LABELS "cpp;io;mesh"
+  )
+  gtest_discover_tests(lvr2_pca_normals_gtest
+    PROPERTIES
+      LABELS "cpp;geometry;normals"
   )
 
   add_executable(lvr2_mesh_io_assimp_gtest

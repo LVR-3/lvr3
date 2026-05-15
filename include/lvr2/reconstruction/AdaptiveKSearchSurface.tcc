@@ -470,53 +470,102 @@ Plane<BaseVecT> AdaptiveKSearchSurface<BaseVecT>::calcPlane(
     const std::vector<size_t> &id
 )
 {
-    const size_t numPoints     = m_points.numElements();
+    using CoordType = typename BaseVecT::CoordType;
 
-    /**
-     * @todo Think of a better way to code this magic number.
-     */
-    const float epsilon = 100.0;
+    Plane<BaseVecT> plane;
+    plane.pos = queryPoint;
 
-    // Calculate a least sqaures fit to the given points
-    Eigen::Vector3f C;
-    Eigen::VectorXf F(id.size());
-    Eigen::MatrixXf B(id.size(), 3);
+    auto fallbackPlane = [&plane]() {
+        plane.normal = Normal<CoordType>(0, 0, 1);
+        return plane;
+    };
 
-    for(size_t j = 0; j < id.size(); j++) 
+    if(id.size() < 3)
     {
-        const BaseVecT p = m_points[id[j]];
-        F(j)    = p.y;
-        B(j, 0) = 1.0f;
-        B(j, 1) = p.x;
-        B(j, 2) = p.z;
+        return fallbackPlane();
     }
 
-    C = B.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(F);
+    const size_t numPoints = m_points.numElements();
+    Eigen::Vector3f mean = Eigen::Vector3f::Zero();
+    size_t validPoints = 0;
 
-    // Calculate to vectors in the fitted plane
-    auto z1 = C(0) + C(1) * (queryPoint.x + epsilon) + C(2) * queryPoint.z;
-    auto z2 = C(0) + C(1) * queryPoint.x + C(2) * (queryPoint.z + epsilon);
-
-    // Calculcate the plane's normal via the cross product
-    auto diff1 = BaseVecT(queryPoint.x + epsilon, z1, queryPoint.z) - queryPoint;
-    auto diff2 = BaseVecT(queryPoint.x, z2, queryPoint.z + epsilon) - queryPoint;
-
-    auto normal = diff1.cross(diff2).normalized();
-
-    if(isnan(normal.getX()) || isnan(normal.getY()) || isnan(normal.getZ()))
+    for(size_t j = 0; j < id.size(); j++)
     {
-        lvr2::logout::get() << lvr2::warning << "[AdaptiveKSearchSurface] Warning: Nan-coordinate in plane normal." << lvr2::endl;
+        const size_t index = id[j];
+        if(index >= numPoints)
+        {
+            continue;
+        }
+
+        const BaseVecT point = m_points[index];
+        const Eigen::Vector3f eigenPoint(point.x, point.y, point.z);
+        if(!eigenPoint.allFinite())
+        {
+            continue;
+        }
+
+        mean += eigenPoint;
+        ++validPoints;
     }
 
-    // Create a plane representation and return the result
-    Plane<BaseVecT> p;
-    // p.a = C(0);
-    // p.b = C(1);
-    // p.c = C(2);
-    p.normal = normal;
-    p.pos = queryPoint;
+    if(validPoints < 3)
+    {
+        return fallbackPlane();
+    }
 
-    return p;
+    mean /= static_cast<float>(validPoints);
+
+    Eigen::Matrix3f covariance = Eigen::Matrix3f::Zero();
+    for(size_t j = 0; j < id.size(); j++)
+    {
+        const size_t index = id[j];
+        if(index >= numPoints)
+        {
+            continue;
+        }
+
+        const BaseVecT point = m_points[index];
+        const Eigen::Vector3f eigenPoint(point.x, point.y, point.z);
+        if(!eigenPoint.allFinite())
+        {
+            continue;
+        }
+
+        const Eigen::Vector3f centered = eigenPoint - mean;
+        covariance += centered * centered.transpose();
+    }
+
+    if(!covariance.allFinite())
+    {
+        return fallbackPlane();
+    }
+
+    Eigen::SelfAdjointEigenSolver<Eigen::Matrix3f> solver(covariance);
+    if(solver.info() != Eigen::Success || !solver.eigenvalues().allFinite())
+    {
+        return fallbackPlane();
+    }
+
+    Eigen::Vector3f normal = solver.eigenvectors().col(0);
+    if(!normal.allFinite() || normal.squaredNorm() <= std::numeric_limits<float>::epsilon())
+    {
+        return fallbackPlane();
+    }
+
+    normal.normalize();
+
+    plane.normal = Normal<CoordType>(
+        static_cast<CoordType>(normal.x()),
+        static_cast<CoordType>(normal.y()),
+        static_cast<CoordType>(normal.z())
+    );
+    plane.pos = BaseVecT(
+        static_cast<CoordType>(mean.x()),
+        static_cast<CoordType>(mean.y()),
+        static_cast<CoordType>(mean.z())
+    );
+
+    return plane;
 }
 
 template<typename BaseVecT>
