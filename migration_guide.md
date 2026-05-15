@@ -85,6 +85,30 @@ cmake -S . -B build-system -DLVR2_WITH_VCPKG=OFF
 
 Common package escape hatches follow the `LVR2_USE_SYSTEM_<PKG>` pattern, including `LVR2_USE_SYSTEM_TL_EXPECTED`, `LVR2_USE_SYSTEM_TBB`, `LVR2_USE_SYSTEM_SPDLOG`, `LVR2_USE_SYSTEM_HIGHFIVE`, `LVR2_USE_SYSTEM_RPLY`, `LVR2_USE_SYSTEM_LASLIB`, `LVR2_USE_SYSTEM_OPENCV`, `LVR2_USE_SYSTEM_HDF5`, and `LVR2_USE_SYSTEM_EIGEN3`. `CMakeSettings.json` is still kept for compatibility. Assimp is required privately for mesh I/O and is intentionally not exposed as a package-specific LVR option.
 
+## Opt-in sanitizer, fuzz, and performance baseline hooks
+
+Developer diagnostics are available but remain off by default:
+
+```bash
+cmake --preset sanitizer-vcpkg-debug
+cmake --build --preset build-vcpkg-sanitizer-debug --target lvr2_mesh_io_facade_header_compile
+
+cmake --preset fuzz-vcpkg-debug
+cmake --build --preset build-vcpkg-fuzz-debug --target lvr2_mesh_io_fuzz
+ctest --test-dir build-vcpkg-fuzz-debug -R lvr2_mesh_io_fuzz_seed
+
+cmake --preset performance-baseline-vcpkg-release
+ctest --test-dir build-vcpkg-performance-baseline-release -R lvr2_performance_baseline_smoke
+```
+
+`LVR2_ENABLE_SANITIZERS=ON` applies GCC/Clang `-fsanitize` instrumentation using
+`LVR2_SANITIZERS` (default `address;undefined`). `LVR2_ENABLE_FUZZING=ON` builds
+fuzz targets and a seed-corpus CTest hook; the default uses a portable standalone
+seed runner, while Clang users can set `LVR2_FUZZ_WITH_LIBFUZZER=ON` for
+libFuzzer. `LVR2_ENABLE_PERFORMANCE_BASELINES=ON` records JSON baselines under
+the build tree. These diagnostics are optional/manual in CI and do not gate the
+normal smoke lanes.
+
 ## Corrected PCA and RANSAC normals
 
 The default `lvr2_reconstruct --nem 0` normal estimator now performs true

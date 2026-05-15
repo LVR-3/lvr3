@@ -61,6 +61,10 @@ debian/lvr2-*/
 # Clang cache
 .cache
 
+# Python cache
+__pycache__/
+*.py[cod]
+
 # RiVLib lib path
 ext/rivlib/
 texture_*.jpg

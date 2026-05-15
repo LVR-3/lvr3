@@ -123,6 +123,17 @@ set_tests_properties(lvr2_system_optout_semantics
     LABELS "cmake;dependencies"
 )
 
+add_test(
+  NAME lvr2_diagnostic_hooks_policy
+  COMMAND ${CMAKE_COMMAND}
+    -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+    -P ${CMAKE_CURRENT_LIST_DIR}/diagnostic_hooks_policy.cmake
+)
+set_tests_properties(lvr2_diagnostic_hooks_policy
+  PROPERTIES
+    LABELS "cmake;diagnostics;sanitizer;fuzz;performance"
+)
+
 if(LVR2_MESH_IO_ASSIMP_AVAILABLE)
   add_executable(lvr2_assimp_adapter_smoke
     test_assimp_adapter_smoke.cpp
@@ -149,6 +160,36 @@ if(LVR2_MESH_IO_ASSIMP_AVAILABLE)
   set_tests_properties(lvr2_assimp_adapter_smoke
     PROPERTIES
       LABELS "cpp;io;mesh;assimp"
+  )
+endif()
+
+if(LVR2_ENABLE_FUZZING)
+  add_executable(lvr2_mesh_io_fuzz
+    fuzz/mesh_io_fuzz.cpp
+  )
+  target_include_directories(lvr2_mesh_io_fuzz PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
+  )
+  target_compile_features(lvr2_mesh_io_fuzz PRIVATE cxx_std_17)
+  target_link_libraries(lvr2_mesh_io_fuzz PRIVATE lvr2)
+  lvr2_configure_fuzz_target(lvr2_mesh_io_fuzz)
+
+  if(LVR2_FUZZ_WITH_LIBFUZZER)
+    add_test(
+      NAME lvr2_mesh_io_fuzz_seed
+      COMMAND lvr2_mesh_io_fuzz -runs=1 ${CMAKE_CURRENT_LIST_DIR}/fuzz/seeds/minimal.obj.seed
+    )
+  else()
+    add_test(
+      NAME lvr2_mesh_io_fuzz_seed
+      COMMAND lvr2_mesh_io_fuzz ${CMAKE_CURRENT_LIST_DIR}/fuzz/seeds/minimal.obj.seed
+    )
+  endif()
+  set_tests_properties(lvr2_mesh_io_fuzz_seed
+    PROPERTIES
+      LABELS "fuzz;io;mesh"
+      RUN_SERIAL TRUE
+      TIMEOUT 30
   )
 endif()
 
@@ -238,6 +279,26 @@ if(_LVR2_GTEST_MAIN_TARGET)
   )
 else()
   message(STATUS "GoogleTest targets not available; skipping C++ smoke test target.")
+endif()
+
+if(LVR2_ENABLE_PERFORMANCE_BASELINES)
+  lvr2_find_package(Python3 COMPONENTS Interpreter QUIET)
+  if(Python3_Interpreter_FOUND)
+    add_test(
+      NAME lvr2_performance_baseline_smoke
+      COMMAND ${Python3_EXECUTABLE}
+        ${CMAKE_CURRENT_LIST_DIR}/performance/record_baseline.py
+        --output ${CMAKE_BINARY_DIR}/performance-baselines/smoke-baseline.json
+        --label ctest-generated-fixture-smoke
+    )
+    set_tests_properties(lvr2_performance_baseline_smoke
+      PROPERTIES
+        LABELS "performance;baseline"
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    )
+  else()
+    message(FATAL_ERROR "LVR2_ENABLE_PERFORMANCE_BASELINES=ON requires a Python3 interpreter.")
+  endif()
 endif()
 
 if(LVR2_ENABLE_PYTEST)

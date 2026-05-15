@@ -1,0 +1,36 @@
+{
+  "created_utc": "2026-05-15T20:28:08.404782+00:00",
+  "host": {
+    "ci": false,
+    "machine": "arm64",
+    "python": "3.14.2",
+    "release": "25.4.0",
+    "system": "Darwin"
+  },
+  "label": "local-generated-fixture-smoke",
+  "metrics": [
+    {
+      "details": {
+        "bbox": [
+          0.0,
+          0.0,
+          0.0,
+          0.9500000000000001,
+          0.9500000000000001,
+          0.0012000000000000001
+        ],
+        "checksum": "62759c43bb87cb87f7b6262c27c058f889a75ae6f49c63e1613197c7c9f0bfe1",
+        "points": 9216
+      },
+      "max": 0.0036342499952297658,
+      "median": 0.0029098750092089176,
+      "min": 0.0028483329951995984,
+      "name": "generated_fixture_smoke",
+      "p90": 0.0036342499952297658,
+      "repeat": 5,
+      "unit": "seconds"
+    }
+  ],
+  "non_gating": true,
+  "schema_version": 1
+}
