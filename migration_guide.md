@@ -85,6 +85,20 @@ cmake -S . -B build-system -DLVR2_WITH_VCPKG=OFF
 
 Common package escape hatches follow the `LVR2_USE_SYSTEM_<PKG>` pattern, including `LVR2_USE_SYSTEM_TL_EXPECTED`, `LVR2_USE_SYSTEM_TBB`, `LVR2_USE_SYSTEM_SPDLOG`, `LVR2_USE_SYSTEM_HIGHFIVE`, `LVR2_USE_SYSTEM_RPLY`, `LVR2_USE_SYSTEM_LASLIB`, `LVR2_USE_SYSTEM_OPENCV`, `LVR2_USE_SYSTEM_HDF5`, and `LVR2_USE_SYSTEM_EIGEN3`. `CMakeSettings.json` is still kept for compatibility. Assimp is required privately for mesh I/O and is intentionally not exposed as a package-specific LVR option.
 
+## ROS and Debian packaging
+
+ROS and Debian packaging currently preserve the historical `lvr2` identity: `package.xml`, Debian source and binary package names, CLI/tool names, C++ namespaces, and `share/lvr2` installation are unchanged. The `lvr3` identity is available through the installed CMake package facade for CMake consumers.
+
+Debian packaging uses the distributor/system-package escape hatch instead of the vcpkg-first default:
+
+```bash
+-DBUILD_SHARED_LIBS=ON -DLVR2_BUILD_STATIC_LIBS=OFF -DLVR2_WITH_VCPKG=OFF
+```
+
+The shared-only flags are required because mesh asset I/O uses a required private Assimp backend that must not leak through exported static target interfaces. Development packages no longer install static archives or vendored HighFive artifacts.
+
+Verified ROS/Debian dependency names were added for package-backed dependencies introduced by the modernization work, including Assimp, tl-expected (`libexpected-dev`), spdlog, TBB, TIFF, GDAL, HDF5, OpenCV, VTK 9, Eigen, Boost, YAML-CPP, OpenGL/GLUT, and OpenCL. HighFive, rply, and LASlib/LAStools remain required by the package-backed system build, but verified Jammy/Noble Debian package names and rosdep keys are not recorded yet; distributors may need local packages or rosdep rules for those dependencies before full system-package Debian builds pass.
+
 ## Opt-in sanitizer, fuzz, and performance baseline hooks
 
 Developer diagnostics are available but remain off by default:

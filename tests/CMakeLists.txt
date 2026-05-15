@@ -134,6 +134,17 @@ set_tests_properties(lvr2_diagnostic_hooks_policy
     LABELS "cmake;diagnostics;sanitizer;fuzz;performance"
 )
 
+add_test(
+  NAME lvr2_packaging_policy
+  COMMAND ${CMAKE_COMMAND}
+    -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+    -P ${CMAKE_CURRENT_LIST_DIR}/packaging_policy.cmake
+)
+set_tests_properties(lvr2_packaging_policy
+  PROPERTIES
+    LABELS "cmake;packaging;ros;debian"
+)
+
 if(LVR2_MESH_IO_ASSIMP_AVAILABLE)
   add_executable(lvr2_assimp_adapter_smoke
     test_assimp_adapter_smoke.cpp

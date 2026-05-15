@@ -1,0 +1,12 @@
+lvr2 source packaging
+=====================
+
+This source package keeps the historical lvr2 Debian and ROS identities. The
+normal upstream build is vcpkg-first, but Debian source builds intentionally use
+system packages through `-DLVR2_WITH_VCPKG=OFF` in `debian/rules`.
+
+Do not reintroduce vendored dependency trees or install vendored dependency
+artifacts from this source package. Static LVR archives are not installed by the
+current Debian development packages because required private mesh asset I/O is
+packaged through shared libraries to avoid exposing the private Assimp backend
+through static target interfaces.
