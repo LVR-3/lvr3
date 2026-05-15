@@ -35,8 +35,12 @@
 #ifndef LVR2_RECONSTRUCTION_POINTSETSURFACE_HPP_
 #define LVR2_RECONSTRUCTION_POINTSETSURFACE_HPP_
 
+#include <cmath>
+#include <cstddef>
+#include <limits>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "lvr2/reconstruction/SearchTree.hpp"
 #include "lvr2/geometry/Normal.hpp"

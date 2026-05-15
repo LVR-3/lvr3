@@ -46,6 +46,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <vector>
 
 #include "SearchTreeFlann.hpp"
 #include "PointsetSurface.hpp"
@@ -312,6 +313,9 @@ private:
 
     /// Search tree for scan poses
     std::shared_ptr<SearchTree<BaseVecT> > m_poseTree;
+
+    /// Scan poses backing m_poseTree; pose search result IDs index this array.
+    std::vector<BaseVecT> m_scanPoses;
 
     /// Type of used search tree
     std::string m_searchTreeName;

@@ -103,6 +103,13 @@ falls back to finite PCA normals when no valid RANSAC plane can be found. Use
 `--normalSeed <uint32>` to make the stochastic RANSAC path reproducible; the
 default seed is `0`.
 
+Scan-pose normal orientation now uses the nearest pose from the scan-pose file
+itself instead of accidentally indexing the point cloud with pose-tree result
+IDs. Normal interpolation also rejects NaN, infinite, and zero normals, orients
+neighbors to a valid reference before averaging, and falls back to a finite unit
+normal when no valid neighbor normal exists. Reconstructed surfaces can change
+for datasets that rely on `--scanPoseFile` or normal interpolation (`--ki`).
+
 ## Mesh I/O facade
 
 A narrow public mesh I/O facade is available in the existing `lvr2` C++ namespace:
