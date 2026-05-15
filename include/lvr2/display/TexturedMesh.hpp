@@ -38,17 +38,21 @@
 #include "lvr2/display/StaticMesh.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 
+#include <vector>
+
 namespace lvr2
 {
 
 using Vec = BaseVector<float>;
+
+struct Material;
 
 struct MaterialGroup
 {
 	int	textureIndex;
 	int numFaces;
 	Vec color;
-	vector<size_t> faceBuffer;
+	std::vector<size_t> faceBuffer;
 };
 
 class TexturedMesh: public StaticMesh
@@ -114,11 +118,11 @@ private:
 	indexArray				m_faceMaterials;
 	floatArr				m_texcoords;
 	textureArr 				m_textures;
-	vector<Material>&		m_materials;
+	std::vector<Material>&		m_materials;
 
 
-	vector<MaterialGroup*> 	m_textureMaterials;
-	vector<MaterialGroup*> 	m_colorMaterials;
+	std::vector<MaterialGroup*> 	m_textureMaterials;
+	std::vector<MaterialGroup*> 	m_colorMaterials;
 
 	size_t					m_numFaces;
 	size_t					m_numMaterials;

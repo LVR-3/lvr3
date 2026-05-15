@@ -4,7 +4,6 @@
 #include <vector>
 #include <string>
 #include <memory>
-#include <opencv2/calib3d.hpp>
 #include <boost/optional.hpp>
 #include "MatrixTypes.hpp"
 #include "lvr2/util/Panic.hpp"

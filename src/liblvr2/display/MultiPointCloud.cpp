@@ -34,6 +34,8 @@
 
 #include "lvr2/display/MultiPointCloud.hpp"
 
+#include "lvr2/types/Model.hpp"
+
 namespace lvr2
 {
 

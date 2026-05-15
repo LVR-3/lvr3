@@ -35,6 +35,8 @@
 
 #include "lvr2/display/TexturedMesh.hpp"
 
+#include "lvr2/texture/Material.hpp"
+#include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/util/Util.hpp"
 
 #include <map>

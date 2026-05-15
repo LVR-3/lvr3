@@ -36,19 +36,7 @@
 #ifndef RENDERABLE_H_
 #define RENDERABLE_H_
 
-#if _MSC_VER
-#include <Windows.h>
-#endif
-
-
-#ifndef __APPLE__
-#include <GL/gl.h>
-#include <GL/glut.h>
-#else
-#include <OpenGL/gl.h>
-#include <GLUT/glut.h>
-#endif
-
+#include <memory>
 #include <string>
 
 #include "lvr2/geometry/BaseVector.hpp"
@@ -56,10 +44,15 @@
 #include "lvr2/geometry/Quaternion.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
 
-#include "lvr2/types/Model.hpp"
-
 namespace lvr2
 {
+
+class MeshBuffer;
+class Model;
+class PointBuffer;
+using MeshBufferPtr = std::shared_ptr<MeshBuffer>;
+using ModelPtr = std::shared_ptr<Model>;
+using PointBufferPtr = std::shared_ptr<PointBuffer>;
 
 class Renderable {
 
@@ -69,15 +62,15 @@ public:
 
 	Renderable();
 	Renderable(const Renderable &other);
-	Renderable(string name);
-	Renderable(Matrix4<Vec> m, string name);
+	Renderable(std::string name);
+	Renderable(Matrix4<Vec> m, std::string name);
 
 	virtual ~Renderable();
 	virtual void render() = 0;
 
 	void setTransformationMatrix(Matrix4<Vec> m);
 
-	virtual void setName(string s){m_name = s;};
+	virtual void setName(std::string s){m_name = s;};
 	void setVisible(bool s){m_visible = s;};
 	void setRotationSpeed(float s){m_rotationSpeed = s;};
 	void setTranslationSpeed(float s){m_translationSpeed = s;};
@@ -151,7 +144,7 @@ protected:
 	float                        m_translationSpeed;
 	float                        m_scaleFactor;
 
-    string                       m_name;
+    std::string                  m_name;
 
 	Normal<typename Vec::CoordType>       			 m_xAxis;
 	Normal<typename Vec::CoordType>                  m_yAxis;

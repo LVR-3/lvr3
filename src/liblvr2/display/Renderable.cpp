@@ -33,6 +33,19 @@
  */
 
 #include "lvr2/display/Renderable.hpp"
+#include "lvr2/types/Model.hpp"
+
+#if _MSC_VER
+#include <Windows.h>
+#endif
+
+#ifndef __APPLE__
+#include <GL/gl.h>
+#include <GL/glut.h>
+#else
+#include <OpenGL/gl.h>
+#include <GLUT/glut.h>
+#endif
 
 namespace lvr2
 {
@@ -69,7 +82,7 @@ Renderable::Renderable()
 
 }
 
-Renderable::Renderable(Matrix4<Vec> m, string n)
+Renderable::Renderable(Matrix4<Vec> m, std::string n)
 {
 	m_transformation    = m;
 	m_name              = n;
@@ -126,7 +139,7 @@ Renderable::Renderable(const Renderable& other)
 	compileAxesList();
 }
 
-Renderable::Renderable(string n)
+Renderable::Renderable(std::string n)
 {
 	m_name                  = n;
 	m_visible               = true;

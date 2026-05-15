@@ -35,17 +35,25 @@
 #ifndef SRC_LIBLVR2_RECONSTRUCTION_MODELTOIMAGE_HPP_
 #define SRC_LIBLVR2_RECONSTRUCTION_MODELTOIMAGE_HPP_
 
-#include "lvr2/types/Model.hpp"
-#include <opencv2/core.hpp>
 #include <algorithm>
+#include <limits>
+#include <memory>
+#include <string>
 #include <vector>
 #include <tuple>
 using std::vector;
 using std::tuple;
 
+namespace cv
+{
+class Mat;
+}
+
 namespace lvr2
 {
 
+class PointBuffer;
+using PointBufferPtr = std::shared_ptr<PointBuffer>;
 class Projection;
 
 ///
@@ -149,7 +157,7 @@ public:
     /// \param cutoff       Max range cutoff. Reduce this to enhance contrast on
     ///                     pixels with low depths.
     ///
-    void writePGM(string filename, float cutoff);
+    void writePGM(std::string filename, float cutoff);
 
     /// Destructor
     virtual ~ModelToImage();
