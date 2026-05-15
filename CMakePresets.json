@@ -7,50 +7,74 @@
   },
   "configurePresets": [
     {
-      "name": "system-release",
-      "displayName": "System packages (Release)",
-      "description": "Configure with system package search (default policy)",
-      "binaryDir": "${sourceDir}/build-system-release",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
-    },
-    {
       "name": "vcpkg-release",
-      "displayName": "vcpkg (Release)",
-      "description": "Enable vcpkg-backed dependency lookup using LVR2_WITH_VCPKG",
-      "inherits": "system-release",
+      "displayName": "vcpkg-first (Release)",
+      "description": "Configure with the vcpkg manifest/toolchain dependency path (default policy)",
       "binaryDir": "${sourceDir}/build-vcpkg-release",
       "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
         "LVR2_WITH_VCPKG": "ON",
-        "LVR2_VCPKG_TOOLCHAIN_FILE": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        "LVR2_VCPKG_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
       }
     },
     {
-      "name": "vcpkg-ignore-system-release",
-      "displayName": "vcpkg with system-path ignore (Release)",
-      "description": "Enable vcpkg and disable CMake system/environment package paths",
+      "name": "vcpkg-isolated-release",
+      "displayName": "vcpkg-first isolated from system packages (Release)",
+      "description": "Use vcpkg and disable CMake system/environment package paths except per-package LVR2_USE_SYSTEM_<PKG> opt-outs",
       "inherits": "vcpkg-release",
-      "binaryDir": "${sourceDir}/build-vcpkg-ignore-system-release",
+      "binaryDir": "${sourceDir}/build-vcpkg-isolated-release",
       "cacheVariables": {
         "LVR2_IGNORE_SYSTEM_PACKAGES": "ON"
+      }
+    },
+    {
+      "name": "vcpkg-system-tbb-tl-release",
+      "displayName": "vcpkg-first with system TBB/tl-expected opt-outs (Release)",
+      "description": "Use vcpkg for most packages while allowing system TBB and tl-expected through explicit per-package opt-outs",
+      "inherits": "vcpkg-isolated-release",
+      "binaryDir": "${sourceDir}/build-vcpkg-system-tbb-tl-release",
+      "cacheVariables": {
+        "LVR2_USE_SYSTEM_TBB": "ON",
+        "LVR2_USE_SYSTEM_TL_EXPECTED": "ON"
+      }
+    },
+    {
+      "name": "system-optout-release",
+      "displayName": "System-package escape hatch (Release)",
+      "description": "Disable vcpkg for distributor builds that intentionally use system packages; prefer per-package LVR2_USE_SYSTEM_<PKG> options when mixing with vcpkg",
+      "binaryDir": "${sourceDir}/build-system-optout-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "LVR2_WITH_VCPKG": "OFF",
+        "LVR2_IGNORE_SYSTEM_PACKAGES": "OFF",
+        "LVR2_USE_SYSTEM_TL_EXPECTED": "ON",
+        "LVR2_USE_SYSTEM_TBB": "ON",
+        "LVR2_USE_SYSTEM_SPDLOG": "ON",
+        "LVR2_USE_SYSTEM_HIGHFIVE": "ON",
+        "LVR2_USE_SYSTEM_RPLY": "ON",
+        "LVR2_USE_SYSTEM_LASLIB": "ON"
       }
     }
   ],
   "buildPresets": [
-    {
-      "name": "build-system-release",
-      "configurePreset": "system-release",
-      "configuration": "Release"
-    },
     {
       "name": "build-vcpkg-release",
       "configurePreset": "vcpkg-release",
       "configuration": "Release"
     },
     {
-      "name": "build-vcpkg-ignore-system-release",
-      "configurePreset": "vcpkg-ignore-system-release",
+      "name": "build-vcpkg-isolated-release",
+      "configurePreset": "vcpkg-isolated-release",
+      "configuration": "Release"
+    },
+    {
+      "name": "build-vcpkg-system-tbb-tl-release",
+      "configurePreset": "vcpkg-system-tbb-tl-release",
+      "configuration": "Release"
+    },
+    {
+      "name": "build-system-optout-release",
+      "configurePreset": "system-optout-release",
       "configuration": "Release"
     }
   ]

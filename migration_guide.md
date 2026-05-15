@@ -51,18 +51,39 @@ Compatibility guarantees:
 
 ## Guarded vcpkg presets
 
-Dependency acquisition policy now uses **system packages by default**.
-The legacy implicit MSVC vcpkg hook was removed.
-To use vcpkg, set `LVR2_WITH_VCPKG=ON` explicitly (optionally via preset):
+The guarded vcpkg presets are superseded by the vcpkg-first dependency policy, which makes vcpkg the primary dependency path.
+
+## vcpkg-first dependency policy
+
+Dependency acquisition is now **vcpkg-first**. A `vcpkg.json` manifest declares the required package set, and configure defaults to `LVR2_WITH_VCPKG=ON`. Set `VCPKG_ROOT`, pass `-DCMAKE_TOOLCHAIN_FILE=/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake`, or set `-DLVR2_VCPKG_TOOLCHAIN_FILE=/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake`.
 
 ```bash
-cmake --preset system-release
 cmake --preset vcpkg-release
-cmake --preset vcpkg-ignore-system-release
-cmake -S . -B build -DLVR2_WITH_VCPKG=ON -DLVR2_VCPKG_TOOLCHAIN_FILE=/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake
+cmake --preset vcpkg-isolated-release
+cmake --preset vcpkg-system-tbb-tl-release
 ```
 
-`LVR2_IGNORE_SYSTEM_PACKAGES=ON` disables CMake system and system-environment package search paths while still using the configured toolchain, and `CMakeSettings.json` is still kept for compatibility.
+Vendored dependencies under `ext/` were removed. `spdlog`, `HighFive`, `rply`, and `LASlib` now come from packages; `spdmon` was replaced by a small LVR-owned progress monitor implementation. The old `ExternalProject_Add` download path for 3D Tiles was also removed; keep `LVR2_WITH_3DTILES=OFF` until a package-backed Cesium Native path is added.
+
+Optional vcpkg features must be requested alongside the matching CMake options. For example, use `-DVCPKG_MANIFEST_FEATURES=assimp -DLVR2_WITH_ASSIMP=ON` for the private Assimp backend, `-DVCPKG_MANIFEST_FEATURES=viewer -DLVR2_BUILD_VIEWER=ON` for the viewer, `-DVCPKG_MANIFEST_FEATURES=pcl -DLVR2_WITH_PCL=ON` for PCL tools, and `-DVCPKG_MANIFEST_FEATURES=draco` for optional Draco support.
+
+`LVR2_IGNORE_SYSTEM_PACKAGES` defaults to `ON` when vcpkg is enabled. To intentionally use a system package with the vcpkg toolchain, enable that package's explicit escape hatch. The matching vcpkg installed prefix is ignored for that package lookup so the system package wins instead of acting only as a fallback:
+
+```bash
+cmake -S . -B build-mixed \
+  -DLVR2_WITH_VCPKG=ON \
+  -DLVR2_USE_SYSTEM_TBB=ON \
+  -DLVR2_USE_SYSTEM_TL_EXPECTED=ON
+```
+
+A distributor may opt out of vcpkg entirely with the system preset, but then all required packages must be available from the host/toolchain:
+
+```bash
+cmake --preset system-optout-release
+cmake -S . -B build-system -DLVR2_WITH_VCPKG=OFF
+```
+
+Common package escape hatches follow the `LVR2_USE_SYSTEM_<PKG>` pattern, including `LVR2_USE_SYSTEM_TL_EXPECTED`, `LVR2_USE_SYSTEM_TBB`, `LVR2_USE_SYSTEM_SPDLOG`, `LVR2_USE_SYSTEM_HIGHFIVE`, `LVR2_USE_SYSTEM_RPLY`, `LVR2_USE_SYSTEM_LASLIB`, `LVR2_USE_SYSTEM_ASSIMP`, `LVR2_USE_SYSTEM_OPENCV`, `LVR2_USE_SYSTEM_HDF5`, and `LVR2_USE_SYSTEM_EIGEN3`. `CMakeSettings.json` is still kept for compatibility.
 
 ## Mesh I/O facade
 
