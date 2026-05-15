@@ -43,7 +43,6 @@ set(LVR2_SOURCES
     io/baseio/yaml/Matrix.cpp
     io/modelio/AsciiIO.cpp
     io/modelio/ModelIOBase.cpp
-    io/modelio/ObjIO.cpp
     io/modelio/DatIO.cpp
     io/modelio/LasIO.cpp
     io/modelio/GeoTIFFIO.cpp
@@ -51,7 +50,6 @@ set(LVR2_SOURCES
     io/AttributeMeshIOBase.cpp
     io/modelio/PPMIO.cpp
     io/modelio/PLYIO.cpp
-    io/modelio/STLIO.cpp
     io/modelio/UosIO.cpp
     io/modelio/PCDIO.cpp
     io/kernels/DirectoryKernel.cpp

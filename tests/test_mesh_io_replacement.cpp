@@ -76,29 +76,17 @@ TEST(MeshIoReplacement, PlyRoundTripUsesFacadeOnly)
     EXPECT_EQ((*loaded)->numFaces(), 1u);
 }
 
-TEST(MeshIoReplacement, UnsupportedLegacyWriterFormatsStayStructuredErrors)
+TEST(MeshIoReplacement, FormerLegacyWriterFormatsUsePrivateBackend)
 {
     const auto mesh = makeTriangleMesh();
 
     const auto objPath = uniquePath(".obj");
     const auto objSaved = lvr2::mesh::save(mesh, objPath);
     removeIfExists(objPath);
-#if defined(LVR2_MESH_IO_TEST_HAS_ASSIMP)
     ASSERT_TRUE(objSaved) << objSaved.error().message;
-#else
-    ASSERT_FALSE(objSaved);
-    EXPECT_EQ(objSaved.error().code, lvr2::mesh::ErrorCode::UnsupportedFormat);
-    EXPECT_EQ(objSaved.error().format, lvr2::mesh::Format::Obj);
-#endif
 
     const auto stlPath = uniquePath(".stl");
     const auto stlSaved = lvr2::mesh::save(mesh, stlPath);
     removeIfExists(stlPath);
-#if defined(LVR2_MESH_IO_TEST_HAS_ASSIMP)
     ASSERT_TRUE(stlSaved) << stlSaved.error().message;
-#else
-    ASSERT_FALSE(stlSaved);
-    EXPECT_EQ(stlSaved.error().code, lvr2::mesh::ErrorCode::UnsupportedFormat);
-    EXPECT_EQ(stlSaved.error().format, lvr2::mesh::Format::Stl);
-#endif
 }

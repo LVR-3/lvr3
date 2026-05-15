@@ -75,6 +75,26 @@ inline bool writeAsciiStlTriangleFixture(const std::filesystem::path& path)
     return out.good();
 }
 
+inline bool writeAsciiPointOnlyPlyFixture(const std::filesystem::path& path)
+{
+    std::ofstream out(path);
+    if(!out.is_open())
+    {
+        return false;
+    }
+    out << "ply\n"
+        << "format ascii 1.0\n"
+        << "element vertex 3\n"
+        << "property float x\n"
+        << "property float y\n"
+        << "property float z\n"
+        << "end_header\n"
+        << "0 0 0\n"
+        << "1 0 0\n"
+        << "0 1 0\n";
+    return out.good();
+}
+
 } // namespace testing
 } // namespace lvr2
 

@@ -104,45 +104,31 @@ TEST(MeshIoFacade, SaveRejectsNullMesh)
     EXPECT_EQ(status.error().format, lvr2::mesh::Format::Ply);
 }
 
-TEST(MeshIoFacade, SaveRejectsTextModeRatherThanIgnoringBinaryOption)
+TEST(MeshIoFacade, SaveSupportsTextPlyThroughPrivateBackend)
 {
     const auto path = uniquePath(".ply");
     const auto status = lvr2::mesh::save(makeTriangleMesh(), path, {lvr2::mesh::Format::Ply, false});
     removeIfExists(path);
 
-    ASSERT_FALSE(status);
-    EXPECT_EQ(status.error().code, lvr2::mesh::ErrorCode::UnsupportedFormat);
-    EXPECT_EQ(status.error().format, lvr2::mesh::Format::Ply);
+    ASSERT_TRUE(status) << status.error().message;
 }
 
-TEST(MeshIoFacade, SaveRejectsObjUntilSafeWriterIsAvailable)
+TEST(MeshIoFacade, SaveObjUsesPrivateBackend)
 {
     const auto path = uniquePath(".obj");
     const auto status = lvr2::mesh::save(makeTriangleMesh(), path);
     removeIfExists(path);
 
-#if defined(LVR2_MESH_IO_TEST_HAS_ASSIMP)
     ASSERT_TRUE(status) << status.error().message;
-#else
-    ASSERT_FALSE(status);
-    EXPECT_EQ(status.error().code, lvr2::mesh::ErrorCode::UnsupportedFormat);
-    EXPECT_EQ(status.error().format, lvr2::mesh::Format::Obj);
-#endif
 }
 
-TEST(MeshIoFacade, SaveRejectsStlUntilSafeWriterIsTestBacked)
+TEST(MeshIoFacade, SaveStlUsesPrivateBackend)
 {
     const auto path = uniquePath(".stl");
     const auto status = lvr2::mesh::save(makeTriangleMesh(), path);
     removeIfExists(path);
 
-#if defined(LVR2_MESH_IO_TEST_HAS_ASSIMP)
     ASSERT_TRUE(status) << status.error().message;
-#else
-    ASSERT_FALSE(status);
-    EXPECT_EQ(status.error().code, lvr2::mesh::ErrorCode::UnsupportedFormat);
-    EXPECT_EQ(status.error().format, lvr2::mesh::Format::Stl);
-#endif
 }
 
 TEST(MeshIoFacade, PlyRoundTripPreservesTriangleCounts)

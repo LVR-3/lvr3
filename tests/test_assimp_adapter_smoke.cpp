@@ -69,6 +69,7 @@ int main()
     const auto mesh = makeTriangleMesh();
     const FormatCase cases[] = {
         {lvr2::mesh::Format::Obj, ".obj", true},
+        {lvr2::mesh::Format::Ply, ".ply", true},
         {lvr2::mesh::Format::Stl, ".stl", true},
         {lvr2::mesh::Format::Dae, ".dae", true},
         {lvr2::mesh::Format::Gltf, ".gltf", true},

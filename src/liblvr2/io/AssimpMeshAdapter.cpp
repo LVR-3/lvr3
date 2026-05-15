@@ -79,11 +79,11 @@ const char* exportIdFor(Format format, bool binary)
     switch(format)
     {
         case Format::Obj: return "obj";
+        case Format::Ply: return binary ? "plyb" : "ply";
         case Format::Stl: return binary ? "stlb" : "stl";
         case Format::Dae: return "collada";
         case Format::Gltf: return "gltf2";
         case Format::Glb: return "glb2";
-        case Format::Ply:
         case Format::Auto:
             return nullptr;
     }
@@ -259,7 +259,7 @@ std::unique_ptr<aiScene> meshBufferToScene(const MeshBufferPtr& mesh,
 
 Result<MeshBufferPtr> loadWithPrivateMeshBackend(const std::filesystem::path& path, Format format)
 {
-    if(format == Format::Ply || format == Format::Auto)
+    if(format == Format::Auto)
     {
         return makeUnexpected(ErrorCode::UnsupportedFormat,
                               std::string("Loading format '") + formatName(format) + "' is not routed to the private mesh backend.",

@@ -65,7 +65,7 @@ cmake --preset vcpkg-system-tbb-tl-release
 
 Vendored dependencies under `ext/` were removed. `spdlog`, `HighFive`, `rply`, and `LASlib` now come from packages; `spdmon` was replaced by a small LVR-owned progress monitor implementation. The old `ExternalProject_Add` download path for 3D Tiles was also removed; keep `LVR2_WITH_3DTILES=OFF` until a package-backed Cesium Native path is added.
 
-Optional vcpkg features must be requested alongside the matching CMake options. For example, use `-DVCPKG_MANIFEST_FEATURES=assimp -DLVR2_WITH_ASSIMP=ON` for the private Assimp backend, `-DVCPKG_MANIFEST_FEATURES=viewer -DLVR2_BUILD_VIEWER=ON` for the viewer, `-DVCPKG_MANIFEST_FEATURES=pcl -DLVR2_WITH_PCL=ON` for PCL tools, and `-DVCPKG_MANIFEST_FEATURES=draco` for optional Draco support.
+Assimp is now part of the default vcpkg manifest dependency set because mesh asset I/O requires the private backend. Optional vcpkg features must be requested alongside the matching CMake options for other packages. For example, use `-DVCPKG_MANIFEST_FEATURES=viewer -DLVR2_BUILD_VIEWER=ON` for the viewer, `-DVCPKG_MANIFEST_FEATURES=pcl -DLVR2_WITH_PCL=ON` for PCL tools, and `-DVCPKG_MANIFEST_FEATURES=draco` for optional Draco support.
 
 `LVR2_IGNORE_SYSTEM_PACKAGES` defaults to `ON` when vcpkg is enabled. To intentionally use a system package with the vcpkg toolchain, enable that package's explicit escape hatch. The matching vcpkg installed prefix is ignored for that package lookup so the system package wins instead of acting only as a fallback:
 
@@ -83,7 +83,7 @@ cmake --preset system-optout-release
 cmake -S . -B build-system -DLVR2_WITH_VCPKG=OFF
 ```
 
-Common package escape hatches follow the `LVR2_USE_SYSTEM_<PKG>` pattern, including `LVR2_USE_SYSTEM_TL_EXPECTED`, `LVR2_USE_SYSTEM_TBB`, `LVR2_USE_SYSTEM_SPDLOG`, `LVR2_USE_SYSTEM_HIGHFIVE`, `LVR2_USE_SYSTEM_RPLY`, `LVR2_USE_SYSTEM_LASLIB`, `LVR2_USE_SYSTEM_ASSIMP`, `LVR2_USE_SYSTEM_OPENCV`, `LVR2_USE_SYSTEM_HDF5`, and `LVR2_USE_SYSTEM_EIGEN3`. `CMakeSettings.json` is still kept for compatibility.
+Common package escape hatches follow the `LVR2_USE_SYSTEM_<PKG>` pattern, including `LVR2_USE_SYSTEM_TL_EXPECTED`, `LVR2_USE_SYSTEM_TBB`, `LVR2_USE_SYSTEM_SPDLOG`, `LVR2_USE_SYSTEM_HIGHFIVE`, `LVR2_USE_SYSTEM_RPLY`, `LVR2_USE_SYSTEM_LASLIB`, `LVR2_USE_SYSTEM_OPENCV`, `LVR2_USE_SYSTEM_HDF5`, and `LVR2_USE_SYSTEM_EIGEN3`. `CMakeSettings.json` is still kept for compatibility. Assimp is required privately for mesh I/O and is intentionally not exposed as a package-specific LVR option.
 
 ## Mesh I/O facade
 
@@ -110,14 +110,13 @@ lvr2::mesh::Status saved = lvr2::mesh::save(*mesh, "output.ply", saveOptions);
 
 The facade exposes LVR-owned `Format`, options, `ErrorCode`, `Error`, `Result<T>`, and `Status` vocabulary. `Result<T>` and `Status` are backed by `tl::expected`, so downstream CMake consumers need the `tl-expected` package available through system packages or the guarded vcpkg path. Installed `lvr2` and `lvr3` CMake configs now declare this public dependency.
 
-Current facade support is intentionally conservative while broader writer validation and the private Assimp adapter are deferred to later slices:
+Current mesh-asset facade support is provided by the required private Assimp backend:
 
-- `load`: OBJ and PLY mesh files.
-- `save`: binary PLY mesh files.
-- STL loading/saving, OBJ saving, DAE/Collada, glTF, and glb currently return `ErrorCode::UnsupportedFormat` through the facade.
-- `SaveOptions::binary=false` is not silently ignored; it returns `UnsupportedFormat` until text/ASCII output is implemented and tested.
+- `load`: OBJ, PLY, STL, DAE/Collada, glTF, and glb mesh files.
+- `save`: OBJ, PLY, STL, DAE/Collada, glTF, and glb mesh files.
+- `SaveOptions::binary` is forwarded to backend formats with binary/text variants such as PLY and STL.
 
-Existing public readers and writers such as `ModelFactory`, `ModelIOBase`, `ObjIO`, `PLYIO`, and `STLIO` are **not removed** by the initial facade. Their removal is covered by the mesh reader/writer removal notes and guarded by replacement tests.
+The initial facade used temporary legacy private readers for part of this coverage. Those mesh-asset paths have now been replaced by the private backend; retained point-cloud/scan storage classes are documented below as a bounded exception.
 
 ## Mesh reader/writer removal
 
@@ -148,33 +147,30 @@ auto saved = lvr2::mesh::save(*mesh, "output.ply", saveOptions);
 
 Internal LVR tools still keep a private implementation bridge so CLI names, options, and current tool dispatch behavior are unchanged. That private bridge is not installed and must not be included by downstream code.
 
-Current facade coverage remains: OBJ/PLY load and binary PLY save are supported; STL load/save, OBJ save, DAE/Collada, glTF, and glb return structured `ErrorCode::UnsupportedFormat` until later test-backed slices. `ModelIOBase` and non-mesh/point-cloud/scan `modelio` classes remain public for now and are deferred to later I/O/streaming slices.
+Current mesh facade coverage routes OBJ, PLY, STL, DAE/Collada, glTF, and glb mesh assets through the required private Assimp backend. Legacy private `ObjIO` and `STLIO` mesh-asset paths have been removed. The private in-tree `ModelFactory` bridge delegates OBJ/STL and mesh PLY cases to the facade; `PLYIO`, `ModelIOBase`, BaseIO, and non-mesh/point-cloud/scan `modelio` classes remain only as a bounded exception for scan-project and point-cloud storage until a later streaming/storage slice replaces them.
 
-Replacement coverage is guarded by `lvr2_removed_public_mesh_io_headers` and the mesh facade GoogleTest coverage (`lvr2_mesh_io_facade_gtest`, including replacement tests).
+Replacement coverage is guarded by `lvr2_removed_public_mesh_io_headers`, `lvr2_no_legacy_mesh_facade_usage`, `lvr2_required_private_assimp_policy`, and the mesh facade GoogleTest coverage (`lvr2_mesh_io_facade_gtest`, including replacement tests).
 
-## Private optional Assimp adapter
+## Required private Assimp adapter
 
-`LVR2_WITH_ASSIMP` is a new opt-in build option for a private mesh facade backend. It defaults to `OFF`, so static/default builds continue to configure without searching for or requiring Assimp. For the private Assimp adapter, enabling the backend is intentionally shared-only to keep Assimp out of exported static target interfaces:
+Assimp is required internally for mesh asset I/O, but it is not exposed as an LVR build option. The backend is intentionally shared-only to keep Assimp out of exported static target interfaces:
 
 ```bash
 cmake -S . -B build-assimp \
-  -DLVR2_WITH_ASSIMP=ON \
   -DBUILD_SHARED_LIBS=ON \
   -DLVR2_BUILD_STATIC_LIBS=OFF
 ```
 
-Assimp remains an implementation detail. Public headers, CMake package configs, target interfaces, C++ namespaces, CLI names, and CLI options do not expose Assimp types, flags, errors, or targets.
+Assimp remains an implementation detail. Public headers, CMake package configs, target interfaces, C++ namespaces, CLI names, CLI options, and LVR build options do not expose Assimp types, flags, errors, or targets. Static/static+shared outputs now fail configure with a privacy-first diagnostic instead of silently falling back to legacy mesh readers.
 
-Facade behavior with `LVR2_WITH_ASSIMP=OFF` remains unchanged without the Assimp backend: OBJ/PLY load and binary PLY save are supported; STL, DAE/Collada, glTF, glb, and non-PLY saves return structured `ErrorCode::UnsupportedFormat`.
+The facade routes these formats through the private backend:
 
-When `LVR2_WITH_ASSIMP=ON` and the shared backend is available, the facade keeps legacy OBJ/PLY load and binary PLY save, and routes the following additional paths through the private backend:
+- `load`: OBJ, PLY, STL, DAE/Collada, glTF, and glb.
+- `save`: OBJ, PLY, STL, DAE/Collada, glTF, and glb.
 
-- `load`: STL, DAE/Collada, glTF, and glb.
-- `save`: OBJ, STL, DAE/Collada, glTF, and glb.
+PLY mesh facade load/save no longer uses legacy `PLYIO`; the private `ModelFactory` bridge tries the facade for mesh PLY and falls back to `PLYIO` only for point-cloud PLY retained under the storage exception. Point-cloud PLY handling remains in the retained storage exception. Distributors who ship binaries with required Assimp mesh I/O must preserve Assimp's license notice and runtime dependency requirements.
 
-Binary PLY remains on the legacy private writer with the private Assimp adapter, and ASCII/text PLY remains unsupported. Distributors who ship binaries with `LVR2_WITH_ASSIMP=ON` must preserve Assimp's license notice and runtime dependency requirements.
-
-Private Assimp adapter coverage is guarded by `lvr2_no_public_assimp_leakage`, package-identity interface checks, and Assimp-enabled mesh facade tests when an Assimp package is available.
+Private Assimp adapter coverage is guarded by `lvr2_no_public_assimp_leakage`, `lvr2_no_legacy_mesh_facade_usage`, package-identity interface checks, and Assimp-enabled mesh facade tests.
 
 ## 25.1.0 -> 25.2.0
 
