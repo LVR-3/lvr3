@@ -35,10 +35,8 @@
 #include "lvr2/io/modelio/AsciiIO.hpp"
 #include "lvr2/io/modelio/PLYIO.hpp"
 #include "lvr2/io/modelio/UosIO.hpp"
-#include "lvr2/io/modelio/ObjIO.hpp"
 #include "lvr2/io/modelio/LasIO.hpp"
 #include "lvr2/io/modelio/DatIO.hpp"
-#include "lvr2/io/modelio/STLIO.hpp"
 #include "lvr2/io/modelio/B3dmIO.hpp"
 
 
@@ -46,6 +44,8 @@
 // #include "lvr2/io/HDF5IO.hpp"
 // #include "lvr2/io/WaveformIO.hpp"
 #include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/mesh/io.hpp"
+#include "lvr2/types/Model.hpp"
 #include "lvr2/util/Timestamp.hpp"
 #include "lvr2/util/Progress.hpp"
 
@@ -68,6 +68,16 @@
 namespace lvr2
 {
 
+namespace
+{
+
+bool hasMeshGeometry(const ModelPtr& model)
+{
+    return model && model->m_mesh && model->m_mesh->numVertices() > 0 && model->m_mesh->numFaces() > 0;
+}
+
+} // namespace
+
 CoordinateTransform<float> ModelFactory::m_transform;
 
 ModelPtr ModelFactory::readModel( std::string filename )
@@ -82,7 +92,21 @@ ModelPtr ModelFactory::readModel( std::string filename )
     ModelIOBase* io = 0;
     if(extension == ".ply")
     {
-        io = new PLYIO;
+        auto meshResult = mesh::load(filename, {mesh::Format::Ply});
+        if(meshResult)
+        {
+            m = ModelPtr(new Model(*meshResult));
+        }
+        else if(meshResult.error().code == mesh::ErrorCode::MissingMesh ||
+                meshResult.error().code == mesh::ErrorCode::ReadFailed)
+        {
+            io = new PLYIO;
+        }
+        else
+        {
+            cout << timestamp << "Mesh facade failed to read " << filename << ": "
+                 << meshResult.error().message << endl;
+        }
     }
     else if(extension == ".pts" || extension == ".3d" || extension == ".xyz" || extension == ".txt")
     {
@@ -91,7 +115,16 @@ ModelPtr ModelFactory::readModel( std::string filename )
 
     else if (extension == ".obj")
     {
-        io = new ObjIO;
+        auto meshResult = mesh::load(filename, {mesh::Format::Obj});
+        if(meshResult)
+        {
+            m = ModelPtr(new Model(*meshResult));
+        }
+        else
+        {
+            cout << timestamp << "Mesh facade failed to read " << filename << ": "
+                 << meshResult.error().message << endl;
+        }
     }
     else if (extension == ".las")
     {
@@ -226,11 +259,25 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     std::string extension = selectedFile.extension().string();
 
     ModelIOBase* io = 0;
+    bool handledByMeshFacade = false;
 
     // Create suitable io
     if(extension == ".ply")
     {
-        io = new PLYIO;
+        if(hasMeshGeometry(m))
+        {
+            handledByMeshFacade = true;
+            const auto status = mesh::save(m->m_mesh, filename, {mesh::Format::Ply});
+            if(!status)
+            {
+                cout << timestamp << "Mesh facade failed to save " << filename << ": "
+                     << status.error().message << endl;
+            }
+        }
+        else
+        {
+            io = new PLYIO;
+        }
     }
     else if (extension == ".pts" || extension == ".3d" || extension == ".xyz" || extension == ".txt")
     {
@@ -238,11 +285,29 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     }
     else if ( extension == ".obj" )
     {
-        io = new ObjIO;
+        handledByMeshFacade = true;
+        if(hasMeshGeometry(m))
+        {
+            const auto status = mesh::save(m->m_mesh, filename, {mesh::Format::Obj});
+            if(!status)
+            {
+                cout << timestamp << "Mesh facade failed to save " << filename << ": "
+                     << status.error().message << endl;
+            }
+        }
     }
     else if (extension == ".stl")
     {
-        io = new STLIO;
+        handledByMeshFacade = true;
+        if(hasMeshGeometry(m))
+        {
+            const auto status = mesh::save(m->m_mesh, filename, {mesh::Format::Stl});
+            if(!status)
+            {
+                cout << timestamp << "Mesh facade failed to save " << filename << ": "
+                     << status.error().message << endl;
+            }
+        }
     }
     /**else if (extension == ".rdbx")
     {
@@ -268,7 +333,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
         io->save( m, filename );
         delete io;
     }
-    else
+    else if(!handledByMeshFacade)
     {
         cout << timestamp << "File format " << extension
             << " is currently not supported." << endl;

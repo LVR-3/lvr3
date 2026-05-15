@@ -1,4 +1,5 @@
 #include "lvr2/mesh/io.hpp"
+#include "lvr2/io/ModelFactory.hpp"
 #include "support/MeshIoTestHelpers.hpp"
 
 #include <gtest/gtest.h>
@@ -32,6 +33,7 @@ TEST(MeshIoAssimp, SavesAndLoadsEnabledFormatsThroughFacade)
 {
     const FormatCase cases[] = {
         {lvr2::mesh::Format::Obj, ".obj", true},
+        {lvr2::mesh::Format::Ply, ".ply", true},
         {lvr2::mesh::Format::Stl, ".stl", true},
         {lvr2::mesh::Format::Dae, ".dae", true},
         {lvr2::mesh::Format::Gltf, ".gltf", true},
@@ -78,9 +80,9 @@ TEST(MeshIoAssimp, MalformedInputReturnsStructuredLvrError)
     EXPECT_EQ(loaded.error().format, lvr2::mesh::Format::Stl);
 }
 
-TEST(MeshIoAssimp, BinaryPlyRemainsLegacyFacadePath)
+TEST(MeshIoAssimp, BinaryPlyUsesPrivateBackendThroughFacade)
 {
-    const auto path = lvr2::testing::uniqueMeshIoPath("lvr2-legacy-ply", ".ply");
+    const auto path = lvr2::testing::uniqueMeshIoPath("lvr2-assimp-ply", ".ply");
     const auto saved = lvr2::mesh::save(lvr2::testing::makeTriangleMesh(), path, {lvr2::mesh::Format::Ply, true});
     ASSERT_TRUE(saved) << saved.error().message;
 
@@ -91,4 +93,17 @@ TEST(MeshIoAssimp, BinaryPlyRemainsLegacyFacadePath)
     ASSERT_TRUE(*loaded);
     EXPECT_EQ((*loaded)->numVertices(), 3u);
     EXPECT_EQ((*loaded)->numFaces(), 1u);
+}
+
+TEST(MeshIoAssimp, ModelFactoryFallsBackForPointCloudPlyException)
+{
+    const auto path = lvr2::testing::uniqueMeshIoPath("lvr2-point-cloud-ply-exception", ".ply");
+    ASSERT_TRUE(lvr2::testing::writeAsciiPointOnlyPlyFixture(path));
+
+    const auto model = lvr2::ModelFactory::readModel(path.string());
+    lvr2::testing::removeMeshIoSidecars(path);
+
+    ASSERT_TRUE(model);
+    ASSERT_TRUE(model->m_pointCloud);
+    EXPECT_EQ(model->m_pointCloud->numPoints(), 3u);
 }

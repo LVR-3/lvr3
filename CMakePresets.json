@@ -13,6 +13,8 @@
       "binaryDir": "${sourceDir}/build-vcpkg-release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
+        "BUILD_SHARED_LIBS": "ON",
+        "LVR2_BUILD_STATIC_LIBS": "OFF",
         "LVR2_WITH_VCPKG": "ON",
         "LVR2_VCPKG_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
       }
@@ -50,6 +52,8 @@
         "LVR2_USE_SYSTEM_TL_EXPECTED": "ON",
         "LVR2_USE_SYSTEM_TBB": "ON",
         "LVR2_USE_SYSTEM_SPDLOG": "ON",
+        "BUILD_SHARED_LIBS": "ON",
+        "LVR2_BUILD_STATIC_LIBS": "OFF",
         "LVR2_USE_SYSTEM_HIGHFIVE": "ON",
         "LVR2_USE_SYSTEM_RPLY": "ON",
         "LVR2_USE_SYSTEM_LASLIB": "ON"
