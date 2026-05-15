@@ -383,16 +383,17 @@ void HashGrid<BaseVecT, BoxT>::saveGrid(std::string file)
     std::ofstream out(file, std::ios::out | std::ios::binary);
 
     unsigned long csize = m_cells.size();
-    out << csize;
+    out << csize << '\n';
     for (auto& [ _, cell ] : m_cells)
     {
         auto& center = cell->getCenter();
-        out << center[0] << center[1] << center[2];
+        out << center[0] << ' ' << center[1] << ' ' << center[2];
 
         for (size_t i = 0; i < 8; i++)
         {
-            out << m_queryPoints[cell->getVertex(i)].m_distance;
+            out << ' ' << m_queryPoints[cell->getVertex(i)].m_distance;
         }
+        out << '\n';
     }
 }
 

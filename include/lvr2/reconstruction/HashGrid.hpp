@@ -124,7 +124,7 @@ public:
      * @param voxelsize The voxel size of the grid.
      */
     HashGrid(std::string file, const BoundingBox<BaseVecT>& boundingBox, float voxelsize)
-        : HashGrid({ file }, boundingBox, voxelsize)
+        : HashGrid(std::vector<std::string>{ file }, boundingBox, voxelsize)
     { }
 
     /**
@@ -146,7 +146,7 @@ public:
      * @param boundingBox Bounding box of the grid.
      * @param voxelsize The voxel size of the grid.
      */
-    HashGrid(const std::vector<string>& files,
+    HashGrid(const std::vector<std::string>& files,
              const std::vector<BoundingBox<BaseVecT>>& innerBoxes,
              const BoundingBox<BaseVecT>& boundingBox,
              float voxelsize);
@@ -159,7 +159,7 @@ public:
      * @param voxelsize The voxel size of the grid.
      */
     HashGrid(PointBufferPtr src, const BoundingBox<BaseVecT>& boundingBox, float voxelsize)
-        : HashGrid({ src }, {}, boundingBox, voxelsize)
+        : HashGrid(std::vector<PointBufferPtr>{ src }, {}, boundingBox, voxelsize)
     { }
 
     /**
