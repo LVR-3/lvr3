@@ -32,7 +32,11 @@ point clouds.
   <author email="jubraun@uos.de">Justus Braun</author>
 
   <buildtool_depend>cmake</buildtool_depend>
+  <buildtool_depend>pkg-config</buildtool_depend>
 
+  <depend>assimp</depend>
+  <depend>libexpected-dev</depend>
+  <depend>spdlog</depend>
   <depend>tbb</depend>
   <depend>libtiff-dev</depend>
   <depend>libgdal-dev</depend>

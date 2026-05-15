@@ -1,0 +1,22 @@
+lvr2 Debian packaging notes
+==========================
+
+The Debian packaging intentionally preserves the existing lvr2 source and
+binary package identities while the build also installs the lvr3 CMake package
+facade for CMake consumers.
+
+Distributor builds use system packages instead of the default vcpkg-first
+workflow by passing `-DLVR2_WITH_VCPKG=OFF`. Mesh asset I/O uses the required
+private Assimp backend and is packaged as shared-only, so both Debian configure
+paths pass `-DBUILD_SHARED_LIBS=ON -DLVR2_BUILD_STATIC_LIBS=OFF`.
+
+The current Ubuntu/ROS dependency set has verified package or rosdep names for
+Assimp (`libassimp-dev` / `assimp`), tl-expected (`libexpected-dev`), spdlog
+(`libspdlog-dev` / `spdlog`), and the existing system dependencies such as TBB,
+TIFF, GDAL, HDF5, OpenCV, VTK 9, Eigen, Boost, YAML-CPP, OpenGL/GLUT, and OpenCL.
+
+The package-backed CMake build also requires HighFive, rply, and LASlib/LAStools.
+Verified Jammy/Noble Debian package names and rosdep keys for those dependencies
+are not recorded here yet, so they are deliberately not listed as Debian or ROS
+package dependencies. Full Debian builds may remain blocked on those packages
+until distro packaging or local rosdep rules provide them.

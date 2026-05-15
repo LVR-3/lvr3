@@ -42,13 +42,17 @@ set(CPACK_DEBIAN_PACKAGE_MAINTAINER "jubraun@uos.de")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 
 set(_LVR2_DEPS
+    pkg-config
+    libassimp-dev
     libeigen3-dev
+    libexpected-dev
     libflann-dev
     libgdal-dev
     libglut-dev
     libgsl-dev
     libhdf5-dev
     liblz4-dev
+    libspdlog-dev
     # We need the full opencv dependency since the FindOpenCV CMake makro is only part of the libopencv-dev package
     libopencv-dev
     libtbb-dev
@@ -59,6 +63,11 @@ set(_LVR2_DEPS
     ocl-icd-opencl-dev
     openmpi-bin
 )
+
+# HighFive, rply, and LASlib/LAStools are still required by the system-package
+# CMake build, but Jammy/Noble Debian package names are not verified here yet.
+# Do not guess dependency names in generated DEB metadata until those packages
+# are provided by distro packaging or local distributor rules.
 
 # Depend on MPI if it was found during build
 if(MPI_FOUND)
