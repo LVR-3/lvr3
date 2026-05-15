@@ -94,7 +94,7 @@ public:
      * @param kn         The number of neighbor points used for normal estimation
      * @param ki         The number of neighbor points used for normal interpolation
      * @param kd         The number of neighbor points used for distance value calculation
-     * @param calcMethod Normal calculation method. 0: PCA(default), 1: RANSAC, 2: Iterative
+     * @param calcMethod Normal calculation method. 0: PCA(default), 1: RANSAC, 2: Iterative, 3: IPCA Exact
      */
     AdaptiveKSearchSurface(
         PointBufferPtr loader,
@@ -130,7 +130,7 @@ public:
         distance(BaseVecT v) const;
 
     /**
-     * @brief Calculates initial point normals using a least squares fit to
+     * @brief Calculates initial point normals using a covariance PCA fit to
      *        the \ref m_kn nearest points
      */
     virtual void calculateSurfaceNormals();

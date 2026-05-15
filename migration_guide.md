@@ -85,6 +85,17 @@ cmake -S . -B build-system -DLVR2_WITH_VCPKG=OFF
 
 Common package escape hatches follow the `LVR2_USE_SYSTEM_<PKG>` pattern, including `LVR2_USE_SYSTEM_TL_EXPECTED`, `LVR2_USE_SYSTEM_TBB`, `LVR2_USE_SYSTEM_SPDLOG`, `LVR2_USE_SYSTEM_HIGHFIVE`, `LVR2_USE_SYSTEM_RPLY`, `LVR2_USE_SYSTEM_LASLIB`, `LVR2_USE_SYSTEM_OPENCV`, `LVR2_USE_SYSTEM_HDF5`, and `LVR2_USE_SYSTEM_EIGEN3`. `CMakeSettings.json` is still kept for compatibility. Assimp is required privately for mesh I/O and is intentionally not exposed as a package-specific LVR option.
 
+## Corrected PCA normals
+
+The default `lvr2_reconstruct --nem 0` normal estimator now performs true
+covariance PCA over the local neighborhood and uses the eigenvector with the
+smallest eigenvalue as the tangent-plane normal. Previous builds used a
+coordinate-dependent directional fit equivalent to `y = f(x, z)` while still
+advertising the mode as PCA. That legacy behavior is not preserved as a fallback,
+so reconstructed surfaces can change for vertical, tilted, noisy, or otherwise
+axis-biased point neighborhoods. Degenerate neighborhoods now produce finite
+fallback normals instead of propagating NaN values.
+
 ## Mesh I/O facade
 
 A narrow public mesh I/O facade is available in the existing `lvr2` C++ namespace:
