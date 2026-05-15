@@ -94,6 +94,13 @@ endif()
     message(FATAL_ERROR "Unknown fake package shape '${_shape}'")
   endif()
 
+  set(_COMPONENT_TARGETS_CONTENT "")
+  foreach(_component IN ITEMS geometry io reconstruction texture registration display)
+    string(APPEND _COMPONENT_TARGETS_CONTENT
+"if(NOT TARGET lvr2::${_component})\n  add_library(lvr2::${_component} INTERFACE IMPORTED)\n  set_target_properties(lvr2::${_component} PROPERTIES\n    INTERFACE_LINK_LIBRARIES \"lvr2::lvr2\")\nendif()\n")
+  endforeach()
+  string(APPEND _TARGETS_CONTENT "${_COMPONENT_TARGETS_CONTENT}")
+
   file(WRITE "${_LVR2_CONFIG_DIR}/lvr2-targets.cmake" "${_TARGETS_CONTENT}")
 
   file(WRITE "${_LVR2_CONFIG_DIR}/lvr2-config-version.cmake"
@@ -101,6 +108,15 @@ endif()
 
   file(WRITE "${_LVR2_CONFIG_DIR}/lvr2-config.cmake"
 "include(CMakeFindDependencyMacro)
+macro(check_required_components _NAME)
+  foreach(_component \${\${_NAME}_FIND_COMPONENTS})
+    if(NOT \${_NAME}_\${_component}_FOUND)
+      if(\${_NAME}_FIND_REQUIRED_\${_component})
+        set(\${_NAME}_FOUND FALSE)
+      endif()
+    endif()
+  endforeach()
+endmacro()
 find_dependency(tl-expected CONFIG)
 include(\"${_LVR2_CONFIG_DIR}/lvr2-targets.cmake\")
 list(APPEND CMAKE_MODULE_PATH \"${_LVR2_CONFIG_DIR}/Modules\")
@@ -129,15 +145,50 @@ else()
   message(FATAL_ERROR \"No installed lvr2 library target is available.\")
 endif()
 set(LVR2_LIBRARIES \${LVR2_LIBRARY})
+set(_LVR2_KNOWN_COMPONENTS geometry io reconstruction texture registration display)
+foreach(_LVR2_COMPONENT IN LISTS _LVR2_KNOWN_COMPONENTS)
+  if(TARGET lvr2::\${_LVR2_COMPONENT})
+    set(lvr2_\${_LVR2_COMPONENT}_FOUND TRUE)
+    set(LVR2_\${_LVR2_COMPONENT}_FOUND TRUE)
+  else()
+    set(lvr2_\${_LVR2_COMPONENT}_FOUND FALSE)
+    set(LVR2_\${_LVR2_COMPONENT}_FOUND FALSE)
+  endif()
+endforeach()
+set(_LVR2_MISSING_COMPONENTS)
+foreach(_LVR2_COMPONENT IN LISTS lvr2_FIND_COMPONENTS)
+  list(FIND _LVR2_KNOWN_COMPONENTS \"\${_LVR2_COMPONENT}\" _LVR2_COMPONENT_INDEX)
+  if(_LVR2_COMPONENT_INDEX EQUAL -1)
+    set(lvr2_\${_LVR2_COMPONENT}_FOUND FALSE)
+    set(LVR2_\${_LVR2_COMPONENT}_FOUND FALSE)
+    list(APPEND _LVR2_MISSING_COMPONENTS \${_LVR2_COMPONENT})
+  elseif(NOT TARGET lvr2::\${_LVR2_COMPONENT})
+    list(APPEND _LVR2_MISSING_COMPONENTS \${_LVR2_COMPONENT})
+  endif()
+endforeach()
+if(_LVR2_MISSING_COMPONENTS)
+  list(JOIN _LVR2_MISSING_COMPONENTS \", \" _LVR2_MISSING_COMPONENTS_TEXT)
+  set(lvr2_NOT_FOUND_MESSAGE \"lvr2 package does not provide requested component(s): \${_LVR2_MISSING_COMPONENTS_TEXT}. Known components: \${_LVR2_KNOWN_COMPONENTS}\")
+endif()
 set(lvr2_FOUND TRUE)
-set(LVR2_FOUND TRUE)
+check_required_components(lvr2)
+set(LVR2_FOUND \${lvr2_FOUND})
 ")
 
   file(WRITE "${_LVR3_CONFIG_DIR}/lvr3-config-version.cmake"
 "set(PACKAGE_VERSION \"25.2.3\")\nset(PACKAGE_VERSION_EXACT TRUE)\nset(PACKAGE_VERSION_COMPATIBLE TRUE)\n")
 
   file(READ "${_PROJECT_DIR}/CMakeModules/lvr3-config.cmake.in" _LVR3_CONFIG_TEMPLATE)
-  set(_PACKAGE_INIT "set(PACKAGE_PREFIX_DIR \"${_prefix}\")")
+  set(_PACKAGE_INIT "set(PACKAGE_PREFIX_DIR \"${_prefix}\")
+macro(check_required_components _NAME)
+  foreach(_component \${\${_NAME}_FIND_COMPONENTS})
+    if(NOT \${_NAME}_\${_component}_FOUND)
+      if(\${_NAME}_FIND_REQUIRED_\${_component})
+        set(\${_NAME}_FOUND FALSE)
+      endif()
+    endif()
+  endforeach()
+endmacro()")
   string(REPLACE "@PACKAGE_INIT@" "${_PACKAGE_INIT}" _LVR3_CONFIG_CONTENT "${_LVR3_CONFIG_TEMPLATE}")
   file(WRITE "${_LVR3_CONFIG_DIR}/lvr3-config.cmake" "${_LVR3_CONFIG_CONTENT}")
 endfunction()
@@ -181,6 +232,14 @@ set(_CASES
   "modern"
   "legacy_then_modern"
   "modern_then_legacy"
+  "legacy_unknown_quiet"
+  "modern_unknown_quiet"
+  "legacy_unknown_optional"
+  "modern_unknown_optional"
+)
+set(_EXPECTED_FAILURE_CASES
+  "legacy_unknown_required"
+  "modern_unknown_required"
 )
 
 list(LENGTH _PACKAGE_PREFIXES _PREFIX_COUNT)
@@ -206,6 +265,26 @@ foreach(_index RANGE 0 ${_LAST_PREFIX_INDEX})
 
     if(NOT _rv EQUAL 0)
       message(FATAL_ERROR "Package identity smoke check '${_shape}/${_case}' failed.\n${_out}\n${_err}")
+    endif()
+  endforeach()
+
+  foreach(_case IN LISTS _EXPECTED_FAILURE_CASES)
+    execute_process(
+      COMMAND "${CMAKE_COMMAND}"
+        -S "${_IDENTITY_CONSUMER_DIR}"
+        -B "${_IDENTITY_CONSUMER_DIR}/build-${_shape}-${_case}"
+        -DCHECK_PREFIX=${_prefix}
+        -DCHECK_ORDER=${_case}
+        -DCHECK_SHAPE=${_shape}
+      RESULT_VARIABLE _rv
+      OUTPUT_VARIABLE _out
+      ERROR_VARIABLE _err
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      ERROR_STRIP_TRAILING_WHITESPACE
+    )
+
+    if(_rv EQUAL 0)
+      message(FATAL_ERROR "Package identity smoke check '${_shape}/${_case}' unexpectedly passed.")
     endif()
   endforeach()
 endforeach()

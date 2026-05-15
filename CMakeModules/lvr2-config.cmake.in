@@ -97,6 +97,33 @@ endif()
 
 set(LVR2_LIBRARIES ${LVR2_LIBRARY})
 
+set(_LVR2_KNOWN_COMPONENTS geometry io reconstruction texture registration display)
+foreach(_LVR2_COMPONENT IN LISTS _LVR2_KNOWN_COMPONENTS)
+  if(TARGET lvr2::${_LVR2_COMPONENT})
+    set(lvr2_${_LVR2_COMPONENT}_FOUND TRUE)
+    set(LVR2_${_LVR2_COMPONENT}_FOUND TRUE)
+  else()
+    set(lvr2_${_LVR2_COMPONENT}_FOUND FALSE)
+    set(LVR2_${_LVR2_COMPONENT}_FOUND FALSE)
+  endif()
+endforeach()
+
+set(_LVR2_MISSING_COMPONENTS)
+foreach(_LVR2_COMPONENT IN LISTS lvr2_FIND_COMPONENTS)
+  list(FIND _LVR2_KNOWN_COMPONENTS "${_LVR2_COMPONENT}" _LVR2_COMPONENT_INDEX)
+  if(_LVR2_COMPONENT_INDEX EQUAL -1)
+    set(lvr2_${_LVR2_COMPONENT}_FOUND FALSE)
+    set(LVR2_${_LVR2_COMPONENT}_FOUND FALSE)
+    list(APPEND _LVR2_MISSING_COMPONENTS ${_LVR2_COMPONENT})
+  elseif(NOT TARGET lvr2::${_LVR2_COMPONENT})
+    list(APPEND _LVR2_MISSING_COMPONENTS ${_LVR2_COMPONENT})
+  endif()
+endforeach()
+if(_LVR2_MISSING_COMPONENTS)
+  list(JOIN _LVR2_MISSING_COMPONENTS ", " _LVR2_MISSING_COMPONENTS_TEXT)
+  set(lvr2_NOT_FOUND_MESSAGE "lvr2 package does not provide requested component(s): ${_LVR2_MISSING_COMPONENTS_TEXT}. Known components: ${_LVR2_KNOWN_COMPONENTS}")
+endif()
+
 ## OBSOLETE END
 #########################
 
@@ -136,3 +163,5 @@ if(@embree_FOUND@)
 endif()
 
 set(lvr2_FOUND TRUE)
+check_required_components(lvr2)
+set(LVR2_FOUND ${lvr2_FOUND})
