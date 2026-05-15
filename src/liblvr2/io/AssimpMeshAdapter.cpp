@@ -23,8 +23,21 @@ namespace detail
 namespace
 {
 
+using AssimpMeshVertexCount = decltype(std::declval<aiMesh>().mNumVertices);
+using AssimpFaceIndexCount = decltype(std::declval<aiFace>().mNumIndices);
+using AssimpFaceIndex = typename std::remove_reference<decltype(std::declval<aiFace>().mIndices[0])>::type;
+using AssimpVertexScalar = decltype(std::declval<aiVector3D>().x);
+
 static_assert(std::is_same<lvr2::indexArray::element_type, unsigned int>::value,
               "MeshBuffer face indices must stay compatible with the backend index type");
+static_assert(std::is_same<AssimpMeshVertexCount, unsigned int>::value,
+              "Assimp mesh vertex counts must fit the MeshBuffer index guard");
+static_assert(std::is_same<AssimpFaceIndexCount, unsigned int>::value,
+              "Assimp triangle index counts must remain unsigned int compatible");
+static_assert(std::is_same<AssimpFaceIndex, unsigned int>::value,
+              "Assimp face indices must remain unsigned int compatible");
+static_assert(std::is_floating_point<AssimpVertexScalar>::value,
+              "Assimp vertex coordinates must remain floating point values");
 
 const char* formatName(Format format)
 {
