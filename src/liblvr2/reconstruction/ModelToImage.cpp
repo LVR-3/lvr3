@@ -34,9 +34,12 @@
 
 #include "lvr2/reconstruction/ModelToImage.hpp"
 #include "lvr2/reconstruction/Projection.hpp"
+#include "lvr2/types/PointBuffer.hpp"
 #include "lvr2/util/Progress.hpp"
 #include "lvr2/util/Timestamp.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
+
+#include <opencv2/core.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -105,7 +108,7 @@ void ModelToImage::computeDepthListMatrix(DepthListMatrix& mat)
     floatArr points = m_points->getPointArray();
 
     // Create progress output
-    string comment = timestamp.getElapsedTime() + "Projecting points ";
+    std::string comment = timestamp.getElapsedTime() + "Projecting points ";
     ProgressBar progress(n_points, comment);
 
     float range;
@@ -159,7 +162,7 @@ void ModelToImage::computeDepthImage(ModelToImage::DepthImage& img, ModelToImage
     floatArr points = m_points->getPointArray();
 
     // Create progress output
-    string comment = timestamp.getElapsedTime() + "Projecting points ";
+    std::string comment = timestamp.getElapsedTime() + "Projecting points ";
     ProgressBar progress(n_points, comment);
 
     float range;
@@ -188,7 +191,7 @@ void ModelToImage::computeDepthImage(ModelToImage::DepthImage& img, ModelToImage
     cout << timestamp << "Min / Max range: " << img.minRange << " / " << img.maxRange << endl;
 }
 
-void ModelToImage::writePGM(string filename, float cutoff)
+void ModelToImage::writePGM(std::string filename, float cutoff)
 {
     // Compute panorama image
     ModelToImage::DepthImage img;

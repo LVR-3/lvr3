@@ -88,7 +88,7 @@ public:
 
     void updateDisplayLists();
 //private:
-    vector<uColorVertex> m_points;
+    std::vector<uColorVertex> m_points;
 
     void setRenderMode(int mode) {m_renderMode = mode;}
 

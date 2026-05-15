@@ -34,6 +34,8 @@
 
 #include "lvr2/display/StaticMesh.hpp"
 
+#include "lvr2/types/Model.hpp"
+
 #include <cassert>
 
 namespace lvr2

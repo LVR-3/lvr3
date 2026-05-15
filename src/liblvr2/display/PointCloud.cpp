@@ -33,6 +33,8 @@
  */
 
 #include "lvr2/display/PointCloud.hpp"
+
+#include "lvr2/types/Model.hpp"
 #include "lvr2/util/ColorGradient.hpp"
 
 #include <string.h>
