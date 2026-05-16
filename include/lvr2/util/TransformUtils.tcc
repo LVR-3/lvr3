@@ -32,11 +32,12 @@
  *  @author Thomas Wiemann
  */
 
- 
+
 
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <cmath>
+#include <lvr2/util/Logging.hpp>
 
 namespace lvr2
 {
@@ -148,7 +149,7 @@ void transformAndReducePointCloud(ModelPtr& model, int modulo, const CoordinateT
 
 template<typename T>
 void transformAndReducePointCloud(
-    ModelPtr model, int modulo, 
+    ModelPtr model, int modulo,
     const T& sx, const T& sy, const T& sz,
     const unsigned char& xPos, const unsigned char& yPos, const unsigned char& zPos)
 {
@@ -200,8 +201,8 @@ void transformAndReducePointCloud(
             }
             else
             {
-                lvr2::logout::get() << lvr2::debug << "[TransformAndReducePointCloud] Cntr: " << (cntr * 3) << " targetSize: " << targetSize << lvr2::endl;
-                lvr2::logout::get() << "TransformAndReducePointCloud] nip : " << n_ip << " modulo " << modulo << lvr2::endl;
+                                lvr2::log::debug("{}{}{}{}", fmt::streamed("[TransformAndReducePointCloud] Cntr: "), fmt::streamed((cntr * 3)), fmt::streamed(" targetSize: "), fmt::streamed(targetSize));
+                                lvr2::log::info("{}{}{}{}", fmt::streamed("TransformAndReducePointCloud] nip : "), fmt::streamed(n_ip), fmt::streamed(" modulo "), fmt::streamed(modulo));
                 break;
             }
 
@@ -230,7 +231,7 @@ void transformAndReducePointCloud(
 template<typename T>
 void transformPointCloud(ModelPtr model, const Transform<T>& transformation)
 {
-    lvr2::logout::get()<< lvr2::info << "Transforming points..." << lvr2::endl;
+        lvr2::log::info("{}", fmt::streamed("Transforming points..."));
 
     size_t numPoints = model->m_pointCloud->numPoints();
     floatArr arr = model->m_pointCloud->getPointArray();
@@ -254,7 +255,7 @@ void transformPointCloud(ModelPtr model, const Transform<T>& transformation)
         ++pointMonitor;
     }
 
-    // Transform normals according to rotation part of the 
+    // Transform normals according to rotation part of the
     // matrix
     floatArr normals = model->m_pointCloud->getNormalArray();
 
@@ -311,7 +312,7 @@ void transformModel(ModelPtr model, const Transform<T> &transformation)
     {
         PointBufferPtr p_buffer = model->m_pointCloud;
 
-        lvr2::logout::get()<< lvr2::info << "[TransformModel] Transforming points" << lvr2::endl;
+                lvr2::log::info("{}", fmt::streamed("[TransformModel] Transforming points"));
         FloatChannelOptional points = p_buffer->getFloatChannel("points");
 
         #pragma omp parallel for
@@ -326,7 +327,7 @@ void transformModel(ModelPtr model, const Transform<T> &transformation)
 
         if (normals)
         {
-            lvr2::logout::get()<< lvr2::info << "[TransformModel] Transforming normals..." << lvr2::endl;
+                        lvr2::log::info("{}", fmt::streamed("[TransformModel] Transforming normals..."));
             Eigen::Matrix<T, 3, 3> rotation = transformation.template block<3, 3>(0, 0);
 
             #pragma omp parallel for
@@ -349,12 +350,12 @@ void transformModel(ModelPtr model, const Transform<T> &transformation)
     // Get mesh buffer
     if (model->m_mesh)
     {
-        lvr2::logout::get()<< lvr2::info << "[TransformModel] Transforming vertices..." << lvr2::endl;
+                lvr2::log::info("{}", fmt::streamed("[TransformModel] Transforming vertices..."));
 
-        MeshBufferPtr m_buffer = model->m_mesh;       
+        MeshBufferPtr m_buffer = model->m_mesh;
         FloatChannelOptional points = m_buffer->getFloatChannel("vertices");
 
-        #pragma omp parallel for        
+        #pragma omp parallel for
         for (size_t i = 0; i < points->numElements(); i++)
         {
             lvr2::BaseVector<T> v((*points)[i][0], (*points)[i][1], (*points)[i][2]);

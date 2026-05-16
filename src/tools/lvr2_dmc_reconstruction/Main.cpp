@@ -24,6 +24,7 @@
 #include "lvr2/reconstruction/metrics/OneSidedHausdorffMetric.hpp"
 #include "lvr2/reconstruction/metrics/SymmetricHausdorffMetric.hpp"
 #include "lvr2/config/lvropenmp.hpp"
+#include <lvr2/util/Logging.hpp>
 
 using namespace lvr2;
 
@@ -38,7 +39,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const dmc_reconstruction::Options& o
     // Parse loaded data
     if (!model)
     {
-        std::cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << std::endl;
+                lvr2::log::error("{}{}", fmt::streamed("IO Error: Unable to parse "), fmt::streamed(options.getInputFileName()));
         return nullptr;
     }
 
@@ -51,13 +52,13 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const dmc_reconstruction::Options& o
     // Create point set surface object
     if(pcm_name == "PCL")
     {
-        std::cout << timestamp << "Using PCL as point cloud manager is not implemented yet!" << std::endl;
+                lvr2::log::info("{}", fmt::streamed("Using PCL as point cloud manager is not implemented yet!"));
         panic_unimplemented("PCL as point cloud manager");
     }
     else if(pcm_name == "FLANN" || pcm_name == "NANOFLANN")
     {
         int plane_fit_method = 0;
-        
+
         if(options.useRansac())
         {
             plane_fit_method = 1;
@@ -80,8 +81,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const dmc_reconstruction::Options& o
     }
     else
     {
-        std::cout << timestamp << "Unable to create PointCloudManager." << std::endl;
-        std::cout << timestamp << "Unknown option '" << pcm_name << "'." << std::endl;
+                lvr2::log::error("{}", fmt::streamed("Unable to create PointCloudManager."));
+                lvr2::log::info("{}{}{}", fmt::streamed("Unknown option '"), fmt::streamed(pcm_name), fmt::streamed("'."));
         return nullptr;
     }
 
@@ -143,7 +144,7 @@ int main(int argc, char** argv)
 
     // get distance between the two meshes
     metric->get_distance(flatMesh, deepMesh);
-    
+
     // Finalize mesh
     lvr2::SimpleFinalizer<Vec> finalize;
     auto meshBuffer = finalize.apply(flatMesh);
@@ -155,7 +156,7 @@ int main(int argc, char** argv)
     m = ModelPtr(new Model(meshBuffer));
     ModelFactory::saveModel(m, "deep_mesh.ply");
 
-    std::cout << timestamp << "Finished reconstruction" << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Finished reconstruction"));
 
     return 0;
 }

@@ -7,6 +7,7 @@
 #include "lvr2/io/YAML.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/util/YAMLUtil.hpp"
+#include <lvr2/util/Logging.hpp>
 
 using lvr2::timestamp;
 
@@ -47,22 +48,18 @@ struct convert<lvr2::HyperspectralCamera>
         /*** Check for deprecated Tags and print warnings ***/
         if(node["kind"])
         {
-            std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralCamera> - decode] " 
-                        << "WARNING: 'kind' Tag is no longer supported! " 
-                        << "Please update your dataset to use 'entity' and 'type' Tags." << std::endl;
-        } 
+                        lvr2::log::warning("{}{}{}", fmt::streamed("[YAML::convert<HyperspectralCamera> - decode] "), fmt::streamed("WARNING: 'kind' Tag is no longer supported! "), fmt::streamed("Please update your dataset to use 'entity' and 'type' Tags."));
+        }
         if(node["sensor_type"])
         {
-            std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralCamera> - decode] "
-                        << "Warning: 'sensor_type' Tag is no longer supported! "
-                        << "Please update your dataset to use 'entity' and 'type' Tags." << std::endl;
+                        lvr2::log::warning("{}{}{}", fmt::streamed("[YAML::convert<HyperspectralCamera> - decode] "), fmt::streamed("Warning: 'sensor_type' Tag is no longer supported! "), fmt::streamed("Please update your dataset to use 'entity' and 'type' Tags."));
         }
         /*** Continue parsing in case these Tags were redundant ***/
 
         // Check if 'entity' and 'type' Tags are valid
-        if (!YAML_UTIL::ValidateEntityAndType(node, 
-            "spectral_camera", 
-            lvr2::HyperspectralCamera::entity, 
+        if (!YAML_UTIL::ValidateEntityAndType(node,
+            "spectral_camera",
+            lvr2::HyperspectralCamera::entity,
             lvr2::HyperspectralCamera::type))
         {
             return false;
@@ -70,49 +67,45 @@ struct convert<lvr2::HyperspectralCamera>
 
         if(node["transformation"])
         {
-            try 
+            try
             {
                 camera.transformation = node["transformation"].as<decltype(camera.transformation)>();
-            } 
-            catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) 
+            }
+            catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex)
             {
-                std::cout << timestamp << "[YAML - HyperspectralCamera - decode] ERROR: Could not decode 'transformation': "
-                    << node["transformation"] << " as Transformd" << std::endl; 
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - HyperspectralCamera - decode] ERROR: Could not decode 'transformation': "), fmt::streamed(node["transformation"]), fmt::streamed(" as Transformd"));
                 return false;
             }
         }
 
         if(node["name"])
         {
-            try 
+            try
             {
                 camera.name = node["name"].as<decltype(camera.name)>();
-            } 
-            catch(const YAML::TypedBadConversion<std::string>& ex) 
+            }
+            catch(const YAML::TypedBadConversion<std::string>& ex)
             {
-                std::cout << timestamp << "[YAML - HyperspectralCamera - decode] ERROR: Could not decode 'name': "
-                    << node["name"] << " as string" << std::endl; 
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - HyperspectralCamera - decode] ERROR: Could not decode 'name': "), fmt::streamed(node["name"]), fmt::streamed(" as string"));
                 return false;
             }
         }
 
         if(node["model"])
         {
-            try 
+            try
             {
                 camera.model= node["model"].as<decltype(camera.model)>();
-            } 
-            catch(const YAML::TypedBadConversion<decltype(camera.model)>& ex) 
+            }
+            catch(const YAML::TypedBadConversion<decltype(camera.model)>& ex)
             {
-                std::cout << timestamp << "[YAML - HyperspectralCamera - decode] ERROR: Could not decode 'model': "
-                    << node["model"] << " as CameraModel" << std::endl;
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - HyperspectralCamera - decode] ERROR: Could not decode 'model': "), fmt::streamed(node["model"]), fmt::streamed(" as CameraModel"));
                 return false;
             }
-        } 
-        else 
+        }
+        else
         {
-            std::cout << lvr2::timestamp << "[YAML::convert<HyperspectralCamera> - decode] "
-                << "WARNING: Hyperspectral camera has no sensor model in meta file." << std::endl;
+                        lvr2::log::warning("{}{}", fmt::streamed("[YAML::convert<HyperspectralCamera> - decode] "), fmt::streamed("WARNING: Hyperspectral camera has no sensor model in meta file."));
         }
 
         return true;
@@ -160,9 +153,9 @@ struct convert<lvr2::HyperspectralPanorama>
     static bool decode(const Node& node, lvr2::HyperspectralPanorama& pano)
     {
         // Check if 'entity' and 'type' Tags are valid
-        if (!YAML_UTIL::ValidateEntityAndType(node, 
-            "spectral_panorama", 
-            lvr2::HyperspectralPanorama::entity, 
+        if (!YAML_UTIL::ValidateEntityAndType(node,
+            "spectral_panorama",
+            lvr2::HyperspectralPanorama::entity,
             lvr2::HyperspectralPanorama::type))
         {
             return false;
@@ -236,9 +229,9 @@ struct convert<lvr2::HyperspectralPanoramaChannel>
     static bool decode(const Node& node, lvr2::HyperspectralPanoramaChannel& hchannel)
     {
         // Check if 'entity' and 'type' Tags are valid
-        if (!YAML_UTIL::ValidateEntityAndType(node, 
-            "spectral_panorama_channel", 
-            lvr2::HyperspectralPanoramaChannel::entity, 
+        if (!YAML_UTIL::ValidateEntityAndType(node,
+            "spectral_panorama_channel",
+            lvr2::HyperspectralPanoramaChannel::entity,
             lvr2::HyperspectralPanoramaChannel::type))
         {
             return false;

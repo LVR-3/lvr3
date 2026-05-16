@@ -23,53 +23,45 @@ DirectorySchemaPtr directorySchemaFromName(const std::string& schemaName, const 
     // Check root directory
     if(!boost::filesystem::is_directory(boost::filesystem::path(rootDirectory)))
     {
-        lvr2::logout::get() << lvr2::warning << "[DirectorySchemaFromName] Cannot create directory schema. Given root is not a directory: '"
-                  << rootDirectory << "'." << lvr2::endl;
+                lvr2::log::warning("{}{}{}", fmt::streamed("[DirectorySchemaFromName] Cannot create directory schema. Given root is not a directory: '"), fmt::streamed(rootDirectory), fmt::streamed("'."));
         return nullptr;
     }
-    
+
     std::string name = boost::to_upper_copy<std::string>(schemaName);
 
     if(name == "EUROC")
     {
-        lvr2::logout::get() << lvr2::info << "[DirectorySchemaFromName] Creating ScanProjectSchemaEuRoC with root directory '" 
-                  << rootDirectory << "." << lvr2::endl;
+                lvr2::log::info("{}{}{}", fmt::streamed("[DirectorySchemaFromName] Creating ScanProjectSchemaEuRoC with root directory '"), fmt::streamed(rootDirectory), fmt::streamed("."));
         return DirectorySchemaPtr(new ScanProjectSchemaEuRoC(rootDirectory));
-    } 
+    }
     else if (name == "HYPERLIB")
     {
-        lvr2::logout::get() << lvr2::info << "[DirectorySchemaFromName] Creating ScanProjectSchemaRaw with root directory '" 
-                  << rootDirectory << "." << lvr2::endl;
+                lvr2::log::info("{}{}{}", fmt::streamed("[DirectorySchemaFromName] Creating ScanProjectSchemaRaw with root directory '"), fmt::streamed(rootDirectory), fmt::streamed("."));
         return DirectorySchemaPtr(new ScanProjectSchemaRaw(rootDirectory));
     }
       else if (name == "RAWPLY")
     {
-        lvr2::logout::get() << lvr2::info << "[DirectorySchemaFromName] Creating ScanProjectSchemaRawPly with root directory '" 
-                  << rootDirectory << "." << lvr2::endl;
+                lvr2::log::info("{}{}{}", fmt::streamed("[DirectorySchemaFromName] Creating ScanProjectSchemaRawPly with root directory '"), fmt::streamed(rootDirectory), fmt::streamed("."));
         return DirectorySchemaPtr(new ScanProjectSchemaRaw(rootDirectory));
     }
     else if (name == "SLAM6D")
-    {   
-        lvr2::logout::get() << lvr2::info << "[DirectorySchemaFromName] Creating ScanProjectSchemaSlam6D with root directory '" 
-                  << rootDirectory << "." << lvr2::endl;
+    {
+                lvr2::log::info("{}{}{}", fmt::streamed("[DirectorySchemaFromName] Creating ScanProjectSchemaSlam6D with root directory '"), fmt::streamed(rootDirectory), fmt::streamed("."));
         return DirectorySchemaPtr(new ScanProjectSchemaSlam6D(rootDirectory));
     }
     // else if (name == "OUSTERPLY")
     // {
-    //     lvr2::logout::get() << lvr2::info << "[DirectorySchemaFromName] Creating Ouster PLY with root directory '" 
-    //               << rootDirectory << "." << lvr2::endl;
     //     return DirectorySchemaPtr(new ScanProjectSchemaOusterPly(rootDirectory));
     // }
 #ifdef LVR2_USE_RDB
     else if (name == "RDBX")
     {
-        lvr2::logout::get() << lvr2::info << "[DirectorySchemaFromName] Creating ScanProjectSchemaRDBX with root directory '" 
-                  << rootDirectory << "." << lvr2::endl;
+                lvr2::log::info("{}{}{}", fmt::streamed("[DirectorySchemaFromName] Creating ScanProjectSchemaRDBX with root directory '"), fmt::streamed(rootDirectory), fmt::streamed("."));
         return DirectorySchemaPtr(new ScanProjectSchemaRdbx(rootDirectory));
     }
 #endif
 
-    lvr2::logout::get() << lvr2::error << "[DirectorySchemaFromName] Unknown directory schema name '" << schemaName << "'." << lvr2::endl;
+        lvr2::log::error("{}{}{}", fmt::streamed("[DirectorySchemaFromName] Unknown directory schema name '"), fmt::streamed(schemaName), fmt::streamed("'."));
     return nullptr;
 }
 
@@ -79,18 +71,17 @@ HDF5SchemaPtr hdf5SchemaFromName(const std::string& schemaName)
 
     if(name == "HDF5")
     {
-        lvr2::logout::get() << lvr2::info << "[HDF5SchemaFromName] Creating ScanProjectSchemaHDF5." << lvr2::endl;
+                lvr2::log::info("{}", fmt::streamed("[HDF5SchemaFromName] Creating ScanProjectSchemaHDF5."));
         return HDF5SchemaPtr(new ScanProjectSchemaHDF5);
     }
     else if(name == "HDFV5V2")
     {
-        lvr2::logout::get() << lvr2::error << "[HDF5SchemaFromName] ScanProjectSchemaHDF5V2 not fully implemented." << lvr2::endl;
+                lvr2::log::error("{}", fmt::streamed("[HDF5SchemaFromName] ScanProjectSchemaHDF5V2 not fully implemented."));
         return nullptr;
-        //lvr2::logout::get() << timestamp << "Creating ScanProjectSchemaHDF5V2." << lvr2::endl;
         //return HDF5SchemaPtr(new ScanProjectSchemaHDF5V2);
     }
 
-    lvr2::logout::get() <<  lvr2::error << "[HDF5SchemaFromName] Unknown HDF5 schema name '" << schemaName << "'." << lvr2::endl;
+        lvr2::log::error("{}{}{}", fmt::streamed("[HDF5SchemaFromName] Unknown HDF5 schema name '"), fmt::streamed(schemaName), fmt::streamed("'."));
     return nullptr;
 }
 

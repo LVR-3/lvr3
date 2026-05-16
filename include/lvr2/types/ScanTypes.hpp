@@ -10,7 +10,7 @@
 
 #include "lvr2/io/kernels/HDF5Kernel.hpp"
 #include "lvr2/io/schema/ScanProjectSchema.hpp"
-#include "lvr2/util/Logging.hpp"
+#include "lvr2/util/Timestamp.hpp"
 
 #include <boost/optional.hpp>
 #include <boost/filesystem.hpp>
@@ -131,11 +131,11 @@ namespace lvr2
 
     /*****************************************************************************
  * @brief   Struct to represent a scan project consisting
- *          of a set of scan position. Each scan position 
+ *          of a set of scan position. Each scan position
  *          can consist of a laser scan and an set of acquired
  *          images. All scan position are numbered incrementally.
  *          If an optional for a scan position returns false,
- *          the corresponding data is not available for this 
+ *          the corresponding data is not available for this
  *          scan position number.
  *****************************************************************************/
     struct ScanProject : ScanProjectEntity, Transformable, BoundedOptional
@@ -196,29 +196,9 @@ namespace lvr2
         return os;
     }
 
-    inline lvr2::Logger& operator<<(lvr2::Logger& log, const ScanProject& p)
-    {
-        log << info << "[Scan Project] Name: " << p.name << lvr2::endl;
-        log << "[Scan Project] Coordinate System: " << p.coordinateSystem << lvr2::endl;
-        log << "[Scan Project] Unit: " << p.unit << lvr2::endl;
-        log << "[Scan Project] Number of scan positions: " << p.positions.size() << lvr2::endl;
-        log << "[Scan Project] Transformation: " << lvr2::endl <<  p.transformation << lvr2::endl;
-        return log;
-    }
 
-    inline lvr2::Logger& operator<<(lvr2::Logger& log, const ScanProjectPtr p)
-    {
-        if (p)
-        {
-            log << *p;
-            log << "[Scan Project] Pointer Address " << p.get() << lvr2::endl;
-        }
-        else
-        {
-            log << lvr2::warning << "[Scan Project] Nullptr" << lvr2::endl;
-        }
-        return log;
-    }
+
+
 
     struct ScanPosition : ScanPositionEntity, Transformable, BoundedOptional
     {
@@ -264,7 +244,7 @@ namespace lvr2
         os << timestamp << "[Scan Position] Transformation: " << p.transformation << std::endl;
         return os;
     }
-    
+
     inline std::ostream& operator<<(std::ostream& os, const ScanPositionPtr p)
     {
         if (p)
@@ -278,37 +258,17 @@ namespace lvr2
         }
         return os;
     }
- 
-    inline lvr2::Logger& operator<<(lvr2::Logger& log, const ScanPosition& p)
-    {
-        log << lvr2::info << "[Scan Position] Timestamp" << p.timestamp << lvr2::endl;
-        log << "[Scan Position] Number of cameras: " << p.cameras.size() << lvr2::endl;
-        log << "[Scan Position] Number of scan positions: " << p.lidars.size() << lvr2::endl;
-        log << "[Scan Position] Pose estimation: " << lvr2::endl << p.poseEstimation << lvr2::endl;
-        log << "[Scan Position] Transformation: " << lvr2::endl << p.transformation << lvr2::endl;
-        return log;
-    }
 
-    inline lvr2::Logger& operator<<(lvr2::Logger& log, const ScanPositionPtr p)
-    {
-        if (p)
-        {
-            log << *p;
-            log << "[Scan Position] Pointer Address " << p.get() << lvr2::endl;
-        }
-        else
-        {
-            log << lvr2::warning << "[Scan Position] Nullptr" << lvr2::endl;
-        }
-        return log;
-    }
+
+
+
 
     /*****************************************************************************
  * @brief   Represents a LIDAR sensor that was used at a specific scan
  *          position. The intrinsic parameters are stored in here. Extrinsic parameters
  *          are relative to the upper coordinate system: ScanPosition.
- *          Most of the time these 
- * 
+ *          Most of the time these
+ *
  ****************************************************************************/
 
     // Flag Struct
@@ -350,33 +310,16 @@ namespace lvr2
     }
 
 
-    inline lvr2::Logger& operator<<(lvr2::Logger& log, const LIDAR& l)
-    {
-        log << lvr2::info << l.model;
-        log << "[LiDAR] Number of scans: " << l.scans.size() << lvr2::endl;
-        return log;
-    }
 
-    inline lvr2::Logger& operator<<(lvr2::Logger& log, const LIDARPtr p)
-    {
-        if (p)
-        {
-            log << *p;
-            log << "[LiDAR] Pointer Address " << p.get() << lvr2::endl;
-        }
-        else
-        {
-            log << lvr2::error << "[LiDAR] Nullptr" << lvr2::endl;
-        }
-        return log;
-    }
+
+
 
 /*****************************************************************************
  * @brief   Represents a camera that was used at a specific scan
  *          position. The intrinsic calibration is stored in the
  *          camera's camera field. Each image has its owen orientation
  *          (extrinsic matrix) with respect to the laser scanner
- * 
+ *
  ****************************************************************************/
     struct Camera : SensorEntity, Transformable
     {
@@ -401,11 +344,7 @@ namespace lvr2
         return os;
     }
 
-    inline lvr2::Logger& operator<<(lvr2::Logger& log, const Camera& c)
-    {
-        log << lvr2::info << "[Camera] Number of image groups: " << c.groups.size() << lvr2::endl;
-        return log;
-    }
+
 
     inline std::ostream& operator<<(std::ostream& os, const CameraPtr p)
     {
@@ -421,19 +360,7 @@ namespace lvr2
         return os;
     }
 
-    inline lvr2::Logger& operator<<(lvr2::Logger& log, const CameraPtr p)
-    {
-        if (p)
-        {
-            log << *p;
-            log << "[Camera] Pointer Address " << p.get() << lvr2::endl;
-        }
-        else
-        {
-            log << lvr2::warning << "[Camera] Nullptr" << lvr2::endl;
-        }
-        return log;
-    }
+
 
     /*****************************************************************************
  * @brief Struct to represent a scan within a scan project
@@ -540,15 +467,7 @@ namespace lvr2
         return os;
     }
 
-    inline lvr2::Logger& operator<<(lvr2::Logger& log, const Scan& s)
-    {
-        log << lvr2::info << "[Scan] Number of Points: " << s.numPoints << lvr2::endl;
-        log << "[Scan] Start time: " << s.startTime << lvr2::endl;
-        log << "[Scan] End time: " << s.endTime << lvr2::endl;
-        log << "[Scan] Pose estimation: " << lvr2::endl << s.poseEstimation;
-        log << "[Scan] Transformation: " << lvr2::endl << s.transformation;
-        return log;
-    }
+
 
     inline std::ostream& operator<<(std::ostream& os, const ScanPtr p)
     {
@@ -564,25 +483,13 @@ namespace lvr2
         return os;
     }
 
-    inline lvr2::Logger& operator<<(lvr2::Logger& log, const ScanPtr p)
-    {
-        if (p)
-        {
-            log << *p;
-            log << "[Scan] Pointer Address " << p.get() << lvr2::endl;
-        }
-        else
-        {
-            log << warning << "[Scan] NullPtr" << lvr2::endl;
-        }
-        return log;
-    }
+
 
 
 /*****************************************************************************
- * @brief   Struct to hold a camera image together with intrinsic 
+ * @brief   Struct to hold a camera image together with intrinsic
  *          and extrinsic camera parameters
- * 
+ *
  *****************************************************************************/
 
     struct CameraImage : SensorDataEntity, Transformable
@@ -642,16 +549,7 @@ namespace lvr2
         return os;
     }
 
-    inline lvr2::Logger& operator<<(lvr2::Logger& log, const CameraImage& i)
-    {
-        log << lvr2::info << "[Camera Image] Timestamp: " << i.timestamp << lvr2::endl;
-        log << "[Camera Image] Loaded: " << i.loaded() << lvr2::endl;
-        log << "[Camera Image] Loadable: " << i.loadable() << lvr2::endl;
-        log << "[Camera Image] Image dimensions: " << i.image.cols << " x " << i.image.rows << lvr2::endl;
-        log << "[Camera Image] Extrinsics estimation: " << i.extrinsicsEstimation << lvr2::endl;
-        log << "[Camera Image] Transformation: " << lvr2::endl << i.transformation << lvr2::endl;
-        return log;
-    }
+
 
     inline std::ostream& operator<<(std::ostream& os, const CameraImagePtr p)
     {
@@ -667,19 +565,7 @@ namespace lvr2
         return os;
     }
 
-    inline lvr2::Logger& operator<<(lvr2::Logger&  log, const CameraImagePtr p)
-    {
-        if (p)
-        {
-            log << *p;
-            log << "[Camera Image] Pointer Address " << p.get() << lvr2::endl;
-        }
-        else
-        {
-            log << lvr2::warning << "[CameraImage] Nullptr" << lvr2::endl;
-        }
-        return log;
-    }
+
 
 
     struct CameraImageGroup : SensorDataGroupEntity, Transformable
@@ -698,12 +584,7 @@ namespace lvr2
         return os;
     }
 
-    inline lvr2::Logger& operator<<(lvr2::Logger& log, const CameraImageGroup& i)
-    {
-        log << lvr2::info << "[Camera Image Group] Number of images: " << i.images.size() << lvr2::endl;
-        log << "[Camera Image Group] Transformation: " << lvr2::endl << i.transformation << lvr2::endl;
-        return log;
-    }
+
 
     inline std::ostream& operator<<(std::ostream& os, const CameraImageGroupPtr p)
     {
@@ -719,24 +600,12 @@ namespace lvr2
         return os;
     }
 
-    inline lvr2::Logger& operator<<(lvr2::Logger& log, const CameraImageGroupPtr p)
-    {
-        if (p)
-        {
-            log << *p;
-            log << "[Camera Image Group] Pointer Address " << p.get() << lvr2::endl;
-        }
-        else
-        {
-            log << lvr2::warning << "[Camera Image Group] Nullptr" << lvr2::endl;
-        }
-        return log;
-    }
+
 
     /*****************************************************************************
  * @brief   Struct to hold a camera hyperspectral panorama
  *          together with a timestamp
- * 
+ *
  *****************************************************************************/
 
     // Not a lvr channel
@@ -768,12 +637,7 @@ namespace lvr2
         return os;
     }
 
-    inline lvr2::Logger& operator<<(lvr2::Logger& log, const HyperspectralPanoramaChannel& c)
-    {
-        log << lvr2::info << "[Hyperspectral Panorama Channel] Timestamp: " << c.timestamp << lvr2::endl;
-        log << "[Hyperspectral Panorama Channel] Image dimensions: " << c.channel.cols << " x " << c.channel.rows << lvr2::endl;
-        return log;
-    }
+
 
     inline std::ostream& operator<<(std::ostream& os, const HyperspectralPanoramaChannelPtr p)
     {
@@ -789,24 +653,12 @@ namespace lvr2
         return os;
     }
 
-    inline lvr2::Logger& operator<<(lvr2::Logger& log, const HyperspectralPanoramaChannelPtr p)
-    {
-       if (p)
-        {
-            log << *p;
-            log << "[Hyperspectral Panorama Channel] Pointer Address " << p.get() << lvr2::endl;
-        }
-        else
-        {
-            log << lvr2::warning << "[Hyperspectral Panorama Channel] Nullptr" << lvr2::endl;
-        }
-        return log;
-    }
+
 
     /*****************************************************************************
  * @brief   Struct to hold a camera hyperspectral panorama
  *          together with a timestamp
- * 
+ *
  *****************************************************************************/
 
     struct HyperspectralPanorama : SensorDataEntity, Transformable
@@ -859,24 +711,13 @@ namespace lvr2
         os << timestamp << "[Hyperspectral Panorama] Frame Axis: " << p.frameAxis << std::endl;
         os << timestamp << "[Hyperspectral Panorama] Data Type: " << p.dataType << std::endl;
         os << timestamp << "[Hyperspectral Panorama] Number of channels: " << p.num_channels << std::endl;
-        os << timestamp << "[Hyperspectral Panorama] Channel vector size: " << p.channels.size() << std::endl; 
+        os << timestamp << "[Hyperspectral Panorama] Channel vector size: " << p.channels.size() << std::endl;
         os << timestamp << "[Hyperspectral Panorama] Preview Type: " << p.previewType << std::endl;
         os << timestamp << "[Hyperspectral Panorama] Preview dimensions: " << p.preview.cols << " x " << p.preview.rows << std::endl;
         return os;
     }
 
-    inline lvr2::Logger& operator<<(lvr2::Logger& log, const HyperspectralPanorama& p)
-    {
-        log << lvr2::info << "[Hyperspectral Panorama] Frames resolution: " << p.framesResolution << lvr2::endl;
-        log << "[Hyperspectral Panorama] Band Axis: " << p.bandAxis << lvr2::endl;
-        log << "[Hyperspectral Panorama] Frame Axis: " << p.frameAxis << lvr2::endl;
-        log << "[Hyperspectral Panorama] Data Type: " << p.dataType << lvr2::endl;
-        log << "[Hyperspectral Panorama] Number of channels: " << p.num_channels << lvr2::endl;
-        log << "[Hyperspectral Panorama] Channel vector size: " << p.channels.size() << lvr2::endl; 
-        log << "[Hyperspectral Panorama] Preview Type: " << p.previewType << lvr2::endl;
-        log << "[Hyperspectral Panorama] Preview dimensions: " << p.preview.cols << " x " << p.preview.rows << lvr2::endl;
-        return log;
-    }
+
 
     inline std::ostream& operator<<(std::ostream& os, const HyperspectralPanoramaPtr p)
     {
@@ -892,24 +733,12 @@ namespace lvr2
         return os;
     }
 
-    inline lvr2::Logger& operator<<(lvr2::Logger& log, const HyperspectralPanoramaPtr p)
-    {
-        if (p)
-        {
-            log << *p;
-            log << "[Hyperspectral Panorama] Pointer Address " << p.get() << lvr2::endl;
-        }
-        else
-        {
-            log << lvr2::warning << "[Hyperspectral Panorama] Nullptr" << lvr2::endl;
-        }
-        return log;
-    }
+
 
 /*****************************************************************************
  * @brief   Struct to hold a hyperspectral camera model
  *          together with intrinsic, extrinsic and further parameters
- * 
+ *
  *****************************************************************************/
 
     // /*****************************************************************************
@@ -937,17 +766,11 @@ namespace lvr2
         os << timestamp << "[Hyperspectral Camera] --------------------------------------------" << std::endl;
         os << timestamp << "[Hyperspectral Camera] Cylindrical Model: " << c.model << std::endl;
         os << timestamp << "[Hyperspectral Camera] Extrinsics Estimation: " << std::endl << c.extrinsicsEstimation << std::endl;
-        os << timestamp << "[Hyperspectral Camera] Number of panoramas: " << c.panoramas.size() << std::endl; 
+        os << timestamp << "[Hyperspectral Camera] Number of panoramas: " << c.panoramas.size() << std::endl;
         return os;
     }
 
-    inline lvr2::Logger& operator<<(lvr2::Logger& log, const HyperspectralCamera& c)
-    {
-        log << lvr2::info << "[Hyperspectral Camera] Cylindrical Model: " << c.model << lvr2::endl;
-        log << "[Hyperspectral Camera] Extrinsics Estimation: " << lvr2::endl << c.extrinsicsEstimation << lvr2::endl;
-        log << "[Hyperspectral Camera] Number of panoramas: " << c.panoramas.size() << lvr2::endl; 
-        return log;
-    }
+
 
 
     inline std::ostream& operator<<(std::ostream& os, const HyperspectralCameraPtr p)
@@ -964,24 +787,12 @@ namespace lvr2
         return os;
     }
 
-    inline lvr2::Logger& operator<<(lvr2::Logger& log, const HyperspectralCameraPtr p)
-    {
-        if (p)
-        {
-            log << *p;
-            log << "[Hyperspectral Camera] Pointer Address " << p.get() << lvr2::endl;
-        }
-        else
-        {
-            log << lvr2::warning << "[Hyperspectral Camera] Nullptr" << lvr2::endl;
-        }
-        return log;
-    }
+
 
 
     /*****************************************************************************
  * @brief   Struct to hold a Fullwaveform Data for a scan
- * 
+ *
  *****************************************************************************/
 
     struct Waveform : SensorDataEntity
@@ -1027,15 +838,7 @@ namespace lvr2
         return os;
     }
 
-    inline lvr2::Logger& operator<<(lvr2::Logger& log, const Waveform& w)
-    {
-        log << lvr2::info << "[Waveform] Max Bucket Size" << w.maxBucketSize << lvr2::endl;
-        log << "[Waveform] Echo Types: " << w.echoType.size() << lvr2::endl;
-        log << "[Waveform] Waveform Indices: " << w.waveformIndices.size() << lvr2::endl;
-        log << "[Waveform] Waveform Samples: " << w.waveformSamples.size() << lvr2::endl;
-        log << "[Waveform] Low Powers: " << w.lowPower.size() << lvr2::endl;
-        return log;
-    }
+
 
 
     inline std::ostream& operator<<(std::ostream& os, const WaveformPtr p)
@@ -1052,19 +855,7 @@ namespace lvr2
         return os;
     }
 
-    inline lvr2::Logger& operator<<(lvr2::Logger& log, const WaveformPtr p)
-    {
-        if (p)
-        {
-            log << *p;
-            log << "[Waveform] Pointer Address " << p.get() << lvr2::endl;
-        }
-        else
-        {
-            log << lvr2::warning << "[Waveform] Nullptr" << lvr2::endl;
-        }
-        return log;
-    }
+
 
     /*****************************************************************************
  * @brief   Struct to represent a LabelInstance
@@ -1108,7 +899,7 @@ namespace lvr2
     /*****************************************************************************
  * @brief   Represents a scan position consisting of a scan and
  *          images taken at this position
- * 
+ *
  ****************************************************************************/
 
     // TODO: HowTo represent Labels?

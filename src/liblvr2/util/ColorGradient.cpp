@@ -87,7 +87,7 @@ void ColorGradient::getColor(RGB8Color& color, size_t bucket, ColorGradient::Gra
     RGBFColor fc;
     getColor(fc, bucket, gradient);
     color[0] = static_cast<uint8_t>(fc[0] * 255);
-    color[1] = static_cast<uint8_t>(fc[1] * 255); 
+    color[1] = static_cast<uint8_t>(fc[1] * 255);
     color[2] = static_cast<uint8_t>(fc[2] * 255);
 }
 
@@ -211,7 +211,7 @@ ColorGradient::GradientType ColorGradient::gradientFromString(const std::string&
     else if(s == "GREY" || s == "grey" || s == "Grey")
     {
         return GREY;
-    } 
+    }
     else if(s == "HSV" || s == "hsv" || s == "Hsv")
     {
         return HSV;
@@ -242,7 +242,7 @@ ColorGradient::GradientType ColorGradient::gradientFromString(const std::string&
     }
     else
     {
-        lvr2::logout::get() << lvr2::warning << "Unknown color graditent type: '" << s << "'" << lvr2::endl;
+                lvr2::log::warning("{}{}{}", fmt::streamed("Unknown color graditent type: '"), fmt::streamed(s), fmt::streamed("'"));
         return GREY;
     }
 }

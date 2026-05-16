@@ -34,6 +34,7 @@
 
 #include <random>
 #include <unordered_set>
+#include <lvr2/util/Logging.hpp>
 
 namespace lvr2
 {
@@ -43,7 +44,7 @@ void transformPointCloudAndAppend(PointBufferPtr& buffer,
         std::vector<float>& pts,
         std::vector<float>& nrm)
 {
-     lvr2::logout::get() << lvr2::info << "[TransformPointCloudAndAppend] Transforming normals " << lvr2::endl;
+          lvr2::log::info("{}", fmt::streamed("[TransformPointCloudAndAppend] Transforming normals "));
 
      char frames[2048];
      char pose[2014];
@@ -60,35 +61,34 @@ void transformPointCloudAndAppend(PointBufferPtr& buffer,
 
      if(boost::filesystem::exists(framesPath))
      {
-        lvr2::logout::get() << lvr2::info << "[TransformPointCloudAndAppend] Transforming according to " << framesPath.filename() << lvr2::endl;
+                lvr2::log::info("{}{}", fmt::streamed("[TransformPointCloudAndAppend] Transforming according to "), fmt::streamed(framesPath.filename()));
         transform = getTransformationFromFrames<double>(framesPath);
      }
      else if(boost::filesystem::exists(posePath))
      {
-        lvr2::logout::get() << lvr2::info << "[TransformPointCloudAndAppend] Transforming according to " << posePath.filename() << lvr2::endl;
+                lvr2::log::info("{}{}", fmt::streamed("[TransformPointCloudAndAppend] Transforming according to "), fmt::streamed(posePath.filename()));
         transform = getTransformationFromFrames<double>(posePath);
      }
      else
      {
-        lvr2::logout::get() << lvr2::warning << "[TransformPointCloudAndAppend] Found no transformation for "
-            << transfromFile.filename() << lvr2::endl;
+                lvr2::log::warning("{}{}", fmt::streamed("[TransformPointCloudAndAppend] Found no transformation for "), fmt::streamed(transfromFile.filename()));
      }
 
      size_t n_normals;
      size_t w_normals;
      size_t n_points = buffer->numPoints();
 
-     floatArr normals = buffer->getFloatArray("normals", n_normals, w_normals); 
+     floatArr normals = buffer->getFloatArray("normals", n_normals, w_normals);
      floatArr points = buffer->getPointArray();
 
      if (w_normals != 3)
      {
-        lvr2::logout::get() << lvr2::warning << "[TransformPointCloudAndAppend] Width of normals is not 3" << lvr2::endl;
+                lvr2::log::warning("{}", fmt::streamed("[TransformPointCloudAndAppend] Width of normals is not 3"));
         return;
      }
      if(n_normals != n_points)
      {
-         lvr2::logout::get() << lvr2::warning << "[TransformPointCloudAndAppend] Point and normal count mismatch" << lvr2::endl;
+                  lvr2::log::warning("{}", fmt::streamed("[TransformPointCloudAndAppend] Point and normal count mismatch"));
          return;
      }
 
@@ -133,8 +133,7 @@ void transformPointCloudAndAppend(PointBufferPtr& buffer,
 size_t countPointsInFile(const boost::filesystem::path& inFile)
 {
     std::ifstream in(inFile.c_str());
-    lvr2::logout::get() << lvr2::info << "[CountPointsInFile] Counting points in "
-        << inFile.filename().string() << "..." << lvr2::endl;
+        lvr2::log::info("{}{}{}", fmt::streamed("[CountPointsInFile] Counting points in "), fmt::streamed(inFile.filename().string()), fmt::streamed("..."));
 
     // Count lines in file
     size_t n_points = 0;
@@ -146,8 +145,7 @@ size_t countPointsInFile(const boost::filesystem::path& inFile)
     }
     in.close();
 
-    lvr2::logout::get() << lvr2::info << "[CountPointsInFile] File " << inFile.filename().string()
-        << " contains " << n_points << " points." << lvr2::endl;
+        lvr2::log::info("{}{}{}{}{}", fmt::streamed("[CountPointsInFile] File "), fmt::streamed(inFile.filename().string()), fmt::streamed(" contains "), fmt::streamed(n_points), fmt::streamed(" points."));
 
     return n_points;
 }
@@ -178,7 +176,7 @@ size_t writePointsToStream(ModelPtr model, std::ofstream& out, bool nocolor)
 
         if(n_colors && !(nocolor))
         {
-            for (unsigned i = 0; i < w_colors; i++)  
+            for (unsigned i = 0; i < w_colors; i++)
             {
                 out << " " << (int)colors[a * w_colors + i];
             }
@@ -196,7 +194,7 @@ size_t getReductionFactor(ModelPtr model, size_t reduction)
     floatArr arr = model->m_pointCloud->getPointArray();
 
 
-    lvr2::logout::get() << lvr2::info << "[GetReductionFactor] Point cloud contains " << n_points << " points." << lvr2::endl;
+        lvr2::log::info("{}{}{}", fmt::streamed("[GetReductionFactor] Point cloud contains "), fmt::streamed(n_points), fmt::streamed(" points."));
 
 /*
      * If reduction is less than the number of points it will segfault
@@ -255,7 +253,7 @@ void writePointsAndNormals(std::vector<float>& p, std::vector<float>& n, std::st
     floatArr points(new float[p.size()]);
     floatArr normals(new float[n.size()]);
 
-    lvr2::logout::get() << lvr2::info << "[WritePointsAndNormals] Copying buffers for output." << lvr2::endl;
+        lvr2::log::info("{}", fmt::streamed("[WritePointsAndNormals] Copying buffers for output."));
     // Assuming p and n have the same size (which they should)
     for(size_t i = 0; i < p.size(); i++)
     {
@@ -268,9 +266,9 @@ void writePointsAndNormals(std::vector<float>& p, std::vector<float>& n, std::st
 
     model->m_pointCloud = buffer;
 
-    lvr2::logout::get() << lvr2::info << "[WritePointsAndNormals] Saving " << outfile << lvr2::endl;
+        lvr2::log::info("{}{}", fmt::streamed("[WritePointsAndNormals] Saving "), fmt::streamed(outfile));
     ModelFactory::saveModel(model, outfile);
-    lvr2::logout::get() << lvr2::info << "[WritePointsAndNormals] Done." << lvr2::endl;
+        lvr2::log::info("{}", fmt::streamed("[WritePointsAndNormals] Done."));
 }
 
 void getPoseFromFile(BaseVector<float>& position, BaseVector<float>& angles, const boost::filesystem::path file)
@@ -302,7 +300,7 @@ size_t getNumberOfPointsInPLY(const std::string& filename)
             while (in.good() && token != "end_header" && token != "END_HEADER")
             {
                 in >> token;
-              
+
 
                 // Check for vertex field
                 if(token == "vertex" || token == "VERTEX")
@@ -318,10 +316,10 @@ size_t getNumberOfPointsInPLY(const std::string& filename)
             }
             if(n_points == 0 && n_vertices == 0)
             {
-                lvr2::logout::get() << lvr2::warning << "[GetNumberOfPointsInPLY] PLY contains neither vertices nor points." << lvr2::endl;
+                                lvr2::log::warning("{}", fmt::streamed("[GetNumberOfPointsInPLY] PLY contains neither vertices nor points."));
                 return 0;
             }
-            
+
             // Prefer points over vertices
             if(n_points)
             {
@@ -334,9 +332,9 @@ size_t getNumberOfPointsInPLY(const std::string& filename)
         }
         else
         {
-            lvr2::logout::get() << lvr2::warning << "[GetNumberOfPointsInPLY] '" << filename << "'is not a valid .ply file." << lvr2::endl;
+                        lvr2::log::warning("{}{}{}", fmt::streamed("[GetNumberOfPointsInPLY] '"), fmt::streamed(filename), fmt::streamed("'is not a valid .ply file."));
         }
-        
+
     }
     return 0;
 }
@@ -348,7 +346,7 @@ typename Channel<T>::Ptr subSampleChannel(Channel<T>& src, std::vector<size_t> i
     size_t width = src.width();
     typename Channel<T>::Ptr red(new Channel<T>(ids.size(), width));
 
-    // Sample from original and insert into reduced 
+    // Sample from original and insert into reduced
     // channel
     boost::shared_array<T> a(red->dataPtr());
     boost::shared_array<T> b(src.dataPtr());
@@ -367,10 +365,10 @@ void subsample(PointBufferPtr src, PointBufferPtr dst, const vector<size_t>& ind
 {
     // Go over all supported channel types and sub-sample
     std::map<std::string, Channel<T>> channels;
-    src->getAllChannelsOfType(channels);      
+    src->getAllChannelsOfType(channels);
     for(auto i : channels)
     {
-        lvr2::logout::get() << lvr2::info << "[Subsample] Subsampling channel " << i.first << lvr2::endl;
+                lvr2::log::info("{}{}", fmt::streamed("[Subsample] Subsampling channel "), fmt::streamed(i.first));
         typename Channel<T>::Ptr c = subSampleChannel(i.second, indices);
         dst->addChannel<T>(c, i.first);
     }
@@ -390,7 +388,7 @@ PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const std::vector<size_t
         //calculate size of new array
         boost::shared_array<size_t> waveformSizes(new size_t[indices.size()]);
         auto oldSize = wSrc->getWaveformSize();
-        for(int i = 0;i < indices.size(); i++) 
+        for(int i = 0;i < indices.size(); i++)
         {
             size_t formsize = 0;
             if( 0 == indices[i])
@@ -403,7 +401,7 @@ PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const std::vector<size_t
         }
         boost::shared_array<uint16_t> newWaveform(new uint16_t[waveformSizes[indices.size()]]);
         auto oldWaveform = wSrc->getWaveformArray();
-        for(int i = 0; i < indices.size(); i++) 
+        for(int i = 0; i < indices.size(); i++)
         {
             if(i == 0)
             {
@@ -440,7 +438,7 @@ PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const size_t& n)
     // Buffer for reduced points
     PointBufferPtr buffer(new PointBuffer);
     size_t numSrcPts = src->numPoints();
-    
+
     // Setup random device and distribution
     std::random_device dev;
     std::mt19937 rng(dev());
@@ -452,12 +450,12 @@ PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const size_t& n)
         // Create index buffer for sub-sampling, using set to avoid duplicates
         std::unordered_set<size_t> index_set;
         while(index_set.size() < n)
-        {   
+        {
             index_set.insert(dist(rng));
         }
 
         // Copy indices into vector for faster access and []-operator support
-        //.In c++14 this is the fastest way. In C++17 a better alternative 
+        //.In c++14 this is the fastest way. In C++17 a better alternative
         // would be to use extract().
         vector<size_t> indices;
         indices.insert(indices.end(), index_set.begin(), index_set.end());
@@ -474,10 +472,10 @@ PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const size_t& n)
     }
     else
     {
-        lvr2::logout::get() << lvr2::info << "[SubSamplePointBuffer] Sub-sampling not possible. Number of sampling points is " << lvr2::endl;
-        lvr2::logout::get() << lvr2::info << "[SubSamplePointBuffer] larger than number in src buffer. (" << n << " / " << numSrcPts << ")" << lvr2::endl;
+                lvr2::log::info("{}", fmt::streamed("[SubSamplePointBuffer] Sub-sampling not possible. Number of sampling points is "));
+                lvr2::log::info("{}{}{}{}{}", fmt::streamed("[SubSamplePointBuffer] larger than number in src buffer. ("), fmt::streamed(n), fmt::streamed(" / "), fmt::streamed(numSrcPts), fmt::streamed(")"));
     }
-    
+
 
     return buffer;
 }
@@ -543,7 +541,7 @@ void parseSLAMDirectory(std::string dir, vector<ScanPtr>& scans)
                 boost::filesystem::path frame_path = directory/frame_file;
                 boost::filesystem::path pose_path = directory/pose_file;
 
-                lvr2::logout::get() << "Loading '" << filename << "'" << lvr2::endl;
+                                lvr2::log::info("{}{}{}", fmt::streamed("Loading '"), fmt::streamed(filename), fmt::streamed("'"));
                 AsciiIO io;
                 ModelPtr model = io.read(scan_files[i].string());
                 scan->points = model->m_pointCloud;
@@ -563,22 +561,22 @@ void parseSLAMDirectory(std::string dir, vector<ScanPtr>& scans)
 
                 if(boost::filesystem::exists(frame_path))
                 {
-                    lvr2::logout::get() << lvr2::info << "[ParseSLAMDirectory] Loading frame information from " << frame_path << lvr2::endl;
+                                        lvr2::log::info("{}{}", fmt::streamed("[ParseSLAMDirectory] Loading frame information from "), fmt::streamed(frame_path));
                     registration = getTransformationFromFrames<double>(frame_path);
                 }
                 else
                 {
-                    lvr2::logout::get() << lvr2::warning << "[ParseSLAMDirectory] Did not find a frame file for " << filename << lvr2::endl;
+                                        lvr2::log::warning("{}{}", fmt::streamed("[ParseSLAMDirectory] Did not find a frame file for "), fmt::streamed(filename));
                 }
 
                 if(boost::filesystem::exists(pose_path))
                 {
-                    lvr2::logout::get() << lvr2::info << "[ParseSLAMDirectory] Loading pose estimation from " << pose_path << lvr2::endl;
+                                        lvr2::log::info("{}{}", fmt::streamed("[ParseSLAMDirectory] Loading pose estimation from "), fmt::streamed(pose_path));
                     pose_estimate = getTransformationFromPose<double>(pose_path);
                 }
                 else
                 {
-                    lvr2::logout::get() << lvr2::warning << "[ParseSLAMDirectory] Did not find a pose file for " << filename << lvr2::endl;
+                                        lvr2::log::warning("{}{}", fmt::streamed("[ParseSLAMDirectory] Did not find a pose file for "), fmt::streamed(filename));
                 }
 
                 // transform points?
@@ -590,14 +588,12 @@ void parseSLAMDirectory(std::string dir, vector<ScanPtr>& scans)
         }
         else
         {
-            lvr2::logout::get() << lvr2::warning << "[ParseSLAMDirectory] "
-                      << "Directory does not contain any .3d files." << lvr2::endl;
+                        lvr2::log::warning("{}{}", fmt::streamed("[ParseSLAMDirectory] "), fmt::streamed("Directory does not contain any .3d files."));
         }
     }
     else
     {
-        lvr2::logout::get() << lvr2::warning << "[ParseSLAMDirectory] "
-                  << dir << "' is nor a directory." << lvr2::endl;
+                lvr2::log::warning("{}{}{}", fmt::streamed("[ParseSLAMDirectory] "), fmt::streamed(dir), fmt::streamed("' is nor a directory."));
     }
 }
 

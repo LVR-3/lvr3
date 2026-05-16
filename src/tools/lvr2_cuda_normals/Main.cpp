@@ -46,6 +46,7 @@
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 #include "lvr2/util/IOUtils.hpp"
 
 #include "Options.hpp"
@@ -69,19 +70,19 @@ void computeNormals(string filename, cuda_normals::Options& opt, PointBufferPtr&
     {
         num_points = model->m_pointCloud->numPoints();
         points = model->m_pointCloud->getPointArray();
-        std::cout << timestamp << "Read " << num_points << " points from " << filename << std::endl;
+                lvr2::log::info("{}{}{}{}", fmt::streamed("Read "), fmt::streamed(num_points), fmt::streamed(" points from "), fmt::streamed(filename));
     }
     else
     {
-        std::cout << timestamp << "Warning: No point cloud data found in " << filename << std::endl;
+                lvr2::log::warning("{}{}", fmt::streamed("Warning: No point cloud data found in "), fmt::streamed(filename));
         return;
     }
 
     floatArr normals = floatArr(new float[ num_points * 3 ]);
 
-    std::cout << timestamp << "Constructing kd-tree..." << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Constructing kd-tree..."));
     CudaSurface gpu_surface(points, num_points);
-    std::cout << timestamp << "Finished kd-tree construction." << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Finished kd-tree construction."));
 
     gpu_surface.setKn(opt.kn());
     gpu_surface.setKi(opt.ki());
@@ -97,11 +98,11 @@ void computeNormals(string filename, cuda_normals::Options& opt, PointBufferPtr&
     }
     gpu_surface.setFlippoint(opt.flipx(), opt.flipy(), opt.flipz());
 
-    std::cout << timestamp << "Start Normal Calculation..." << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Start Normal Calculation..."));
     gpu_surface.calculateNormals();
 
     gpu_surface.getNormals(normals);
-    std::cout << timestamp << "Finished Normal Calculation. " << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Finished Normal Calculation. "));
 
     size_t nc;
     model->m_pointCloud->setNormalArray(normals, num_points);
@@ -148,7 +149,7 @@ void reconstructAndSave(PointBufferPtr& buffer, cuda_normals::Options& opt)
 
     ModelPtr m( new Model( res ) );
 
-    std::cout << timestamp << "Saving mesh." << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Saving mesh."));
     ModelFactory::saveModel( m, "triangle_mesh.ply");
 }
 
@@ -178,7 +179,7 @@ int main(int argc, char** argv){
                 int num = 0;
                 if(sscanf(currentFile.c_str(), "scan%3d", &num))
                 {
-                    std::cout << timestamp << "Processing " << p.string() << std::endl;
+                                        lvr2::log::info("{}{}", fmt::streamed("Processing "), fmt::streamed(p.string()));
                     PointBufferPtr buffer(new PointBuffer );
 
                     computeNormals(p.string(), opt, buffer);

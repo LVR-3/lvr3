@@ -43,6 +43,7 @@ using std::ifstream;
 #include "lvr2/io/modelio/AsciiIO.hpp"
 #include "lvr2/util/Progress.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 
 namespace lvr2
 {
@@ -67,7 +68,7 @@ ModelPtr AsciiIO::read(
 
     if ( lines_in_file < 2 )
     {
-        cout << timestamp << "AsciiIO: Too few lines in file (has to be > 2)." << endl;
+                lvr2::log::info("{}", fmt::streamed("AsciiIO: Too few lines in file (has to be > 2)."));
         return ModelPtr();
     }
 
@@ -106,7 +107,7 @@ ModelPtr AsciiIO::read(
     // (Some) sanity checks for given paramters
     if(rPos > num_columns || gPos > num_columns || bPos > num_columns || iPos > num_columns)
     {
-        cout << timestamp << "Error: At least one attribute index is larger than the number of columns" << endl;
+                lvr2::log::error("{}", fmt::streamed("Error: At least one attribute index is larger than the number of columns"));
         // Retrun empty model
         return ModelPtr();
     }
@@ -194,8 +195,7 @@ ModelPtr AsciiIO::read(
     // Sanity check
     if(c != numPoints)
     {
-        cout << timestamp << "Warning: Point count / line count mismatch: "
-             << numPoints << " / " << c << endl;
+                lvr2::log::warning("{}{}{}{}", fmt::streamed("Warning: Point count / line count mismatch: "), fmt::streamed(numPoints), fmt::streamed(" / "), fmt::streamed(c));
     }
 
     // Assign buffers
@@ -240,7 +240,7 @@ ModelPtr AsciiIO::read(string filename)
 
     if ( lines_in_file < 2 )
     {
-        cout << timestamp << "AsciiIO: Too few lines in file (has to be > 2)." << endl;
+                lvr2::log::info("{}", fmt::streamed("AsciiIO: Too few lines in file (has to be > 2)."));
         return ModelPtr();
     }
     // Open the given file. Skip the first line (as it may
@@ -267,9 +267,9 @@ ModelPtr AsciiIO::read(string filename)
 
     if(has_color || has_intensity)
     {
-        cout << timestamp << "Autodetected the following attributes" << endl;
-        cout << timestamp << "Color:     " << has_color << endl;
-        cout << timestamp << "Intensity: " << has_intensity << endl;
+                lvr2::log::info("{}", fmt::streamed("Autodetected the following attributes"));
+                lvr2::log::info("{}{}", fmt::streamed("Color:     "), fmt::streamed(has_color));
+                lvr2::log::info("{}{}", fmt::streamed("Intensity: "), fmt::streamed(has_intensity));
 
         if(has_color && has_intensity)
         {
@@ -338,7 +338,7 @@ void AsciiIO::save( std::string filename )
     {
       pointIntensities = (*intensity).dataPtr();
       buf = (*intensity).numElements();
-    
+
 
       /* We need the same amount of intensity values and points. */
       if ( pointcount != buf )

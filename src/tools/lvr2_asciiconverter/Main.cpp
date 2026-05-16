@@ -32,6 +32,7 @@
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/util/Progress.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -64,7 +65,7 @@ int main(int argc, char** argv)
 
     if(numPoints <= 0)
     {
-        std::cout << timestamp << "File contains no points. Exiting." << std::endl;
+                lvr2::log::info("{}", fmt::streamed("File contains no points. Exiting."));
     }
 
     // Check color and intensity options
@@ -78,9 +79,9 @@ int main(int argc, char** argv)
     bool convert = options.convertRemission();
 
     // Print stats
-    std::cout << timestamp << "Read colors\t\t: " << readColor << std::endl;
-    std::cout << timestamp << "Read intensities\t\t: " << readIntensity << std::endl;
-    std::cout << timestamp << "Convert intensities\t: " << convert << std::endl;
+        lvr2::log::info("{}{}", fmt::streamed("Read colors\t\t: "), fmt::streamed(readColor));
+        lvr2::log::info("{}{}", fmt::streamed("Read intensities\t\t: "), fmt::streamed(readIntensity));
+        lvr2::log::info("{}{}", fmt::streamed("Convert intensities\t: "), fmt::streamed(convert));
 
     // Alloc buffers
     floatArr points(new float[3 * numPoints]);

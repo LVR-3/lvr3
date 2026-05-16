@@ -1,3 +1,4 @@
+#include <lvr2/util/Logging.hpp>
 /**
  * Copyright (c) 2018, University Osnabrück
  * All rights reserved.
@@ -48,7 +49,7 @@ vector<coord<float>*> DMCVecPointHandle<BaseVecT>::getContainedPoints(int index)
     if((index - 7) > (containedPoints.size() - 1))
     {
         return vector<coord<float>*>();
-        std::cout << timestamp << "[DMCVecPointHandle] No points for current cell" << std::endl;
+                lvr2::log::info("{}", fmt::streamed("[DMCVecPointHandle] No points for current cell"));
     }
     return containedPoints[index - 7];
 }

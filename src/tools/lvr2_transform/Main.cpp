@@ -39,6 +39,7 @@
 #include "lvr2/types/Model.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 #include <iostream>
 #include <cmath>
 
@@ -66,10 +67,10 @@ int main(int argc, char **argv)
 
     // load model via ModelFactory
     ModelPtr model = ModelFactory::readModel(options.getInputFile());
-    
+
     if(!model)
     {
-      cout << timestamp << "IO Error: Unable to parse " << options.getInputFile() << endl;
+            lvr2::log::error("{}{}", fmt::streamed("IO Error: Unable to parse "), fmt::streamed(options.getInputFile()));
       exit(-1);
     }
 
@@ -79,13 +80,13 @@ int main(int argc, char **argv)
       // read in accordingly.
       std::ifstream in(options.getTransformFile().c_str());
       if(!in.good()){
-        cout << timestamp << "Warning: Load transform file: File not found or corrupted." << endl;
+                lvr2::log::warning("{}", fmt::streamed("Warning: Load transform file: File not found or corrupted."));
         return -1;
       }
 
       if(options.getTransformFile().substr(options.getTransformFile().length()-5) == ".pose")
       {
-        cout << timestamp << "Reading from .pose file" << endl;
+                lvr2::log::info("{}", fmt::streamed("Reading from .pose file"));
         in >> x >> y >> z >> r1 >> r2 >> r3;
 
         r1 = r1 * 0.0174532925f;
@@ -96,12 +97,12 @@ int main(int argc, char **argv)
       }
       else //expect frames file instead
       {
-        cout << timestamp << "Reading from .frames file" << endl;
+                lvr2::log::info("{}", fmt::streamed("Reading from .frames file"));
         float t[17];
         std::ifstream in(options.getTransformFile().c_str());
         while(in.good())
         {
-          in >>  t[0] >>  t[1] >>  t[2] >>  t[3] 
+          in >>  t[0] >>  t[1] >>  t[2] >>  t[3]
              >>  t[4] >>  t[5] >>  t[6] >>  t[7]
              >>  t[8] >>  t[9] >> t[10] >> t[11]
              >> t[12] >> t[13] >> t[14] >> t[15]
@@ -153,10 +154,10 @@ int main(int argc, char **argv)
     {
       PointBufferPtr p_buffer = model->m_pointCloud;
 
-      cout << timestamp << "Using points" << endl;
+            lvr2::log::info("{}", fmt::streamed("Using points"));
       did_anything = true;
       FloatChannelOptional points = p_buffer->getFloatChannel("points");
-       
+
       cout << mat;
       for(size_t i = 0; i < points->numElements(); i++)
       {
@@ -174,7 +175,7 @@ int main(int argc, char **argv)
     {
       MeshBufferPtr m_buffer = model->m_mesh;
 
-      cout << timestamp << "Using meshes" << endl;
+            lvr2::log::info("{}", fmt::streamed("Using meshes"));
       did_anything = true;
       FloatChannelOptional points = m_buffer->getFloatChannel("vertices");
 
@@ -191,12 +192,12 @@ int main(int argc, char **argv)
 
     if(!did_anything)
     {
-      std::cerr << timestamp << "I had nothing to do. Terminating now..." << std::endl;
+            lvr2::log::error("{}", fmt::streamed("I had nothing to do. Terminating now..."));
       return 0;
     }
     else
     {
-      cout << timestamp << "Finished. Program end." << endl;
+            lvr2::log::info("{}", fmt::streamed("Finished. Program end."));
     }
 
     ModelFactory::saveModel(model, options.getOutputFile());

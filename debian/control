@@ -2,7 +2,7 @@ Source: lvr2
 Priority: optional
 Maintainer: Marcel Wiegand <wiegand@linux.com>
 Build-Depends: dh-exec (>= 0.3), debhelper (>= 10), cmake, pkg-config,
- libassimp-dev, libexpected-dev, libspdlog-dev, libtbb-dev,
+ libassimp-dev, libexpected-dev, libfmt-dev, libspdlog-dev, libtbb-dev,
  libtiff-dev, libgdal-dev, libopencv-dev (>= 3.2), libflann-dev,
  liblz4-dev, libgsl-dev, libeigen3-dev,
  libboost-dev, libboost-filesystem-dev, libboost-program-options-dev,
@@ -20,7 +20,7 @@ Package: liblvr2-dev
 Section: libdevel
 Architecture: amd64
 Multi-Arch: same
-Depends: cmake, pkg-config, libassimp-dev, libexpected-dev, libspdlog-dev,
+Depends: cmake, pkg-config, libassimp-dev, libexpected-dev, libfmt-dev, libspdlog-dev,
  libtbb-dev, libtiff-dev, libgdal-dev, libopencv-dev (>= 3.2),
  libflann-dev, liblz4-dev, libgsl-dev, libeigen3-dev,
  libboost-dev, libboost-filesystem-dev, libboost-program-options-dev,
@@ -57,7 +57,7 @@ Package: liblvr2-cuda-dev
 Section: libdevel
 Architecture: amd64
 Multi-Arch: same
-Depends: cmake, pkg-config, libassimp-dev, libexpected-dev, libspdlog-dev,
+Depends: cmake, pkg-config, libassimp-dev, libexpected-dev, libfmt-dev, libspdlog-dev,
  libtbb-dev, libtiff-dev, libgdal-dev, libopencv-dev (>= 3.2),
  libflann-dev, liblz4-dev, libgsl-dev, libeigen3-dev,
  libboost-dev, libboost-filesystem-dev, libboost-program-options-dev,

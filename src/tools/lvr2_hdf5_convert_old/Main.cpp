@@ -1,5 +1,3 @@
-#include "Logging.hpp"
-
 #include "Options.hpp"
 
 #include "lvr2/io/scan.hpp"

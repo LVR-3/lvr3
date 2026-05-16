@@ -1,7 +1,7 @@
 #include <iostream>
 #include <memory>
 
-#include "../helper/include/Logging.hpp"
+#include <lvr2/util/Logging.hpp>
 #include "../helper/include/ScanTypesCompare.hpp"
 #include "../helper/include/ScanTypesDummies.hpp"
 
@@ -15,7 +15,7 @@ namespace
 
 void reportStorageError(const std::string& action, const lvr2::io::storage::Error& error)
 {
-    LOG(Logger::WARNING) << action << " failed: " << error.message << std::endl;
+        lvr2::log::warning("{}{}{}", fmt::streamed(action), fmt::streamed(" failed: "), fmt::streamed(error.message));
 }
 
 void useDirectoryRawPlySchema(ScanProjectPtr sp)
@@ -49,7 +49,7 @@ void useDirectoryRawPlySchema(ScanProjectPtr sp)
 
     if (!equal(sp, loaded.value()))
     {
-        LOG(Logger::WARNING) << "Something went wrong. Saved and loaded scan project are not equal" << std::endl;
+                lvr2::log::warning("{}", fmt::streamed("Something went wrong. Saved and loaded scan project are not equal"));
     }
 }
 
@@ -78,7 +78,7 @@ void useDirectoryOneShotHelpers(ScanProjectPtr sp)
 
     if (!equal(sp, loaded.value()))
     {
-        LOG(Logger::WARNING) << "Something went wrong. Saved and loaded scan project are not equal" << std::endl;
+                lvr2::log::warning("{}", fmt::streamed("Something went wrong. Saved and loaded scan project are not equal"));
     }
 }
 
@@ -113,7 +113,7 @@ void useHdf5Schema(ScanProjectPtr sp)
 
     if (!equal(sp, loaded.value()))
     {
-        LOG(Logger::WARNING) << "Something went wrong. Saved and loaded scan project are not equal" << std::endl;
+                lvr2::log::warning("{}", fmt::streamed("Something went wrong. Saved and loaded scan project are not equal"));
     }
 }
 
@@ -121,27 +121,21 @@ void useHdf5Schema(ScanProjectPtr sp)
 
 int main(int argc, char** argv)
 {
-    LOG.setLoggerLevel(Logger::DEBUG);
+    lvr2::log::set_level(lvr2::log::Level::debug);
 
-    LOG(Logger::HIGHLIGHT) << "ScanProjects Schema" << std::endl;
+        lvr2::log::info("{}", fmt::streamed("ScanProjects Schema"));
 
-    LOG(Logger::DEBUG) << "Generating dataset, wait." << std::endl;
+        lvr2::log::debug("{}", fmt::streamed("Generating dataset, wait."));
     ScanProjectPtr sp = dummyScanProjectStorage();
 
-    LOG(Logger::HIGHLIGHT) << "1. Example: raw-PLY directory schema" << std::endl;
-    LOG.tab();
+        lvr2::log::info("{}", fmt::streamed("1. Example: raw-PLY directory schema"));
     useDirectoryRawPlySchema(sp);
-    LOG.deltab();
 
-    LOG(Logger::HIGHLIGHT) << "2. Example: one-shot raw-PLY helpers" << std::endl;
-    LOG.tab();
+        lvr2::log::info("{}", fmt::streamed("2. Example: one-shot raw-PLY helpers"));
     useDirectoryOneShotHelpers(sp);
-    LOG.deltab();
 
-    LOG(Logger::HIGHLIGHT) << "3. Example: HDF5 schema" << std::endl;
-    LOG.tab();
+        lvr2::log::info("{}", fmt::streamed("3. Example: HDF5 schema"));
     useHdf5Schema(sp);
-    LOG.deltab();
 
     return 0;
 }

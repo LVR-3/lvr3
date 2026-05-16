@@ -7,6 +7,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/io/YAML.hpp"
 #include "lvr2/util/YAMLUtil.hpp"
@@ -17,20 +18,20 @@ namespace YAML {
 
 /**
  * YAML-CPPs convert specialization
- * 
- * example: 
+ *
+ * example:
  */
 
 // WRITE SCAN PARTIALLY
 template<>
-struct convert<lvr2::Camera> 
+struct convert<lvr2::Camera>
 {
 
     /**
-     * Encode Eigen matrix to yaml. 
+     * Encode Eigen matrix to yaml.
      */
     static Node encode(const lvr2::Camera& camera) {
-        
+
         Node node;
         node["entity"] = lvr2::Camera::entity;
         node["type"] = lvr2::Camera::type;
@@ -41,7 +42,7 @@ struct convert<lvr2::Camera>
         return node;
     }
 
-    static bool decode(const Node& node, lvr2::Camera& camera) 
+    static bool decode(const Node& node, lvr2::Camera& camera)
     {
         // Check if 'entity' and 'type' Tags are valid
         if (!YAML_UTIL::ValidateEntityAndType(node, "camera", lvr2::Camera::entity, lvr2::Camera::type))
@@ -54,8 +55,7 @@ struct convert<lvr2::Camera>
             try {
                 camera.name = node["name"].as<std::string>();
             } catch(const YAML::TypedBadConversion<std::string>& ex) {
-                std::cout << timestamp << "[YAML - Camera - decode] ERROR: Could not decode 'name': " 
-                    << node["name"] << " as string" << std::endl;
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - Camera - decode] ERROR: Could not decode 'name': "), fmt::streamed(node["name"]), fmt::streamed(" as string"));
                 return false;
             }
         }
@@ -66,28 +66,26 @@ struct convert<lvr2::Camera>
 
         if(node["transformation"])
         {
-            try 
+            try
             {
                 camera.transformation = node["transformation"].as<lvr2::Transformd>();
-            } 
-            catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) 
+            }
+            catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex)
             {
-                std::cout <<  timestamp << "[YAML - Camera - decode] ERROR: Could not decode 'transformation': " 
-                    << node["transformation"] << " as Transformd" << std::endl; 
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - Camera - decode] ERROR: Could not decode 'transformation': "), fmt::streamed(node["transformation"]), fmt::streamed(" as Transformd"));
                 return false;
             }
         }
 
         if(node["model"])
         {
-            try 
+            try
             {
                 camera.model = node["model"].as<decltype(camera.model)>();
-            } 
-            catch(const YAML::TypedBadConversion<decltype(camera.model)>& ex) 
+            }
+            catch(const YAML::TypedBadConversion<decltype(camera.model)>& ex)
             {
-                std::cout <<  timestamp <<  "[YAML - Camera - decode] ERROR: Could not decode 'model': " 
-                    << node["model"] << " as CameraModel" << std::endl;
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - Camera - decode] ERROR: Could not decode 'model': "), fmt::streamed(node["model"]), fmt::streamed(" as CameraModel"));
                 return false;
             }
         }

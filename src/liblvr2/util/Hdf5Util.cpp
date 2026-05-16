@@ -1,5 +1,6 @@
 #include "lvr2/util/Hdf5Util.hpp"
 #include "lvr2/types/Channel.hpp"
+#include <lvr2/util/Logging.hpp>
 
 namespace lvr2
 {
@@ -35,14 +36,14 @@ std::vector<std::string> splitGroupNames(const std::string& groupName)
 }
 
 std::pair<std::string, std::string> validateGroupDataset(
-    const std::string& groupName, 
+    const std::string& groupName,
     const std::string& datasetName)
 {
     // std::cout << "Validate " << groupName << ", " << datasetName << std::endl;
 
     std::vector<std::string> groupNameSplit = splitGroupNames(groupName);
     std::vector<std::string> datasetSplit = splitGroupNames(datasetName);
-    
+
     std::vector<std::string> totalPath;
 
     for(auto groupName : groupNameSplit)
@@ -64,7 +65,7 @@ std::pair<std::string, std::string> validateGroupDataset(
             groupPath += "/" + totalPath[i];
         }
     }
-    
+
     std::string container = totalPath.back();
 
     // std::cout << "To " << groupPath << ", " << container << std::endl;
@@ -166,8 +167,8 @@ HighFive::Group getGroup(HighFive::Group& g, const std::string& groupName, bool 
     }
     catch (HighFive::Exception& e)
     {
-        std::cout << timestamp << "Error in HDF5Util::getGroup '" << groupName << "': " << std::endl;
-        std::cout << timestamp << e.what() << std::endl;
+                lvr2::log::error("{}{}{}", fmt::streamed("Error in HDF5Util::getGroup '"), fmt::streamed(groupName), fmt::streamed("': "));
+                lvr2::log::info("{}", fmt::streamed(e.what()));
         throw e;
     }
 
@@ -184,8 +185,8 @@ HighFiveSplit split(HighFive::Group g)
         if(obj_type == HighFive::ObjectType::Group)
         {
             ret.groups.push_back(key);
-        } 
-        else if(obj_type == HighFive::ObjectType::Dataset) 
+        }
+        else if(obj_type == HighFive::ObjectType::Dataset)
         {
             ret.datasets.push_back(key);
         }

@@ -48,6 +48,7 @@
 #include "lvr2/util/Debug.hpp"
 #include "lvr2/util/Progress.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 
 #include <algorithm>
 #include <complex>
@@ -258,7 +259,7 @@ BoundingRectangle<typename BaseVecT::CoordType> calculateBoundingRectangle(
     float texelSize,
     ClusterHandle clusterH
 )
-{   
+{
     auto regressionPlane = calcRegressionPlane(mesh, cluster, normals);
 
     // support vector for the plane
@@ -474,8 +475,7 @@ ClusterBiMap<FaceHandle> iterativePlanarClusterGrowing(
     // Iterate numIterations times
     for (int i = 0; i < numIterations; ++i)
     {
-        std::cout << timestamp << "Optimizing planes. Iterations "
-                  << i << " / " << numIterations << std::endl;
+                lvr2::log::info("{}{}{}{}", fmt::streamed("Optimizing planes. Iterations "), fmt::streamed(i), fmt::streamed(" / "), fmt::streamed(numIterations));
         // Generate clusters
         clusters = planarClusterGrowing(mesh, normals, minSinAngle);
 
@@ -509,8 +509,7 @@ ClusterBiMap<FaceHandle> iterativePlanarClusterGrowingRANSAC(
     // Iterate numIterations times
     for (int i = 0; i < numIterations; ++i)
     {
-        std::cout << timestamp << "Optimizing planes. Iterations "
-                  << (i + 1) << " / " << numIterations << std::endl;
+                lvr2::log::info("{}{}{}{}", fmt::streamed("Optimizing planes. Iterations "), fmt::streamed((i + 1)), fmt::streamed(" / "), fmt::streamed(numIterations));
         // Generate clusters
         clusters = planarClusterGrowing(mesh, normals, minSinAngle);
 
@@ -685,7 +684,7 @@ Plane<BaseVecT> calcRegressionPlaneRANSAC(
     float error_limit = 0.01; // dynamically voxelsize / 100
     Plane<BaseVecT> best_plane;
     int best_inlier = 0;
-    
+
 
     // RANSAC:
     // - select vertex + normal randomly -> plane
@@ -720,7 +719,7 @@ Plane<BaseVecT> calcRegressionPlaneRANSAC(
     avg_dist /= static_cast<float>(num_edges);
 
     error_limit *= avg_dist;
-    
+
     const size_t num_cluster_vertices = vertices.size();
     const size_t num_cluster_faces = cluster.size();
 
@@ -733,7 +732,7 @@ Plane<BaseVecT> calcRegressionPlaneRANSAC(
         plane.normal.x = 0.0;
         plane.normal.y = 0.0;
         plane.normal.z = 0.0;
-        
+
         // build avg plane of RANSAC samples
         for(int j=0; j<num_samples; j++)
         {
@@ -744,7 +743,7 @@ Plane<BaseVecT> calcRegressionPlaneRANSAC(
 
         plane.pos /= static_cast<float>(num_samples);
         plane.normal.normalize();
-        
+
 
         // calulate inlier
         int inlier = 0;
@@ -813,7 +812,7 @@ Plane<BaseVecT> calcRegressionPlanePCA(
 
         current_vertex++;
     }
-    
+
     const Eigen::Matrix3Xd centered = data.array().colwise() - center.array();
     const Eigen::MatrixXd cov = (centered * centered.transpose()) / centered.cols();
     Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> eig(cov);

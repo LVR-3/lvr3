@@ -2,10 +2,11 @@
 #include <cmath>
 
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 
 // TODO reorder colors etc...
 
-namespace lvr2{ 
+namespace lvr2{
     template <typename BaseVecT>
         MeshOctree<BaseVecT>::MeshOctree(float voxelSize, std::vector<size_t>& hashes, std::vector<BaseVecT>& centroids, BoundingBox<BaseVecT>& bb) :
             m_voxelSize(voxelSize),
@@ -101,12 +102,12 @@ namespace lvr2{
 
 
 
-        std::cout << lvr2::timestamp << "Start building octree with voxelsize " << m_voxelSize << std::endl;
-        std::cout << lvr2::timestamp << hashes.size() << std::endl;
+                lvr2::log::info("{}{}", fmt::streamed("Start building octree with voxelsize "), fmt::streamed(m_voxelSize));
+                lvr2::log::info("{}", fmt::streamed(hashes.size()));
         m_root = reinterpret_cast<BOct*>(m_mem.alloc<BOct>(1, offset));
         m_root = (BOct*)((unsigned char*) m_root + buildTree(m_root, hashes, centroids, m_bbox));
 //        buildTree(m_root, hashes, centroids, m_bbox);
-        std::cout << lvr2::timestamp << numLeafs << std::endl;
+                lvr2::log::info("{}", fmt::streamed(numLeafs));
     }
 
     template  <typename BaseVecT>
@@ -155,7 +156,7 @@ namespace lvr2{
             }
         }
 
-    template <typename BaseVecT> 
+    template <typename BaseVecT>
         unsigned char MeshOctree<BaseVecT>::getIndex(const BaseVecT& point, const BoundingBox<BaseVecT>& bbox)
         {
             BaseVecT centroid = bbox.getCentroid();
@@ -163,11 +164,11 @@ namespace lvr2{
 
 
             // TODO i think this is not consistent. Coordinate system
-            // 
+            //
             // y
             // |   x
             // |  /       ???
-            // | /       
+            // | /
             // |/_____ z
             if(point.x > centroid.x)
             {
@@ -236,18 +237,18 @@ namespace lvr2{
     //          continue;
     //        }
     //
-    //        
+    //
     //        if(ptr[index] == &m_points[i])
     //        {
-    //          // is already in correct bucket 
+    //          // is already in correct bucket
     //          if(ptr[index] < &m_points[end - 1])
-    //            ptr[index]++; 
+    //            ptr[index]++;
     //
     //          i++;
     //        }
     //        else
     //        {
-    //          // TODO 
+    //          // TODO
     //          // We somehow need 2 temporary variables. Otherwise it won't work with the proxy(Ptr)
     //
     //          // advance bucket pointer if current element is correct.
@@ -313,7 +314,7 @@ namespace lvr2{
                 }
 
                 link(oct, leaves);
-            
+
                 int cnt = 0;
                 for(unsigned i = 0; i < 8; ++i)
                 {
@@ -336,7 +337,7 @@ namespace lvr2{
                         for(size_t j = 0 ; j < c_hashes[i].size(); ++j)
                         {
                             // SHOULD ONLY BE ONE!!
-                            
+
                             //size_t hash = (c_hashes[i][j]);
                             //BaseVecT cent = (c_centroids[i][j]);
                             //leaves[cnt].m_hashes[j]    = hash;
@@ -423,11 +424,11 @@ namespace lvr2{
     //      {
     //        auto point = m_points[i];
     //
-    //        std::cout << point.x << " " 
+    //        std::cout << point.x << " "
     //          << point.y << " "
     //          << point.z << " "
     //          << (int)pow(2, index) << " "
-    //          << (int)pow(2, index) << " " 
+    //          << (int)pow(2, index) << " "
     //          << (int)pow(2, index) << " "
     //          << std::endl;
     //      }
@@ -577,7 +578,7 @@ namespace lvr2{
                 }
 
                 double distance;
-                // get distance pVertex. hessian 
+                // get distance pVertex. hessian
                 distance = planes[i * 4 + 0] * pVertex.x +
                     planes[i * 4 + 1] * pVertex.y +
                     planes[i * 4 + 2] * pVertex.z +
@@ -630,7 +631,7 @@ namespace lvr2{
 
                 double distance;
 
-                // get distance pVertex. hessian 
+                // get distance pVertex. hessian
                 distance = planes[i * 4 + 0] * pVertex.x +
                     planes[i * 4 + 1] * pVertex.y +
                     planes[i * 4 + 2] * pVertex.z +

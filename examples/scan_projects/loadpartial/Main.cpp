@@ -1,7 +1,7 @@
 #include <iostream>
 #include <memory>
 
-#include "../helper/include/Logging.hpp"
+#include <lvr2/util/Logging.hpp>
 #include "../helper/include/ScanTypesDummies.hpp"
 
 #include "lvr2/io/scan.hpp"
@@ -14,7 +14,7 @@ namespace
 
 void reportStorageError(const std::string& action, const lvr2::io::storage::Error& error)
 {
-    LOG(Logger::WARNING) << action << " failed: " << error.message << std::endl;
+        lvr2::log::warning("{}{}{}", fmt::streamed(action), fmt::streamed(" failed: "), fmt::streamed(error.message));
 }
 
 size_t countLoadedPoints(const ScanProjectPtr& project)
@@ -73,7 +73,7 @@ void loadPartial(ScanProjectPtr sp)
     }
 
     auto& store = opened.value();
-    LOG(Logger::DEBUG) << "Save complete scan project to '" << filename << "'" << std::endl;
+        lvr2::log::debug("{}{}{}", fmt::streamed("Save complete scan project to '"), fmt::streamed(filename), fmt::streamed("'"));
     auto saved = store.save(*sp);
     if (!saved)
     {
@@ -82,7 +82,7 @@ void loadPartial(ScanProjectPtr sp)
     }
 
     std::cout << std::endl;
-    LOG(Logger::INFO) << "Load project hierarchy lazily" << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Load project hierarchy lazily"));
     auto loadedProject = store.load();
     if (!loadedProject)
     {
@@ -90,12 +90,10 @@ void loadPartial(ScanProjectPtr sp)
         return;
     }
 
-    LOG(Logger::DEBUG) << "Total points after explicit scan loads: "
-                       << countLoadedPoints(loadedProject.value()) << std::endl;
+        lvr2::log::debug("{}{}", fmt::streamed("Total points after explicit scan loads: "), fmt::streamed(countLoadedPoints(loadedProject.value())));
     std::cout << std::endl;
 
-    LOG.tab();
-    LOG(Logger::INFO) << "Load one scan position through ProjectStore" << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Load one scan position through ProjectStore"));
     auto position = store.load_position(1);
     if (!position)
     {
@@ -105,13 +103,11 @@ void loadPartial(ScanProjectPtr sp)
     {
         ScanProjectPtr singlePositionProject(new ScanProject);
         singlePositionProject->positions.push_back(position.value());
-        LOG(Logger::DEBUG) << "Total points in loaded position: "
-                           << countLoadedPoints(singlePositionProject) << std::endl;
+                lvr2::log::debug("{}{}", fmt::streamed("Total points in loaded position: "), fmt::streamed(countLoadedPoints(singlePositionProject)));
     }
     std::cout << std::endl;
 
-    LOG.tab();
-    LOG(Logger::INFO) << "Load one LIDAR through ProjectStore" << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Load one LIDAR through ProjectStore"));
     auto lidar = store.load_lidar(1, 0);
     if (!lidar)
     {
@@ -132,12 +128,11 @@ void loadPartial(ScanProjectPtr sp)
                 scan->release();
             }
         }
-        LOG(Logger::DEBUG) << "Total points in loaded LIDAR: " << totalPoints << std::endl;
+                lvr2::log::debug("{}{}", fmt::streamed("Total points in loaded LIDAR: "), fmt::streamed(totalPoints));
     }
     std::cout << std::endl;
 
-    LOG.tab();
-    LOG(Logger::INFO) << "Load one scan payload through ProjectStore" << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Load one scan payload through ProjectStore"));
     auto scan = store.load_scan(1, 0, 0);
     if (!scan)
     {
@@ -148,15 +143,12 @@ void loadPartial(ScanProjectPtr sp)
         scan.value()->load();
         if (scan.value()->points)
         {
-            LOG(Logger::DEBUG) << "Total points in scan: " << scan.value()->points->numPoints() << std::endl;
+                        lvr2::log::debug("{}{}", fmt::streamed("Total points in scan: "), fmt::streamed(scan.value()->points->numPoints()));
         }
         scan.value()->release();
     }
     std::cout << std::endl;
 
-    LOG.deltab();
-    LOG.deltab();
-    LOG.deltab();
 }
 
 void loadProjectMeta(ScanProjectPtr sp)
@@ -181,14 +173,14 @@ void loadProjectMeta(ScanProjectPtr sp)
         return;
     }
 
-    LOG(Logger::INFO) << "Load scan-project metadata through ProjectStore" << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Load scan-project metadata through ProjectStore"));
     auto meta = store.load_meta();
     if (!meta)
     {
         reportStorageError("Load project metadata", meta.error());
         return;
     }
-    LOG(Logger::DEBUG) << meta.value().text << std::endl;
+        lvr2::log::debug("{}", fmt::streamed(meta.value().text));
     std::cout << std::endl;
 }
 
@@ -205,18 +197,18 @@ int main(int argc, char** argv)
             lvr2::io::storage::LoadMode::Lazy);
         if (!opened)
         {
-            std::cout << timestamp << "Unable to open HDF5 scan project: " << opened.error().message << std::endl;
+                        lvr2::log::error("{}{}", fmt::streamed("Unable to open HDF5 scan project: "), fmt::streamed(opened.error().message));
             return 1;
         }
 
-        std::cout << timestamp << "1. Load ScanProject no data" << std::endl;
+                lvr2::log::info("{}", fmt::streamed("1. Load ScanProject no data"));
         auto loaded = opened.value().load();
         if (!loaded)
         {
-            std::cout << timestamp << "Unable to load HDF5 scan project: " << loaded.error().message << std::endl;
+                        lvr2::log::error("{}{}", fmt::streamed("Unable to load HDF5 scan project: "), fmt::streamed(loaded.error().message));
             return 1;
         }
-        std::cout << timestamp << "- Done." << std::endl;
+                lvr2::log::info("{}", fmt::streamed("- Done."));
 
         ScanProjectPtr sp_loaded = loaded.value();
         if (sp_loaded && !sp_loaded->positions.empty() &&
@@ -226,9 +218,9 @@ int main(int argc, char** argv)
             ScanPtr scan = sp_loaded->positions[0]->lidars[0]->scans[0];
             if (scan)
             {
-                std::cout << timestamp << "- Load " << scan->numPoints << " points completely" << std::endl;
+                                lvr2::log::info("{}{}{}", fmt::streamed("- Load "), fmt::streamed(scan->numPoints), fmt::streamed(" points completely"));
                 scan->load();
-                std::cout << timestamp << "- Done." << std::endl;
+                                lvr2::log::info("{}", fmt::streamed("- Done."));
                 if (scan->points)
                 {
                     std::cout << *scan->points << std::endl;
@@ -236,9 +228,9 @@ int main(int argc, char** argv)
                 scan->release();
 
                 ReductionAlgorithmPtr red(new FixedSizeReductionAlgorithm(1000));
-                std::cout << timestamp << "- Load " << scan->numPoints << " points reduced" << std::endl;
+                                lvr2::log::info("{}{}{}", fmt::streamed("- Load "), fmt::streamed(scan->numPoints), fmt::streamed(" points reduced"));
                 scan->load(red);
-                std::cout << timestamp << "- Done." << std::endl;
+                                lvr2::log::info("{}", fmt::streamed("- Done."));
                 if (scan->points)
                 {
                     std::cout << *scan->points << std::endl;
@@ -249,24 +241,20 @@ int main(int argc, char** argv)
     }
     else
     {
-        LOG.setLoggerLevel(Logger::DEBUG);
+        lvr2::log::set_level(lvr2::log::Level::debug);
 
-        LOG(Logger::HIGHLIGHT) << "ScanProjects Load Partial" << std::endl;
+                lvr2::log::info("{}", fmt::streamed("ScanProjects Load Partial"));
 
-        LOG(Logger::DEBUG) << "Generating dataset, wait." << std::endl;
+                lvr2::log::debug("{}", fmt::streamed("Generating dataset, wait."));
         ScanProjectPtr sp = dummyScanProjectStorage();
 
         std::cout << std::endl;
-        LOG(Logger::HIGHLIGHT) << "1. Example: Load datasets partially" << std::endl;
-        LOG.tab();
+                lvr2::log::info("{}", fmt::streamed("1. Example: Load datasets partially"));
         loadPartial(sp);
-        LOG.deltab();
 
         std::cout << std::endl;
-        LOG(Logger::HIGHLIGHT) << "2. Example: Load project metadata" << std::endl;
-        LOG.tab();
+                lvr2::log::info("{}", fmt::streamed("2. Example: Load project metadata"));
         loadProjectMeta(sp);
-        LOG.deltab();
     }
 
     return 0;

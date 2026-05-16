@@ -2,6 +2,7 @@
 #include <lvr2/reconstruction/SearchTree.hpp>
 #include <lvr2/reconstruction/SearchTreeFlann.hpp>
 #include <lvr2/util/Timestamp.hpp>
+#include <lvr2/util/Logging.hpp>
 #include <lvr2/geometry/BaseVector.hpp>
 
 #include <iostream>
@@ -12,7 +13,7 @@ namespace lvr2
 static Eigen::Vector4f ComputePairFeatures(const Eigen::Vector3f &p1,
                                            const Eigen::Vector3f &n1,
                                            const Eigen::Vector3f &p2,
-                                           const Eigen::Vector3f &n2) 
+                                           const Eigen::Vector3f &n2)
 {
     Eigen::Vector4f result;
     Eigen::Vector3f dp2p1 = p2 - p1;
@@ -76,13 +77,13 @@ FPFHFeaturePtr computeInitialFeatures(const PointBufferPtr pointBuffer, SearchTr
                     // Skip the point itself, compute histogram
                     size_t current = indices[k];
                     Eigen::Vector3f current_point(
-                        points[current][0], 
-                        points[current][1], 
+                        points[current][0],
+                        points[current][1],
                         points[current][2]);
 
                     Eigen::Vector3f current_normal(
-                        normals[current][0], 
-                        normals[current][1], 
+                        normals[current][0],
+                        normals[current][1],
                         normals[current][2]);
 
                     auto pf = ComputePairFeatures(query_point, query_normal,
@@ -119,7 +120,7 @@ FPFHFeaturePtr computeFPFHFeatures(const PointBufferPtr pointBuffer, SearchTreeP
     auto spfh = computeInitialFeatures(pointBuffer, tree, k);
     if (spfh == nullptr)
     {
-        std::cout << timestamp << "Internal error: SPFH feature vector is nullptr." << std::endl;
+                lvr2::log::error("{}", fmt::streamed("Internal error: SPFH feature vector is nullptr."));
     }
 #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < pointBuffer->numPoints(); i++)
@@ -166,9 +167,9 @@ FPFHFeaturePtr computeFPFHFeatures(const PointBufferPtr pointBuffer, SearchTreeP
 
 FPFHFeaturePtr computeFPFHFeatures(const PointBufferPtr pointCloud, size_t k)
 {
-    if (!pointCloud->hasNormals()) 
+    if (!pointCloud->hasNormals())
     {
-        std::cout << timestamp << "FPFH Failed because input point cloud has no normals" << std::endl;
+                lvr2::log::error("{}", fmt::streamed("FPFH Failed because input point cloud has no normals"));
     }
 
     SearchTreePtr<BaseVector<float>> tree(new SearchTreeFlann<BaseVector<float>>(pointCloud));

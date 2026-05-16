@@ -2,7 +2,6 @@
 set(LVR2_EXAMPLES_SCAN_PROJECTS_SRCS
     src/ScanTypesCompare.cpp
     src/ScanTypesDummies.cpp
-    # src/Logging.cpp
 )
 
 set(LVR2_EXAMPLES_SCAN_PROJECTS_DEPS

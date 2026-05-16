@@ -47,6 +47,7 @@
 #include "lvr2/io/mesh.hpp"
 #include "lvr2/types/Model.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 #include "lvr2/util/Progress.hpp"
 
 // PCL related includes
@@ -104,8 +105,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
         }
         else
         {
-            cout << timestamp << "Mesh facade failed to read " << filename << ": "
-                 << meshResult.error().message << endl;
+                        lvr2::log::error("{}{}{}{}", fmt::streamed("Mesh facade failed to read "), fmt::streamed(filename), fmt::streamed(": "), fmt::streamed(meshResult.error().message));
         }
     }
     else if(extension == ".pts" || extension == ".3d" || extension == ".xyz" || extension == ".txt")
@@ -122,8 +122,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
         }
         else
         {
-            cout << timestamp << "Mesh facade failed to read " << filename << ": "
-                 << meshResult.error().message << endl;
+                        lvr2::log::error("{}{}{}{}", fmt::streamed("Mesh facade failed to read "), fmt::streamed(filename), fmt::streamed(": "), fmt::streamed(meshResult.error().message));
         }
     }
     else if (extension == ".las")
@@ -193,7 +192,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
         }
         else
         {
-            cout << timestamp << "Given directory does not contain " << endl;
+                        lvr2::log::info("{}", fmt::streamed("Given directory does not contain "));
         }
     }
 
@@ -270,8 +269,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
             const auto status = lvr2::io::mesh::save(m->m_mesh, filename, {lvr2::io::mesh::Format::Ply});
             if(!status)
             {
-                cout << timestamp << "Mesh facade failed to save " << filename << ": "
-                     << status.error().message << endl;
+                                lvr2::log::error("{}{}{}{}", fmt::streamed("Mesh facade failed to save "), fmt::streamed(filename), fmt::streamed(": "), fmt::streamed(status.error().message));
             }
         }
         else
@@ -291,8 +289,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
             const auto status = lvr2::io::mesh::save(m->m_mesh, filename, {lvr2::io::mesh::Format::Obj});
             if(!status)
             {
-                cout << timestamp << "Mesh facade failed to save " << filename << ": "
-                     << status.error().message << endl;
+                                lvr2::log::error("{}{}{}{}", fmt::streamed("Mesh facade failed to save "), fmt::streamed(filename), fmt::streamed(": "), fmt::streamed(status.error().message));
             }
         }
     }
@@ -304,8 +301,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
             const auto status = lvr2::io::mesh::save(m->m_mesh, filename, {lvr2::io::mesh::Format::Stl});
             if(!status)
             {
-                cout << timestamp << "Mesh facade failed to save " << filename << ": "
-                     << status.error().message << endl;
+                                lvr2::log::error("{}{}{}{}", fmt::streamed("Mesh facade failed to save "), fmt::streamed(filename), fmt::streamed(": "), fmt::streamed(status.error().message));
             }
         }
     }
@@ -335,8 +331,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     }
     else if(!handledByMeshFacade)
     {
-        cout << timestamp << "File format " << extension
-            << " is currently not supported." << endl;
+                lvr2::log::info("{}{}{}", fmt::streamed("File format "), fmt::streamed(extension), fmt::streamed(" is currently not supported."));
     }
 
 }

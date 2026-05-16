@@ -8,6 +8,7 @@
 
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 #include "lvr2/util/YAMLUtil.hpp"
 #include "lvr2/io/YAML.hpp"
 
@@ -16,12 +17,12 @@ using lvr2::timestamp;
 namespace YAML {
 
 template<>
-struct convert<lvr2::CameraImage> 
+struct convert<lvr2::CameraImage>
 {
     /**
-     * Encode Eigen matrix to yaml. 
+     * Encode Eigen matrix to yaml.
      */
-    static Node encode(const lvr2::CameraImage& cameraImage) { 
+    static Node encode(const lvr2::CameraImage& cameraImage) {
         Node node = cameraImage.metadata;
 
         node["entity"] = lvr2::CameraImage::entity;
@@ -37,7 +38,7 @@ struct convert<lvr2::CameraImage>
         return node;
     }
 
-    static bool decode(const Node& node, lvr2::CameraImage& scanImage) 
+    static bool decode(const Node& node, lvr2::CameraImage& scanImage)
     {
         //skip this for now since we cant read the riegl scanprojects otherwise
        // Check if 'entity' and 'type' Tags are valid
@@ -53,13 +54,12 @@ struct convert<lvr2::CameraImage>
         // Get fields
         if(parsed_node["transformation"])
         {
-            try 
+            try
             {
                 scanImage.transformation = parsed_node["transformation"].as<lvr2::Transformd>();
-            } catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) 
+            } catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex)
             {
-                std::cout <<  timestamp <<  "[YAML - CameraImage - decode] ERROR: Could not decode 'transformation': " 
-                    << parsed_node["transformation"] << " as Transformd" << std::endl;
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - CameraImage - decode] ERROR: Could not decode 'transformation': "), fmt::streamed(parsed_node["transformation"]), fmt::streamed(" as Transformd"));
                 return false;
             }
             parsed_node.remove("transformation");
@@ -72,14 +72,13 @@ struct convert<lvr2::CameraImage>
         if(parsed_node["pose_estimation"])
         {
             // NAN check?
-            try 
+            try
             {
                 scanImage.extrinsicsEstimation = parsed_node["pose_estimation"].as<lvr2::Extrinsicsd>();
-            } 
-            catch(const YAML::TypedBadConversion<lvr2::Extrinsicsd>& ex) 
+            }
+            catch(const YAML::TypedBadConversion<lvr2::Extrinsicsd>& ex)
             {
-                std::cout << timestamp << "[YAML - CameraImage - decode] ERROR: Could not decode 'pose_estimation': " 
-                    << parsed_node["pose_estimation"] << " as Extrinsicsd" << std::endl;
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - CameraImage - decode] ERROR: Could not decode 'pose_estimation': "), fmt::streamed(parsed_node["pose_estimation"]), fmt::streamed(" as Extrinsicsd"));
                 return false;
             }
             parsed_node.remove("pose_estimation");
@@ -91,19 +90,18 @@ struct convert<lvr2::CameraImage>
 
         if(parsed_node["timestamp"])
         {
-            try 
+            try
             {
                 scanImage.timestamp = parsed_node["timestamp"].as<double>();
-            } 
-            catch(const YAML::TypedBadConversion<double>& ex) 
+            }
+            catch(const YAML::TypedBadConversion<double>& ex)
             {
-                std::cout <<  timestamp <<  "[YAML - CameraImage - decode] ERROR: Could not decode 'timestamp': " 
-                    << node["timestamp"] << " as double" << std::endl; 
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - CameraImage - decode] ERROR: Could not decode 'timestamp': "), fmt::streamed(node["timestamp"]), fmt::streamed(" as double"));
                 return false;
             }
             parsed_node.remove("timestamp");
-        } 
-        else 
+        }
+        else
         {
             // TODO: how to handle no timestamp?
             scanImage.timestamp = -1.0;
@@ -117,9 +115,9 @@ struct convert<lvr2::CameraImage>
 
 
 template<>
-struct convert<lvr2::CameraImageGroup> 
+struct convert<lvr2::CameraImageGroup>
 {
-    static Node encode(const lvr2::CameraImageGroup& cameraImageGroup) { 
+    static Node encode(const lvr2::CameraImageGroup& cameraImageGroup) {
         Node node;
 
         node["entity"] = lvr2::CameraImageGroup::entity;
@@ -129,27 +127,26 @@ struct convert<lvr2::CameraImageGroup>
         return node;
     }
 
-    static bool decode(const Node& node, lvr2::CameraImageGroup& cameraImageGroup) 
+    static bool decode(const Node& node, lvr2::CameraImageGroup& cameraImageGroup)
     {
        // Check if 'entity' and 'type' Tags are valid
-        if (!YAML_UTIL::ValidateEntityAndTypeSilent(node, 
-            "camera_images", 
-            lvr2::CameraImageGroup::entity, 
+        if (!YAML_UTIL::ValidateEntityAndTypeSilent(node,
+            "camera_images",
+            lvr2::CameraImageGroup::entity,
             lvr2::CameraImageGroup::type))
         {
             return false;
         }
-    
+
         // Get fields
         if(node["transformation"])
         {
             try {
                 cameraImageGroup.transformation = node["transformation"].as<lvr2::Transformd>();
-            } 
-            catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex) 
+            }
+            catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex)
             {
-                std::cout <<  timestamp <<  "[YAML - CameraImageGroup - decode] ERROR: Could not decode 'transformation': " 
-                    << node["transformation"] << " as Transformd" << std::endl; 
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - CameraImageGroup - decode] ERROR: Could not decode 'transformation': "), fmt::streamed(node["transformation"]), fmt::streamed(" as Transformd"));
                 return false;
             }
         }

@@ -6,12 +6,13 @@
 
 #include "lvr2/io/modelio/GeoTIFFIO.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 
 #include <gdal_priv.h>
 
 namespace lvr2
 {
-    
+
 
 GeoTIFFIO::GeoTIFFIO(std::string filename, int cols, int rows, int bands) : m_cols(cols), m_rows(rows), m_bands(bands)
 {
@@ -36,7 +37,7 @@ int GeoTIFFIO::writeBand(cv::Mat *mat, int band)
 {
     if (!m_gtif_dataset)
     {
-        std::cout << timestamp << "GeoTIFF dataset not initialized!" << std::endl;
+                lvr2::log::info("{}", fmt::streamed("GeoTIFF dataset not initialized!"));
         return -1;
     }
 
@@ -50,8 +51,7 @@ int GeoTIFFIO::writeBand(cv::Mat *mat, int band)
         if (m_gtif_dataset->GetRasterBand(band)->RasterIO(
                 GF_Write, 0, row, m_cols, 1, rowBuff, m_cols, 1, GDT_UInt16, 0, 0) != CPLE_None)
         {
-            std::cout << timestamp << "An error occurred in GDAL while writing band "
-                << band << " in row " << row << "." << std::endl;
+                        lvr2::log::error("{}{}{}{}{}", fmt::streamed("An error occurred in GDAL while writing band "), fmt::streamed(band), fmt::streamed(" in row "), fmt::streamed(row), fmt::streamed("."));
             return -1;
         }
     }
@@ -68,7 +68,7 @@ int GeoTIFFIO::getRasterWidth()
     {
         return 0;
     }
-    
+
 }
 
 int GeoTIFFIO::getRasterHeight()
@@ -81,7 +81,7 @@ int GeoTIFFIO::getRasterHeight()
     {
         return 0;
     }
-    
+
 }
 
 void GeoTIFFIO::getMaxMinOfBand(float* values, int band_index)
@@ -126,15 +126,15 @@ cv::Mat *GeoTIFFIO::readBand(int index)
         CPLErr error = band->RasterIO(GF_Read, 0, 0, nXSize, nYSize, buf, nXSize, nYSize, GDT_Float32, 0, 0);
 
         cv::Mat *mat = new cv::Mat(nXSize, nYSize, CV_32FC1, buf);
-        
+
         return mat;
     }
     else
     {
-        std::cout << timestamp << "Error getting raster band" << std::endl;
+                lvr2::log::error("{}", fmt::streamed("Error getting raster band"));
         return new cv::Mat;
     }
-    
+
 }
 
 GeoTIFFIO::~GeoTIFFIO()

@@ -63,7 +63,7 @@ std::shared_ptr<lvr2::BaseMesh<VecT> > make_hem(
     {
         return std::make_shared<lvr2::PMPMesh<VecT> >(mesh_buffer);
     }
-    
+
     throw std::runtime_error("Could not find half edge mesh implementation.");
 }
 
@@ -79,7 +79,7 @@ int main(int argc, char** argv)
 
 
     std::cout << "LVR2 Mesh Reduction" << std::endl;
-  
+
     // Exit if options had to generate a usage message
     // (this means required parameters are missing)
     if (options.printUsage())
@@ -89,7 +89,7 @@ int main(int argc, char** argv)
     std::cout << options << std::endl;
     std::cout << "Loading mesh ..." << endl;
     lvr2::ModelPtr model = lvr2::ModelFactory::readModel(options.getInputFileName());
-    
+
     if(!model->m_mesh)
     {
       std::cout << "lvr could not load mesh / input file is not a mesh." << std::endl;
@@ -98,17 +98,17 @@ int main(int argc, char** argv)
 
     lvr2::MeshBufferPtr meshBuffer = model->m_mesh;
     cout << *meshBuffer << endl;
-  
+
     auto mesh = make_hem<Vec>(meshBuffer, options.getHemImplementation());
 
-    std::cout << lvr2::timestamp << "Computing face normals..." << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Computing face normals..."));
 
     // Calculate initial face normals
     auto faceNormals = calcFaceNormals(*mesh);
 
     // Reduce mesh complexity
     const auto reductionRatio = options.getEdgeCollapseReductionRatio();
-    std::cout << lvr2::timestamp << "Collapsing faces..." << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Collapsing faces..."));
 
     if (reductionRatio > 0.0)
     {
@@ -140,8 +140,8 @@ int main(int argc, char** argv)
     auto m = std::make_shared<lvr2::Model>(buffer);
 
     lvr2::ModelFactory::saveModel(m, "reduced_mesh.ply");
-   
-    cout << lvr2::timestamp << "Program end." << endl;
+
+        lvr2::log::info("{}", fmt::streamed("Program end."));
 
     return 0;
 }

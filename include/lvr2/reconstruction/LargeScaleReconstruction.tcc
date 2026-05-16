@@ -26,6 +26,7 @@
  */
 
 #include <iostream>
+#include <sstream>
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/geometry/PMPMesh.hpp"
 #include "lvr2/algorithm/pmp/SurfaceNormals.h"
@@ -41,6 +42,7 @@
 #include "lvr2/algorithm/NormalAlgorithms.hpp"
 #include "lvr2/algorithm/Tesselator.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 
 
 #include "LargeScaleReconstruction.hpp"
@@ -68,7 +70,7 @@ namespace lvr2
         : m_options(options)
     {
         m_options.ensureCorrectness();
-        lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Reconstruction instance created..." << lvr2::endl;
+                lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Reconstruction instance created..."));
     }
 
     template <typename BaseVecT>
@@ -92,9 +94,9 @@ namespace lvr2
 
         float chunkSize = m_options.bgVoxelSize;
 
-        lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Starting BigGrid" << lvr2::endl;
+                lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Starting BigGrid"));
         BigGrid<BaseVecT> bg(chunkSize, project, m_options.tempDir, m_options.scale);
-        lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] BigGrid finished " << lvr2::endl;
+                lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] BigGrid finished "));
 
         BoundingBox<BaseVecT> bgBB = bg.getBB();
 
@@ -124,14 +126,14 @@ namespace lvr2
         cmBB.expand(newChunksBB);
         chunkManager->setBoundingBox(cmBB);
 
-        lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Got: " << bg.getCells().size() << " chunks." << lvr2::endl;
+        lvr2::log::info("[LargeScaleReconstruction] Got: {} chunks.", bg.getCells().size());
 
-        lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] VoxelSizes: ";
+        std::ostringstream voxelSizes;
         for (auto v : m_options.voxelSizes)
         {
-            lvr2::logout::get() << v << " ";
+            voxelSizes << v << ' ';
         }
-        lvr2::logout::get() << lvr2::endl;
+        lvr2::log::info("[LargeScaleReconstruction] VoxelSizes: {}", voxelSizes.str());
 
         for(size_t h = 0; h < m_options.voxelSizes.size(); h++)
         {
@@ -199,7 +201,7 @@ namespace lvr2
                 auto& partitionBox = partitionBoxes[i];
                 auto& coord = chunkCoords[i];
 
-                lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Processing Partition " << i << "/" << (partitionBoxes.size() - 1) << lvr2::endl;
+                                lvr2::log::info("{}{}{}{}", fmt::streamed("[LargeScaleReconstruction] Processing Partition "), fmt::streamed(i), fmt::streamed("/"), fmt::streamed((partitionBoxes.size() - 1)));
 
                 BoundingBox<BaseVecT> gridbb(partitionBox.getMin() - overlapVector, partitionBox.getMax() + overlapVector);
 
@@ -238,7 +240,7 @@ namespace lvr2
 
             if (m_options.mergeChunkBorders)
             {
-                lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Finished calculating TSDFs. Merging chunk overlaps" << lvr2::endl;
+                                lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Finished calculating TSDFs. Merging chunk overlaps"));
 
                 // an empty grid to call calcIndex on
                 HashGrid<BaseVecT, BoxT> dummyGrid(voxelSize, {}, true, m_options.extrude);
@@ -248,7 +250,7 @@ namespace lvr2
                     auto& partitionBox = filteredPartitionBoxes[i];
                     auto& coord = filteredChunkCoords[i];
 
-                    lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Processing Partition " << i << "/" << (filteredPartitionBoxes.size() - 1) << lvr2::endl;
+                                        lvr2::log::info("{}{}{}{}", fmt::streamed("[LargeScaleReconstruction] Processing Partition "), fmt::streamed(i), fmt::streamed("/"), fmt::streamed((filteredPartitionBoxes.size() - 1)));
 
                     // In order to get consistent chunks, it is necessary to have the exact same
                     // distance values on both sides of a border.
@@ -314,7 +316,7 @@ namespace lvr2
 
                     if (!neighborQPs.empty())
                     {
-                        lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Merging " << neighborQPs.size() << " neighbors" << lvr2::endl;
+                                                lvr2::log::info("{}{}{}", fmt::streamed("[LargeScaleReconstruction] Merging "), fmt::streamed(neighborQPs.size()), fmt::streamed(" neighbors"));
 
                         auto& queryPoints = ps_grid->getQueryPoints();
                         #pragma omp parallel
@@ -380,9 +382,9 @@ namespace lvr2
                 }
             }
             size_t skipped = partitionBoxes.size() - filteredPartitionBoxes.size();
-            lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Skipped PartitionBoxes: " << skipped << lvr2::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("[LargeScaleReconstruction] Skipped PartitionBoxes: "), fmt::streamed(skipped));
 
-            lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Finished" << lvr2::endl;
+                        lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Finished"));
 
             if (createChunksHdf5)
             {
@@ -395,20 +397,20 @@ namespace lvr2
 #ifdef LVR2_USE_3DTILES
             if (create3dTiles && !chunkMap.empty())
             {
-                lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Creating 3D Tiles: Generating HLOD Tree" << lvr2::endl;
+                                lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Creating 3D Tiles: Generating HLOD Tree"));
                 if (m_options.tiles3dMemUsage > AllowedMemoryUsage::Minimal)
                 {
-                    lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Note: If the following overflows your RAM, try setting 3dTilesMemUsage to Minimal" << lvr2::endl;
+                                        lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Note: If the following overflows your RAM, try setting 3dTilesMemUsage to Minimal"));
                 }
                 auto tree = HLODTree<BaseVecT>::partition(std::move(chunkMap), 3);
                 tree->finalize(m_options.tiles3dMemUsage); // TODO: make optional params and the 3 above configurable
 
-                lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Creating 3D Tiles: Writing to mesh.3dtiles" << lvr2::endl;
+                                lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Creating 3D Tiles: Writing to mesh.3dtiles"));
                 Tiles3dIO<BaseVecT> io((m_options.outputDir / "mesh.3dtiles").string());
                 io.write(tree, m_options.tiles3dCompress);
                 tree.reset();
 
-                lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Creating 3D Tiles: Finished" << lvr2::endl;
+                                lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Creating 3D Tiles: Finished"));
             }
             if (chunkFile3dTiles)
             {
@@ -433,10 +435,7 @@ namespace lvr2
                     }
                     else
                     {
-                        lvr2::logout::get() << lvr2::info 
-                            << "[LargeScaleReconstruction] WARNING - Could not find chunk (" 
-                            << coord.x() << ", " << coord.y() << ", " << coord.z()
-                            << ") in layer: " << "tsdf_values_" + std::to_string(voxelSize) << lvr2::endl;
+                                                lvr2::log::error("{}{}{}{}{}{}{}{}", fmt::streamed("[LargeScaleReconstruction] WARNING - Could not find chunk ("), fmt::streamed(coord.x()), fmt::streamed(", "), fmt::streamed(coord.y()), fmt::streamed(", "), fmt::streamed(coord.z()), fmt::streamed(") in layer: "), fmt::streamed("tsdf_values_" + std::to_string(voxelSize)));
                     }
                 }
                 auto hg = std::make_shared<HashGrid<BaseVecT, BoxT>>(tsdfChunks, filteredPartitionBoxes, cbb, voxelSize);
@@ -445,17 +444,12 @@ namespace lvr2
                 createAndSaveBigMesh(hg, h);
             }
 
-            lvr2::logout::get() << lvr2::info 
-                << "[LargeScaleReconstruction] Added/changed " 
-                << filteredChunkCoords.size() << " chunks in layer " 
-                << layerName << lvr2::endl;
+                        lvr2::log::info("{}{}{}{}", fmt::streamed("[LargeScaleReconstruction] Added/changed "), fmt::streamed(filteredChunkCoords.size()), fmt::streamed(" chunks in layer "), fmt::streamed(layerName));
         }
 
         auto timeDiffMs = lvr2::timestamp.getCurrentTimeInMs() - startTimeMs;
 
-        lvr2::logout::get() << lvr2::info 
-            << "[LargeScaleReconstruction] Finished complete reconstruction in " 
-            << (timeDiffMs / 1000.0) << "s" << lvr2::endl;
+                lvr2::log::info("{}{}{}", fmt::streamed("[LargeScaleReconstruction] Finished complete reconstruction in "), fmt::streamed((timeDiffMs / 1000.0)), fmt::streamed("s"));
     }
 
     template <typename BaseVecT>
@@ -478,9 +472,9 @@ namespace lvr2
         /// Maximum number of points in a chunk to avoid GPU memory overflow. Chunks bigger than this are reduced.
         size_t maxPointsPerChunk = 130'000'000;
 
-        lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Starting BigGrid" << lvr2::endl;
+                lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Starting BigGrid"));
         BigGrid<BaseVecT> bg(m_options.bgVoxelSize, project, m_options.tempDir, m_options.scale);
-        lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] BigGrid finished " << lvr2::endl;
+                lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] BigGrid finished "));
 
         BoundingBox<BaseVecT> bgBB = bg.getBB();
 
@@ -488,7 +482,7 @@ namespace lvr2
         std::vector<BoundingBox<BaseVecT>> filteredPartitionBoxes;
 
         // use KD-Tree
-        lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Generating tree" << lvr2::endl;
+                lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Generating tree"));
         BigGridKdTree<BaseVecT> gridKd(bg.getBB(), m_options.nodeSize, &bg, m_options.bgVoxelSize);
         gridKd.insert(bg.pointSize(), bg.getBB().getCentroid());
         auto leafs = gridKd.getLeafs();
@@ -498,15 +492,15 @@ namespace lvr2
             partitionBoxes.push_back(leaf->getBB());
         }
 
-        lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Finished tree" << lvr2::endl;
-        lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Got: " << bg.getCells().size() << " chunks." << lvr2::endl;
+        lvr2::log::info("[LargeScaleReconstruction] Finished tree");
+        lvr2::log::info("[LargeScaleReconstruction] Got: {} chunks.", bg.getCells().size());
 
-        lvr2::logout::get() << lvr2::info << "VoxelSizes: ";
+        std::ostringstream voxelSizes;
         for (auto v : m_options.voxelSizes)
         {
-            lvr2::logout::get() << v << " ";
+            voxelSizes << v << ' ';
         }
-        lvr2::logout::get() << lvr2::endl;
+        lvr2::log::info("VoxelSizes: {}", voxelSizes.str());
 
         for(size_t h = 0; h < m_options.voxelSizes.size(); h++)
         {
@@ -545,8 +539,8 @@ namespace lvr2
             }
             size_t skipped = partitionBoxes.size() - filteredPartitionBoxes.size();
 
-            lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Skipped PartitionBoxes: " << skipped << lvr2::endl;
-            lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Finished" << lvr2::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("[LargeScaleReconstruction] Skipped PartitionBoxes: "), fmt::streamed(skipped));
+                        lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Finished"));
 
             //combine chunks
             BoundingBox<BaseVecT> cbb(bgBB.getMin() - overlapVector, bgBB.getMax() + overlapVector);
@@ -557,7 +551,7 @@ namespace lvr2
 
         auto timeDiffMs = lvr2::timestamp.getCurrentTimeInMs() - startTimeMs;
 
-        lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Finished complete reconstruction in " << (timeDiffMs / 1000.0) << "s" << lvr2::endl;
+                lvr2::log::info("{}{}{}", fmt::streamed("[LargeScaleReconstruction] Finished complete reconstruction in "), fmt::streamed((timeDiffMs / 1000.0)), fmt::streamed("s"));
     }
 
     template<typename BaseVecT>
@@ -606,7 +600,7 @@ namespace lvr2
             while (numPoints > maxPointsPerChunk)
             {
                 // reduction is necessary to avoid GPU memory overflow
-                lvr2::logout::get() << lvr2::warning << "[LargeScaleReconstruction] Chunk has too many points: " << numPoints << ". Reducing." << lvr2::endl;
+                                lvr2::log::warning("{}{}{}", fmt::streamed("[LargeScaleReconstruction] Chunk has too many points: "), fmt::streamed(numPoints), fmt::streamed(". Reducing."));
                 RandomSampleOctreeReduction oct(p_loader, targetSize, 10);
                 p_loader = oct.getReducedPoints();
                 numPoints = p_loader->numPoints();
@@ -630,7 +624,7 @@ namespace lvr2
         if ((!hasNormals && m_options.useGPU) || (!hasDistances && m_options.useGPUDistances))
         {
             floatArr points = p_loader->getPointArray();
-            lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Generate GPU kd-tree..." << lvr2::endl;
+                        lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Generate GPU kd-tree..."));
 
             GpuSurface gpu_surface(points, numPoints);
 
@@ -653,11 +647,11 @@ namespace lvr2
                     {
                         throw; // forward any other exceptions
                     }
-                    lvr2::logout::get() << lvr2::error << "[LargeScaleReconstruction] Not enough GPU memory. Reducing Points further." << lvr2::endl;
+                                        lvr2::log::error("{}", fmt::streamed("[LargeScaleReconstruction] Not enough GPU memory. Reducing Points further."));
                     maxPointsPerChunk = maxPointsPerChunk * 0.8;
                     if (maxPointsPerChunk < minPointsPerChunk)
                     {
-                        lvr2::logout::get() << lvr2::warning << "[LargeScaleReconstruction] Your GPU is garbage. Switching back to CPU" << lvr2::endl;
+                                                lvr2::log::warning("{}", fmt::streamed("[LargeScaleReconstruction] Your GPU is garbage. Switching back to CPU"));
                         m_options.useGPU = false;
                     }
                     retry = true;
@@ -673,11 +667,11 @@ namespace lvr2
             {
                 auto& query_points = ps_grid->getQueryPoints();
 
-                lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Computing signed distances in GPU with brute force kernel." << lvr2::endl;
-                lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] This might take a while...." << lvr2::endl;
+                                lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Computing signed distances in GPU with brute force kernel."));
+                                lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] This might take a while...."));
                 gpu_surface.distances(query_points, voxelSize);
                 hasDistances = true;
-                lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Done." << lvr2::endl;
+                                lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Done."));
             }
         }
 #endif // GPU_FOUND
@@ -722,7 +716,7 @@ namespace lvr2
 
         if (m_options.removeDanglingArtifacts)
         {
-            lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Removing dangling artifacts" << lvr2::endl;
+                        lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Removing dangling artifacts"));
             removeDanglingCluster(mesh, m_options.removeDanglingArtifacts);
             if (mesh.numFaces() == 0)
             {
@@ -769,7 +763,7 @@ namespace lvr2
                 chunkMap.emplace(coord, HLODTree<BaseVecT>::leaf(LazyMesh(std::move(mesh), chunkFile3dTiles), bb));
             }
         }
-        #endif 
+        #endif
     }
 
     template<typename BaseVecT>
@@ -785,7 +779,7 @@ namespace lvr2
 
         if (m_options.removeDanglingArtifacts)
         {
-            lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Removing dangling artifacts" << lvr2::endl;
+                        lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Removing dangling artifacts"));
             removeDanglingCluster(mesh, m_options.removeDanglingArtifacts);
         }
 
@@ -818,12 +812,12 @@ namespace lvr2
         {
             std::string suffix = voxelSizeIndex > 0 ? std::to_string(m_options.voxelSizes[voxelSizeIndex]) : "";
             fs::path filename = m_options.outputDir / ("mesh" + suffix + ".ply");
-            lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Writing mesh to " << filename << lvr2::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("[LargeScaleReconstruction] Writing mesh to "), fmt::streamed(filename));
             mesh.getSurfaceMesh().write(filename.string());
         }
         else
         {
-            lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Warning: Mesh is empty!" << lvr2::endl;
+                        lvr2::log::warning("{}", fmt::streamed("[LargeScaleReconstruction] Warning: Mesh is empty!"));
         }
     }
 
@@ -846,10 +840,7 @@ namespace lvr2
         int yMax = (int) (newChunksBB.getMax().y / chunkSize);
         int zMax = (int) (newChunksBB.getMax().z / chunkSize);
 
-        lvr2::logout::get() << lvr2::debug 
-            << "[LargeScaleReconstruction] New Chunks from (" 
-            << xMin << ", " << yMin << ", " << zMin
-            << ") - to (" << xMax << ", " << yMax << ", " << zMax << ")." << lvr2::endl;
+                lvr2::log::debug("{}{}{}{}{}{}{}{}{}{}{}{}{}", fmt::streamed("[LargeScaleReconstruction] New Chunks from ("), fmt::streamed(xMin), fmt::streamed(", "), fmt::streamed(yMin), fmt::streamed(", "), fmt::streamed(zMin), fmt::streamed(") - to ("), fmt::streamed(xMax), fmt::streamed(", "), fmt::streamed(yMax), fmt::streamed(", "), fmt::streamed(zMax), fmt::streamed(")."));
 
         for (int i = xMin - 1; i <= xMax + 1; i++) {
             for (int j = yMin - 1; j <= yMax + 1; j++) {
@@ -882,7 +873,7 @@ namespace lvr2
         reconstruction->getMesh(mesh);
 
         if (m_options.removeDanglingArtifacts) {
-            lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Removing dangling artifacts" << lvr2::endl;
+                        lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Removing dangling artifacts"));
             removeDanglingCluster(mesh, static_cast<size_t>(m_options.removeDanglingArtifacts));
         }
 
@@ -901,9 +892,7 @@ namespace lvr2
             const auto saved = lvr2::io::mesh::save(meshBuffer, chunkPath, {lvr2::io::mesh::Format::Ply, true});
             if (!saved)
             {
-                lvr2::logout::get() << lvr2::warning
-                    << "[LargeScaleReconstruction] Could not write chunk mesh '"
-                    << chunkPath << "': " << saved.error().message << lvr2::endl;
+                                lvr2::log::warning("{}{}{}{}", fmt::streamed("[LargeScaleReconstruction] Could not write chunk mesh '"), fmt::streamed(chunkPath), fmt::streamed("': "), fmt::streamed(saved.error().message));
             }
         }
             return mesh;
@@ -924,7 +913,7 @@ namespace lvr2
 
         if(project->project->positions.size() != project->changed.size())
         {
-            lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Inconsistency between number of given scans and diff-vector (scans to consider)! exit..." << lvr2::endl;
+                        lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Inconsistency between number of given scans and diff-vector (scans to consider)! exit..."));
             bool a = false;
             for(int i = 1; i < size; i++)
             {
@@ -934,9 +923,9 @@ namespace lvr2
             return 0;
         }
 
-        lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Starting BigGrid" << lvr2::endl;
+                lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Starting BigGrid"));
         BigGrid<BaseVecT> bg( m_options.bgVoxelSize ,project, m_options.scale);
-        lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] BigGrid finished " << lvr2::endl;
+                lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] BigGrid finished "));
 
         BoundingBox<BaseVecT> bb = bg.getBB();
 
@@ -947,7 +936,7 @@ namespace lvr2
 
 
         BoundingBox<BaseVecT> partbb = bg.getpartialBB();
-        lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Generating VGrid" << lvr2::endl;
+                lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Generating VGrid"));
 
         VirtualGrid<BaseVecT> vGrid(
                 bg.getpartialBB(), chunkSize, m_options.bgVoxelSize);
@@ -957,9 +946,8 @@ namespace lvr2
         BaseVecT addMax = BaseVecT(std::ceil(partbb.getMax().x / chunkSize) * chunkSize, std::ceil(partbb.getMax().y / chunkSize) * chunkSize, std::ceil(partbb.getMax().z / chunkSize) * chunkSize);
         newChunksBB.expand(addMin);
         newChunksBB.expand(addMax);
-        lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Finished vGrid" << lvr2::endl;
-        lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Got: " 
-                                     << partitionBoxes.size() << " chunks" << lvr2::endl;
+                lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Finished vGrid"));
+                lvr2::log::info("{}{}{}", fmt::streamed("[LargeScaleReconstruction] Got: "), fmt::streamed(partitionBoxes.size()), fmt::streamed(" chunks"));
 
         // we use the BB of all scans (including old ones) they are already hashed in the cm
         // and we can't make the BB smaller
@@ -974,10 +962,7 @@ namespace lvr2
         size_t numChunks_global = (cmBB.getXSize() / chunkSize) * (cmBB.getYSize() / chunkSize) * (cmBB.getZSize() / chunkSize);
         size_t numChunks_partial = partitionBoxes.size();
 
-        lvr2::logout::get() << lvr2::info 
-            << "[LargeScaleReconstruction] Saving " 
-            << numChunks_global - numChunks_partial 
-            << " Chunks compared to full reconstruction" << lvr2::endl;
+                lvr2::log::info("{}{}{}", fmt::streamed("[LargeScaleReconstruction] Saving "), fmt::streamed(numChunks_global - numChunks_partial), fmt::streamed(" Chunks compared to full reconstruction"));
 
         BaseVecT bb_min(bb.getMin().x, bb.getMin().y, bb.getMin().z);
         BaseVecT bb_max(bb.getMax().x, bb.getMax().y, bb.getMax().z);
@@ -1005,10 +990,10 @@ namespace lvr2
 
         unsigned long timeSum = timeEnd - timeStart;
 
-        lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Finished complete reconstruction in " << (double) (timeSum/1000.0) << "s" << lvr2::endl;
-        lvr2::logout::get() << "[LargeScaleReconstruction] Initialization: " << (double) ((timeInit-timeStart)/1000.0) << "s" << lvr2::endl;
-        lvr2::logout::get() << "[LargeScaleReconstruction] Calculation: " << (double) ((timeCalc-timeInit)/1000.0) << "s" << lvr2::endl;
-        lvr2::logout::get() << "[LargeScaleReconstruction] Combine chunks: " << (double) ((timeEnd-timeCalc)/1000.0) << "s" << lvr2::endl;
+                lvr2::log::info("{}{}{}", fmt::streamed("[LargeScaleReconstruction] Finished complete reconstruction in "), fmt::streamed((double) (timeSum/1000.0)), fmt::streamed("s"));
+                lvr2::log::info("{}{}{}", fmt::streamed("[LargeScaleReconstruction] Initialization: "), fmt::streamed((double) ((timeInit-timeStart)/1000.0)), fmt::streamed("s"));
+                lvr2::log::info("{}{}{}", fmt::streamed("[LargeScaleReconstruction] Calculation: "), fmt::streamed((double) ((timeCalc-timeInit)/1000.0)), fmt::streamed("s"));
+                lvr2::log::info("{}{}{}", fmt::streamed("[LargeScaleReconstruction] Combine chunks: "), fmt::streamed((double) ((timeEnd-timeCalc)/1000.0)), fmt::streamed("s"));
 
 
         return 1;
@@ -1032,7 +1017,7 @@ namespace lvr2
 
             for (int i = 0; i < partitionBoxes.size(); i++)
             {
-                lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Chunk " << i+1 << "/" << partitionBoxes.size() << lvr2::endl;
+                                lvr2::log::info("{}{}{}{}", fmt::streamed("[LargeScaleReconstruction] Chunk "), fmt::streamed(i+1), fmt::streamed("/"), fmt::streamed(partitionBoxes.size()));
 
 
                 size_t numPoints;
@@ -1057,27 +1042,27 @@ namespace lvr2
                 MPI_Status status;
                 MPI_Recv(nullptr, 0, MPI_BYTE, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &status);
                 dest = status.MPI_SOURCE;
-                lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Send chunk to client " << dest << lvr2::endl;
+                                lvr2::log::info("{}{}", fmt::streamed("[LargeScaleReconstruction] Send chunk to client "), fmt::streamed(dest));
                 MPI_Send(&i, 1, MPI_INT, dest, 2, MPI_COMM_WORLD);
 
                 // Send all Data to client
                 // TODO: Non-blocking
-                lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Num Points: " << numPoints << lvr2::endl;
+                                lvr2::log::info("{}{}", fmt::streamed("[LargeScaleReconstruction] Num Points: "), fmt::streamed(numPoints));
                 MPI_Send(&numPoints, 1, MPI_SIZE_T, dest, 3, MPI_COMM_WORLD);
-                lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Points: " << points.get()[0] << lvr2::endl;
+                                lvr2::log::info("{}{}", fmt::streamed("[LargeScaleReconstruction] Points: "), fmt::streamed(points.get()[0]));
                 MPI_Send(points.get(), numPoints*3, MPI_FLOAT, dest, 4, MPI_COMM_WORLD);
-                lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] BoundingBoxMin: [" << x_min << "," << y_min << "," << z_min << "]" << lvr2::endl;
+                                lvr2::log::info("{}{}{}{}{}{}{}", fmt::streamed("[LargeScaleReconstruction] BoundingBoxMin: ["), fmt::streamed(x_min), fmt::streamed(","), fmt::streamed(y_min), fmt::streamed(","), fmt::streamed(z_min), fmt::streamed("]"));
                 MPI_Send(&x_min, 1, MPI_FLOAT, dest, 5, MPI_COMM_WORLD);
                 MPI_Send(&y_min, 1, MPI_FLOAT, dest, 6, MPI_COMM_WORLD);
                 MPI_Send(&z_min, 1, MPI_FLOAT, dest, 7, MPI_COMM_WORLD);
-                lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] BoundingBoxMin: [" << x_max << "," << y_max << "," << z_max << "]" << lvr2::endl;
+                                lvr2::log::info("{}{}{}{}{}{}{}", fmt::streamed("[LargeScaleReconstruction] BoundingBoxMin: ["), fmt::streamed(x_max), fmt::streamed(","), fmt::streamed(y_max), fmt::streamed(","), fmt::streamed(z_max), fmt::streamed("]"));
                 MPI_Send(&x_max, 1, MPI_FLOAT, dest, 8, MPI_COMM_WORLD);
                 MPI_Send(&y_max, 1, MPI_FLOAT, dest, 9, MPI_COMM_WORLD);
                 MPI_Send(&z_max, 1, MPI_FLOAT, dest, 10, MPI_COMM_WORLD);
-                lvr2::logout::get() << lvr2::info << "h: " << h << lvr2::endl;
+                                lvr2::log::info("{}{}", fmt::streamed("h: "), fmt::streamed(h));
                 MPI_Send(&h, 1, MPI_INT, dest, 11, MPI_COMM_WORLD);
                 bool calcNorm = !bg.hasNormals();
-                lvr2::logout::get() << lvr2::info <<  "Normals available: " << !calcNorm << lvr2::endl;
+                                lvr2::log::info("{}{}", fmt::streamed("Normals available: "), fmt::streamed(!calcNorm));
                 MPI_Send(&calcNorm, 1, MPI_CXX_BOOL, dest, 12, MPI_COMM_WORLD);
 
                 // Send normals if they are available
@@ -1085,28 +1070,28 @@ namespace lvr2
                 {
                     size_t numNormals;
                     lvr2::floatArr normals = bg.normals(gridbb, numNormals);
-                    lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] NumNormals: " << numNormals << lvr2::endl;
+                                        lvr2::log::info("{}{}", fmt::streamed("[LargeScaleReconstruction] NumNormals: "), fmt::streamed(numNormals));
                     MPI_Send(&numNormals, 1, MPI_SIZE_T, dest, 13, MPI_COMM_WORLD);
                     MPI_Send(normals.get(), numNormals*3, MPI_FLOAT, dest, 14, MPI_COMM_WORLD);
                 }
                 // Wait for new client
             }
-            lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Skipped PartitionBoxes: " << partitionBoxesSkipped << lvr2::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("[LargeScaleReconstruction] Skipped PartitionBoxes: "), fmt::streamed(partitionBoxesSkipped));
         }
         int size;
         int a = -1;
         MPI_Comm_size(MPI_COMM_WORLD, &size);
         MPI_Status status;
-        lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] All chunks send, sending abort codes... " << lvr2::endl;
+                lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] All chunks send, sending abort codes... "));
         for(int i = 1; i < size; i++)
         {
-            lvr2::logout::get() << lvr2::error << "[LargeScaleReconstruction] Abort " << i << "/" << size-1 << lvr2::endl;
+                        lvr2::log::error("{}{}{}{}", fmt::streamed("[LargeScaleReconstruction] Abort "), fmt::streamed(i), fmt::streamed("/"), fmt::streamed(size-1));
             MPI_Recv(nullptr, 0, MPI_BYTE, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &status);
             int dest = status.MPI_SOURCE;
-            lvr2::logout::get() << lvr2::error << "[LargeScaleReconstruction] Sending abort code to client " << dest << lvr2::endl;
+                        lvr2::log::error("{}{}", fmt::streamed("[LargeScaleReconstruction] Sending abort code to client "), fmt::streamed(dest));
             MPI_Send(&a, 1, MPI_INT, dest, 2, MPI_COMM_WORLD);
         }
-        lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] All clients closed." << lvr2::endl;
+                lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] All clients closed."));
         return partitionBoxesSkipped;
     }
 
@@ -1136,10 +1121,10 @@ namespace lvr2
                 // Receive chunk from client
                 int len, dest, chunk;
                 MPI_Status status;
-                lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] [Collector] Waiting for chunk " << i+1 << "/" << partitionBoxes.size() - partitionBoxesSkipped[h] << lvr2::endl;
+                                lvr2::log::info("{}{}{}{}", fmt::streamed("[LargeScaleReconstruction] [Collector] Waiting for chunk "), fmt::streamed(i+1), fmt::streamed("/"), fmt::streamed(partitionBoxes.size() - partitionBoxesSkipped[h]));
                 MPI_Recv(&len, 1, MPI_INT, MPI_ANY_SOURCE, 15, MPI_COMM_WORLD, &status);
                 dest = status.MPI_SOURCE;
-                lvr2::logout::get() << lvr2::info <<  "[LargeScaleReconstruction] [Collector] Got chunk from Client " << dest << lvr2::endl;
+                                lvr2::log::info("{}{}", fmt::streamed("[LargeScaleReconstruction] [Collector] Got chunk from Client "), fmt::streamed(dest));
                 char* ret = new char[len];
                 MPI_Recv(ret, len, MPI_CHAR, dest, 16, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
@@ -1178,8 +1163,8 @@ namespace lvr2
                 timeSum += timeEnd - timeStart;
             }
 
-            lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] ChunkManagerIO Time: " <<(double) (timeSum / 1000.0) << " s" << lvr2::endl;
-            lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Finished" << lvr2::endl;
+                        lvr2::log::info("{}{}{}", fmt::streamed("[LargeScaleReconstruction] ChunkManagerIO Time: "), fmt::streamed((double) (timeSum / 1000.0)), fmt::streamed(" s"));
+                        lvr2::log::info("{}", fmt::streamed("[LargeScaleReconstruction] Finished"));
 
             if(h == 0 && m_options.hasOutput(LSROutput::BigMesh))
             {
@@ -1199,16 +1184,13 @@ namespace lvr2
                                                                                                             coord.x,
                                                                                                             coord.y,
                                                                                                             coord.z);
-                    if (chunk) 
+                    if (chunk)
                     {
                         tsdfChunks.push_back(chunk.get());
-                    } 
-                    else 
+                    }
+                    else
                     {
-                        lvr2::logout::get() << lvr2::warning 
-                            << "[LargeScaleReconstruction] Could not find chunk (" 
-                            << coord.x << ", " << coord.y << ", " << coord.z
-                            << ") in layer: " << "tsdf_values_" + std::to_string(voxelSize) << lvr2::endl;
+                                                lvr2::log::warning("{}{}{}{}{}{}{}{}", fmt::streamed("[LargeScaleReconstruction] Could not find chunk ("), fmt::streamed(coord.x), fmt::streamed(", "), fmt::streamed(coord.y), fmt::streamed(", "), fmt::streamed(coord.z), fmt::streamed(") in layer: "), fmt::streamed("tsdf_values_" + std::to_string(voxelSize)));
                     }
                 }
                 auto hg = std::make_shared<HashGrid<BaseVecT, BoxT>>(tsdfChunks, filteredPartitionBoxes, cbb, voxelSize);
@@ -1216,7 +1198,7 @@ namespace lvr2
 
                 createAndSaveBigMesh(hg, h);
             }
-            lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] Added/changed " << newChunks.size() << " chunks in layer " << layerName << lvr2::endl;
+                        lvr2::log::info("{}{}{}{}", fmt::streamed("[LargeScaleReconstruction] Added/changed "), fmt::streamed(newChunks.size()), fmt::streamed(" chunks in layer "), fmt::streamed(layerName));
         }
     }
 
@@ -1229,7 +1211,7 @@ namespace lvr2
         int chunk;
         std::list<int> chunks;
 
-        lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] [" << rank << "] Waiting for work." << lvr2::endl;
+                lvr2::log::info("{}{}{}", fmt::streamed("[LargeScaleReconstruction] ["), fmt::streamed(rank), fmt::streamed("] Waiting for work."));
         MPI_Send(nullptr, 0, MPI_BYTE, 0, 1, MPI_COMM_WORLD);
         MPI_Recv(&chunk, 1, MPI_INT, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
@@ -1309,7 +1291,7 @@ namespace lvr2
 
 
 
-            lvr2::logout::get() << lvr2::info << "[LargeScaleReconstruction] [" << rank << "] Requesting chunk. " << lvr2::endl;
+                        lvr2::log::info("{}{}{}", fmt::streamed("[LargeScaleReconstruction] ["), fmt::streamed(rank), fmt::streamed("] Requesting chunk. "));
             // is something to do?
 
             MPI_Send(nullptr, 0, MPI_BYTE, 0, 1, MPI_COMM_WORLD);
@@ -1330,16 +1312,16 @@ namespace lvr2
             fl.read(result, len);
             fl.close();
 
-            lvr2::logout::get() << lvr2::debug << "Sending " << len << " bytes." << lvr2::endl;
+                        lvr2::log::debug("{}{}{}", fmt::streamed("Sending "), fmt::streamed(len), fmt::streamed(" bytes."));
             MPI_Send(&len, 1, MPI_INT, 0, 15 , MPI_COMM_WORLD);
-            lvr2::logout::get() << lvr2::debug << "Sending data." << lvr2::endl;
+                        lvr2::log::debug("{}", fmt::streamed("Sending data."));
             MPI_Send(result, len, MPI_CHAR, 0, 16 , MPI_COMM_WORLD);
-            lvr2::logout::get() << lvr2::debug << "Sending chunk " << chunk + 1 << lvr2::endl;
+                        lvr2::log::debug("{}{}", fmt::streamed("Sending chunk "), fmt::streamed(chunk + 1));
             MPI_Send(&chunk, 1, MPI_INT, 0, 17, MPI_COMM_WORLD);
             std::remove(largeScale.str().c_str());
             delete [] result;
         }
-        lvr2::logout::get() << lvr2::debug << "[LargeScaleReconstruction][" << rank << "] finished. " << lvr2::endl;
+                lvr2::log::debug("{}{}{}", fmt::streamed("[LargeScaleReconstruction]["), fmt::streamed(rank), fmt::streamed("] finished. "));
         return 1;
     }
 

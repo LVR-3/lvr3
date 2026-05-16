@@ -23,6 +23,7 @@
     "tiff",
     "opencv4",
     "rply",
+    "fmt",
     "spdlog",
     "tbb",
     "tl-expected",

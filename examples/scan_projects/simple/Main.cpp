@@ -2,7 +2,7 @@
 #include <memory>
 #include <lvr2/types/Variant.hpp>
 
-#include "../helper/include/Logging.hpp"
+#include <lvr2/util/Logging.hpp>
 #include "../helper/include/ScanTypesCompare.hpp"
 #include "../helper/include/ScanTypesDummies.hpp"
 
@@ -16,14 +16,14 @@ namespace
 
 void reportStorageError(const std::string& action, const lvr2::io::storage::Error& error)
 {
-    LOG(Logger::WARNING) << action << " failed: " << error.message << std::endl;
+        lvr2::log::warning("{}{}{}", fmt::streamed(action), fmt::streamed(" failed: "), fmt::streamed(error.message));
 }
 
 void directoryProjectStoreExample(ScanProjectPtr sp)
 {
     std::string filename = "examples_sp_simple/dirio_data";
 
-    LOG(Logger::DEBUG) << "Save complete scan project to '" << filename << "'" << std::endl;
+        lvr2::log::debug("{}{}{}", fmt::streamed("Save complete scan project to '"), fmt::streamed(filename), fmt::streamed("'"));
     auto opened = lvr2::io::scan::open_directory(
         filename,
         lvr2::io::scan::Schema::raw_ply(),
@@ -42,7 +42,7 @@ void directoryProjectStoreExample(ScanProjectPtr sp)
         return;
     }
 
-    LOG(Logger::DEBUG) << "Load scan project into new buffer" << std::endl;
+        lvr2::log::debug("{}", fmt::streamed("Load scan project into new buffer"));
     auto loaded = store.load();
     if (!loaded)
     {
@@ -52,22 +52,22 @@ void directoryProjectStoreExample(ScanProjectPtr sp)
 
     if (equal(sp, loaded.value()))
     {
-        LOG(Logger::DEBUG) << "Directory ProjectStore saves and loads correctly." << std::endl;
+                lvr2::log::debug("{}", fmt::streamed("Directory ProjectStore saves and loads correctly."));
     }
     else
     {
-        LOG(Logger::WARNING) << "Something went wrong. Saved and loaded scan project are not equal" << std::endl;
+                lvr2::log::warning("{}", fmt::streamed("Something went wrong. Saved and loaded scan project are not equal"));
     }
 
-    LOG(Logger::DEBUG) << "Take a look at '" << filename << "'" << std::endl;
-    LOG(Logger::DEBUG) << "- You can use 'tree' to show the entire directory structure" << std::endl;
+        lvr2::log::debug("{}{}{}", fmt::streamed("Take a look at '"), fmt::streamed(filename), fmt::streamed("'"));
+        lvr2::log::debug("{}", fmt::streamed("- You can use 'tree' to show the entire directory structure"));
 }
 
 void hdf5ProjectStoreExample(ScanProjectPtr sp)
 {
     std::string filename = "examples_sp_simple/hdf5io_data.h5";
 
-    LOG(Logger::DEBUG) << "Save complete scan project to '" << filename << "'" << std::endl;
+        lvr2::log::debug("{}{}{}", fmt::streamed("Save complete scan project to '"), fmt::streamed(filename), fmt::streamed("'"));
     auto opened = lvr2::io::scan::open_hdf5(
         filename,
         lvr2::io::scan::Schema::hdf5(),
@@ -86,7 +86,7 @@ void hdf5ProjectStoreExample(ScanProjectPtr sp)
         return;
     }
 
-    LOG(Logger::DEBUG) << "Load scan project into new buffer" << std::endl;
+        lvr2::log::debug("{}", fmt::streamed("Load scan project into new buffer"));
     auto loaded = store.load();
     if (!loaded)
     {
@@ -96,37 +96,33 @@ void hdf5ProjectStoreExample(ScanProjectPtr sp)
 
     if (equal(sp, loaded.value()))
     {
-        LOG(Logger::DEBUG) << "HDF5 ProjectStore saves and loads correctly." << std::endl;
+                lvr2::log::debug("{}", fmt::streamed("HDF5 ProjectStore saves and loads correctly."));
     }
     else
     {
-        LOG(Logger::WARNING) << "Something went wrong. Saved and loaded scan project are not equal" << std::endl;
+                lvr2::log::warning("{}", fmt::streamed("Something went wrong. Saved and loaded scan project are not equal"));
     }
 
-    LOG(Logger::DEBUG) << "Take a look at '" << filename << "'" << std::endl;
-    LOG(Logger::DEBUG) << "- You can use 'HDFCompass' to view the entire hdf5 structure" << std::endl;
+        lvr2::log::debug("{}{}{}", fmt::streamed("Take a look at '"), fmt::streamed(filename), fmt::streamed("'"));
+        lvr2::log::debug("{}", fmt::streamed("- You can use 'HDFCompass' to view the entire hdf5 structure"));
 }
 
 } // namespace
 
 int main(int argc, char** argv)
 {
-    LOG.setLoggerLevel(Logger::DEBUG);
+    lvr2::log::set_level(lvr2::log::Level::debug);
 
-    LOG(Logger::HIGHLIGHT) << "ScanProjects Simple" << std::endl;
+        lvr2::log::info("{}", fmt::streamed("ScanProjects Simple"));
 
-    LOG(Logger::DEBUG) << "Generating dataset, wait." << std::endl;
+        lvr2::log::debug("{}", fmt::streamed("Generating dataset, wait."));
     ScanProjectPtr sp = dummyScanProjectStorage();
 
-    LOG(Logger::INFO) << "1. Example: Directory ProjectStore" << std::endl;
-    LOG.tab();
+        lvr2::log::info("{}", fmt::streamed("1. Example: Directory ProjectStore"));
     directoryProjectStoreExample(sp);
-    LOG.deltab();
 
-    LOG(Logger::INFO) << "2. Example: HDF5 ProjectStore" << std::endl;
-    LOG.tab();
+        lvr2::log::info("{}", fmt::streamed("2. Example: HDF5 ProjectStore"));
     hdf5ProjectStoreExample(sp);
-    LOG.deltab();
 
     return 0;
 }

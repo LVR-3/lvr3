@@ -34,6 +34,7 @@
 
 #include "lvr2/io/modelio/DatIO.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 #include "lvr2/util/Progress.hpp"
 
 #include <boost/filesystem.hpp>
@@ -84,7 +85,7 @@ ModelPtr DatIO::read(string filename, int n, int reduction)
 	if(reduction != 0 && numPoints > reduction)
 	{
 		mod_filter = (int)(numPoints / reduction);
-		cout << timestamp << "Reduction mode. Reading every " << mod_filter << "th point." << endl;
+				lvr2::log::info("{}{}{}", fmt::streamed("Reduction mode. Reading every "), fmt::streamed(mod_filter), fmt::streamed("th point."));
 		numPoints = reduction;
 	}
 	else
@@ -155,7 +156,7 @@ ModelPtr DatIO::read(string filename, int n, int reduction)
 	pointArray = (float*)realloc(pointArray, 3 * d * sizeof(float));
 	colorArray = (unsigned char*)realloc(colorArray, 3 * d * sizeof(unsigned char));
 
-	cout << timestamp << "Creating point buffer with " << d << "points." << endl;
+		lvr2::log::info("{}{}{}", fmt::streamed("Creating point buffer with "), fmt::streamed(d), fmt::streamed("points."));
 
 	// Setup model pointer
 	floatArr parr(pointArray);
@@ -190,7 +191,7 @@ void  DatIO::save(string filename)
 			floatArr pointArray = pointBuffer->getPointArray();
 			floatArr intensityArray = pointBuffer->getFloatArray("intensities", numIntensities, w_intensities);
 			float buffer[4];
-			cout << timestamp << "Writing " << numPoints << " to " << filename << endl;
+						lvr2::log::info("{}{}{}{}", fmt::streamed("Writing "), fmt::streamed(numPoints), fmt::streamed(" to "), fmt::streamed(filename));
 			for(size_t i = 0; i < numPoints; i++)
 			{
 				memset(buffer, 0, 4 * sizeof(float));
@@ -208,7 +209,7 @@ void  DatIO::save(string filename)
 		}
 		else
 		{
-			cout << timestamp << "DatIO: Unable to open file " << filename << " for writing." << endl;
+						lvr2::log::error("{}{}{}", fmt::streamed("DatIO: Unable to open file "), fmt::streamed(filename), fmt::streamed(" for writing."));
 		}
 	}
 }

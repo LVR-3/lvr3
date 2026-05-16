@@ -33,6 +33,7 @@
 #include "lvr2/algorithm/ContourAlgorithms.hpp"
 #include "lvr2/attrmaps/AttrMaps.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 
 namespace lvr2
 {
@@ -85,7 +86,7 @@ size_t naiveFillSmallHoles(BaseMesh<BaseVecT>& mesh, size_t maxSize, bool collap
         return 0;
     }
 
-    std::cout << timestamp << "Trying to remove all holes with size ≤ " << maxSize << std::endl;
+        lvr2::log::info("{}{}", fmt::streamed("Trying to remove all holes with size ≤ "), fmt::streamed(maxSize));
 
 
     // First, we need to have a ClusterBiMap where each cluster describes one

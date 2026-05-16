@@ -51,6 +51,7 @@ using namespace std;
 
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 #include "lvr2/util/IOUtils.hpp"
 #include "lvr2/util/TransformUtils.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
@@ -95,7 +96,7 @@ int main(int argc, char** argv)
     path transformPath(options.getTransformFile());
     if(!exists(transformPath) || !is_regular_file(transformPath))
     {
-        std::cout << timestamp << "Could not open transformation file " << options.getTransformFile() << std::endl;
+                lvr2::log::error("{}{}", fmt::streamed("Could not open transformation file "), fmt::streamed(options.getTransformFile()));
         exit(-1);
     }
 
@@ -105,39 +106,39 @@ int main(int argc, char** argv)
     BaseVector<float> transform_angles;
     getPoseFromMatrix(transform_position, transform_angles, transform);
 
-    std::cout << timestamp << "Transforming: " << std::endl << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Transforming: "));
     std::cout << transform << std::endl << std::endl;
 
     path inputDir(options.getInputDir());
     if(!is_directory(inputDir))
     {
-        std::cout << timestamp << "Input directory is not valid: " << options.getInputDir() << std::endl;
+                lvr2::log::info("{}{}", fmt::streamed("Input directory is not valid: "), fmt::streamed(options.getInputDir()));
         exit(-1);
     }
 
     path outputDir(options.getOutputDir());
     if(!is_directory(inputDir))
     {
-        std::cout << timestamp << "Output directory is not valid: " << options.getOutputDir() << std::endl;
+                lvr2::log::info("{}{}", fmt::streamed("Output directory is not valid: "), fmt::streamed(options.getOutputDir()));
         exit(-1);
     }
 
     if(inputDir == outputDir)
     {
-        std::cout << timestamp << "Input directory and output directory should not be equal." << std::endl;
+                lvr2::log::info("{}", fmt::streamed("Input directory and output directory should not be equal."));
         exit(-1);
     }
 
     path mergeDir(options.getMergeDir());
     if(!is_directory(mergeDir))
     {
-        std::cout << timestamp << "Merge directory is not valid: " << options.getMergeDir() << std::endl;
+                lvr2::log::info("{}{}", fmt::streamed("Merge directory is not valid: "), fmt::streamed(options.getMergeDir()));
         exit(-1);
     }
 
     if(mergeDir == outputDir)
     {
-        std::cout << timestamp << "Merge directory and output directory should not be equal." << std::endl;
+                lvr2::log::info("{}", fmt::streamed("Merge directory and output directory should not be equal."));
         exit(-1);
     }
 
@@ -178,7 +179,7 @@ int main(int argc, char** argv)
         // -------->>>> SCAN FILE
         sprintf(name_buffer, "scan%03d.3d", scan_counter);
         path target_path = outputDir / path(name_buffer);
-        std::cout << timestamp << "Copying " << current_path.string() << " to " << target_path.string() << "." << std::endl;
+                lvr2::log::info("{}{}{}{}{}", fmt::streamed("Copying "), fmt::streamed(current_path.string()), fmt::streamed(" to "), fmt::streamed(target_path.string()), fmt::streamed("."));
         boost::filesystem::copy(current_path, target_path);
 
         // -------->>>> OCT FILE
@@ -188,7 +189,7 @@ int main(int argc, char** argv)
         {
             sprintf(name_buffer, "scan%03d.oct", scan_counter);
             path oct_out = outputDir / path(name_buffer);
-            std::cout << timestamp << "Copying " << oct_in.string() << " to " << oct_out.string() << "." << std::endl;
+                        lvr2::log::info("{}{}{}{}{}", fmt::streamed("Copying "), fmt::streamed(oct_in.string()), fmt::streamed(" to "), fmt::streamed(oct_out.string()), fmt::streamed("."));
             boost::filesystem::copy(oct_in, oct_out);
         }
 
@@ -204,11 +205,11 @@ int main(int argc, char** argv)
         // Check for exisiting frames file
         if(!exists(frames_in))
         {
-            std::cout << timestamp << "Warning: Could not find " << frames_in.string() << std::endl;
+                        lvr2::log::error("{}{}", fmt::streamed("Warning: Could not find "), fmt::streamed(frames_in.string()));
         }
         else
         {
-            std::cout << timestamp << "Copying " << frames_in.string() << " to " << frames_out.string() << "." << std::endl;
+                        lvr2::log::info("{}{}{}{}{}", fmt::streamed("Copying "), fmt::streamed(frames_in.string()), fmt::streamed(" to "), fmt::streamed(frames_out.string()), fmt::streamed("."));
             boost::filesystem::copy(frames_in, frames_out);
         }
 
@@ -224,11 +225,11 @@ int main(int argc, char** argv)
         // Check for exisiting frames file
         if(!exists(pose_in))
         {
-            std::cout << timestamp << "Warning: Could not find " << pose_in.string() << std::endl;
+                        lvr2::log::error("{}{}", fmt::streamed("Warning: Could not find "), fmt::streamed(pose_in.string()));
         }
         else
         {
-            std::cout << timestamp << "Copying " << pose_in.string() << " to " << pose_out.string() << "." << std::endl;
+                        lvr2::log::info("{}{}{}{}{}", fmt::streamed("Copying "), fmt::streamed(pose_in.string()), fmt::streamed(" to "), fmt::streamed(pose_out.string()), fmt::streamed("."));
             boost::filesystem::copy(pose_in, pose_out);
         }
 
@@ -242,7 +243,7 @@ int main(int argc, char** argv)
         // Copy scan file
         sprintf(name_buffer, "scan%03d.3d", scan_counter);
         path target_path = outputDir / path(name_buffer);
-        std::cout << timestamp << "Copying " << current_path.string() << " to " << target_path.string() << "." << std::endl;
+                lvr2::log::info("{}{}{}{}{}", fmt::streamed("Copying "), fmt::streamed(current_path.string()), fmt::streamed(" to "), fmt::streamed(target_path.string()), fmt::streamed("."));
         boost::filesystem::copy(current_path, target_path);
 
         // -------->>>> OCT FILE
@@ -252,7 +253,7 @@ int main(int argc, char** argv)
         {
             sprintf(name_buffer, "scan%03d.oct", scan_counter);
             path oct_out = outputDir / path(name_buffer);
-            std::cout << timestamp << "Copying " << oct_in.string() << " to " << oct_out.string() << "." << std::endl;
+                        lvr2::log::info("{}{}{}{}{}", fmt::streamed("Copying "), fmt::streamed(oct_in.string()), fmt::streamed(" to "), fmt::streamed(oct_out.string()), fmt::streamed("."));
             boost::filesystem::copy(oct_in, oct_out);
         }
 
@@ -268,17 +269,17 @@ int main(int argc, char** argv)
         // Check for exisiting frames file
         if(!exists(frames_in))
         {
-            std::cout << timestamp << "Warning: Could not find " << frames_in.string() << std::endl;
+                        lvr2::log::error("{}{}", fmt::streamed("Warning: Could not find "), fmt::streamed(frames_in.string()));
         }
         else
         {
             // Get transformation from file and transform
-            std::cout << timestamp << "Transforming " << frames_in.string() << std::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("Transforming "), fmt::streamed(frames_in.string()));
             Transformf registration = getTransformationFromFrames<float>(frames_in);
             //registration *= transform;
             Transformf t_reg = transformRegistration<float>(transform, registration);
 
-            std::cout << timestamp << "Writing transformed registration to " << frames_out.string() << std::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("Writing transformed registration to "), fmt::streamed(frames_out.string()));
             writeFrame(t_reg, frames_out);
 
         }
@@ -294,12 +295,12 @@ int main(int argc, char** argv)
         // Check for exisiting frames file
         if(!exists(frames_in))
         {
-            std::cout << timestamp << "Warning: Could not find " << frames_in.string() << std::endl;
+                        lvr2::log::error("{}{}", fmt::streamed("Warning: Could not find "), fmt::streamed(frames_in.string()));
         }
         else
         {
             // Get transformation from file and transform
-            std::cout << timestamp << "Transforming " << pose_in.string() << std::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("Transforming "), fmt::streamed(pose_in.string()));
             BaseVector<float> pos;
             BaseVector<float> ang;
             getPoseFromFile(pos, ang, pose_in);
@@ -307,7 +308,7 @@ int main(int argc, char** argv)
             pos += transform_position;
             ang += transform_angles;
 
-            std::cout << timestamp << "Writing transformed pose estimat to " << pose_out.string() << std::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("Writing transformed pose estimat to "), fmt::streamed(pose_out.string()));
             writePose(pos, ang, pose_out);
 
         }

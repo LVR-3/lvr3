@@ -5,6 +5,7 @@
 #include "lvr2/util/YAMLUtil.hpp"
 
 #include <unordered_set>
+#include <lvr2/util/Logging.hpp>
 
 namespace lvr2
 {
@@ -39,7 +40,7 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
         boost::filesystem::path framesPath = dir / (filename + ".frames");
 
         ScanPosition sp;
-        
+
         if(YAML::convert<ScanPosition>::decode(node, sp))
         {
             // Is scan position
@@ -49,7 +50,7 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
             // what to do here?
         }
     } else {
-        lvr2::logout::get() << lvr2::warning << "[MetaFormatFactory] Meta extension " << p.extension() << " unknown. " << lvr2::endl; 
+                lvr2::log::warning("{}{}{}", fmt::streamed("[MetaFormatFactory] Meta extension "), fmt::streamed(p.extension()), fmt::streamed(" unknown. "));
     }
 }
 
@@ -67,21 +68,18 @@ YAML::Node loadMetaInformation(const std::string &in)
         YAML::Node n;
         if (boost::filesystem::exists(inPath))
         {
-            // lvr2::logout::get() << timestamp
-            //           << "LoadMetaInformation(YAML): Loading " << inPath << lvr2::endl;
             n = YAML::LoadFile(inPath.string());
         }
         else
         {
-            lvr2::logout::get() << lvr2::error
-                      << "[MetaFormatFactory] LoadMetaInformation(YAML): Unable to find yaml file: " << inPath << lvr2::endl;
+                        lvr2::log::error("{}{}", fmt::streamed("[MetaFormatFactory] LoadMetaInformation(YAML): Unable to find yaml file: "), fmt::streamed(inPath));
         }
         return n;
     }
 
     else if (inPath.extension() == ".slam6d")
     {
-        YAML::Node node;        
+        YAML::Node node;
 
         boost::filesystem::path dir = inPath.parent_path();
         std::string filename = inPath.stem().string();
@@ -105,34 +103,30 @@ YAML::Node loadMetaInformation(const std::string &in)
         }
         else
         {
-            lvr2::logout::get() << lvr2::warning
-                      << "[MetaFormatFactory] LoadMetaInformation(SLAM6D): Warning: No pose file found." << lvr2::endl;
+                        lvr2::log::warning("{}", fmt::streamed("[MetaFormatFactory] LoadMetaInformation(SLAM6D): Warning: No pose file found."));
         }
 
         if (frames_exist)
         {
-            // lvr2::logout::get() << timestamp
-            //           << "LoadMetaInformation(SLAM6D): Loading " << framesInPath << lvr2::endl;
             sp.transformation = getTransformationFromFrames<double>(framesPath);
         }
         else
         {
             // node frames found. taking poseEstimate as transformation
             sp.transformation = sp.poseEstimation;
-            
-            lvr2::logout::get() << warning
-                      << "[MetaFormatFactory] LoadMetaInformation(SLAM6D): Warning: No frames file found." << lvr2::endl;
+
+                        lvr2::log::warning("{}", fmt::streamed("[MetaFormatFactory] LoadMetaInformation(SLAM6D): Warning: No frames file found."));
         }
 
         node = sp;
 
         return node;
-    } 
+    }
     else if(inPath.extension() == ".plyschema")
     {
         // Actually like .slam6d this is just a tag to make the loader
         // think we have meta data but in this schema we just take
-        // the already transformed pointcloud so we just have to 
+        // the already transformed pointcloud so we just have to
         // return empty scan position meta information
         YAML::Node node;
 
@@ -140,7 +134,7 @@ YAML::Node loadMetaInformation(const std::string &in)
     }
     else
     {
-        lvr2::logout::get() << lvr2::error << "[MetaFormatFactory] Meta extension " << inPath.extension() << " unknown. " << lvr2::endl;
+                lvr2::log::error("{}{}{}", fmt::streamed("[MetaFormatFactory] Meta extension "), fmt::streamed(inPath.extension()), fmt::streamed(" unknown. "));
         YAML::Node node;
         return node;
     }

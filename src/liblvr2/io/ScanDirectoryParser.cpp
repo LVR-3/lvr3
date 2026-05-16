@@ -6,6 +6,7 @@
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/registration/OctreeReduction.hpp"
 #include "lvr2/util/IOUtils.hpp"
+#include <lvr2/util/Logging.hpp>
 
 using namespace boost::filesystem;
 
@@ -27,7 +28,7 @@ ScanDirectoryParser::ScanDirectoryParser(const std::string& directory) noexcept
     Path dir(directory);
     if(!exists(directory))
     {
-        std::cout << timestamp << "Directory " << directory << " does not exist." << std::endl;
+                lvr2::log::info("{}{}{}", fmt::streamed("Directory "), fmt::streamed(directory), fmt::streamed(" does not exist."));
     }
     else
     {
@@ -56,7 +57,7 @@ void ScanDirectoryParser::setPointCloudExtension(const std::string& extension)
 void ScanDirectoryParser::setPosePrefix(const std::string& prefix)
 {
     m_posePrefix = prefix;
-}   
+}
 void ScanDirectoryParser::setPoseExtension(const std::string& extension)
 {
     m_poseExtension = extension;
@@ -81,7 +82,7 @@ size_t ScanDirectoryParser::examineASCII(const std::string& filename)
 {
     Path p(filename);
     return countPointsInFile(p);
-} 
+}
 
 PointBufferPtr ScanDirectoryParser::octreeSubSample(const double& voxelSize, const size_t& minPoints)
 {
@@ -89,19 +90,19 @@ PointBufferPtr ScanDirectoryParser::octreeSubSample(const double& voxelSize, con
 
     for(auto i : m_scans)
     {
-        std::cout << timestamp << "Reading " << i->m_filename << std::endl;
+                lvr2::log::info("{}{}", fmt::streamed("Reading "), fmt::streamed(i->m_filename));
         ModelPtr model = ModelFactory::readModel(i->m_filename);
         if(model)
         {
             PointBufferPtr buffer = model->m_pointCloud;
             if(buffer)
             {
-                std::cout << timestamp << "Building octree with voxel size " << voxelSize << " from " << i->m_filename << std::endl;
+                                lvr2::log::info("{}{}{}{}", fmt::streamed("Building octree with voxel size "), fmt::streamed(voxelSize), fmt::streamed(" from "), fmt::streamed(i->m_filename));
                 RandomSampleOctreeReduction oct(buffer, voxelSize, 5);
                 PointBufferPtr reduced = oct.getReducedPoints();
 
                 // Apply transformation
-                std::cout << timestamp << "Transforming reduced point cloud" << std::endl;
+                                lvr2::log::info("{}", fmt::streamed("Transforming reduced point cloud"));
                 out_model->m_pointCloud = reduced;
                 transformPointCloud<double>(out_model, i->m_pose);
 
@@ -109,10 +110,10 @@ PointBufferPtr ScanDirectoryParser::octreeSubSample(const double& voxelSize, con
                 std::stringstream name_stream;
                 Path p(i->m_filename);
                 name_stream << p.stem().string() << "_reduced" << ".ply";
-                std::cout << timestamp << "Saving data to " << name_stream.str() << std::endl;
+                                lvr2::log::info("{}{}", fmt::streamed("Saving data to "), fmt::streamed(name_stream.str()));
                 ModelFactory::saveModel(out_model, name_stream.str());
 
-                std::cout << timestamp << "Points written: " << reduced->numPoints() << std::endl;
+                                lvr2::log::info("{}{}", fmt::streamed("Points written: "), fmt::streamed(reduced->numPoints()));
             }
         }
     }
@@ -120,19 +121,19 @@ PointBufferPtr ScanDirectoryParser::octreeSubSample(const double& voxelSize, con
 }
 
 PointBufferPtr ScanDirectoryParser::transform()
-{ 
+{
     for(auto i : m_scans)
     {
         // Apply transformation
-        std::cout << timestamp << "Transforming " << i->m_filename << std::endl;
+                lvr2::log::info("{}{}", fmt::streamed("Transforming "), fmt::streamed(i->m_filename));
         ModelPtr model = ModelFactory::readModel(i->m_filename);
         transformPointCloud<double>(model, i->m_pose);
-    
+
         // Write reduced data
         std::stringstream name_stream;
         Path p(i->m_filename);
         name_stream << p.stem().string() << "_transformed" << ".ply";
-        std::cout << timestamp << "Saving data to " << name_stream.str() << std::endl;
+                lvr2::log::info("{}{}", fmt::streamed("Saving data to "), fmt::streamed(name_stream.str()));
         ModelFactory::saveModel(model, name_stream.str());
     }
     return PointBufferPtr(new PointBuffer);
@@ -163,20 +164,20 @@ PointBufferPtr ScanDirectoryParser::randomSubSample(const size_t& tz)
 
 
                     target_size = (int)(target_ratio + 0.5);
-                    std::cout << timestamp << "Sampling " << target_size << " points from " << i->m_filename << std::endl;
+                                        lvr2::log::info("{}{}{}{}", fmt::streamed("Sampling "), fmt::streamed(target_size), fmt::streamed(" points from "), fmt::streamed(i->m_filename));
 
                     // Sub-sample buffer
                     reduced = subSamplePointBuffer(buffer, target_size);
                 }
                 else
                 {
-                    std::cout << timestamp << "Using orignal points from " << i->m_filename << std::endl;
+                                        lvr2::log::info("{}{}", fmt::streamed("Using orignal points from "), fmt::streamed(i->m_filename));
                     reduced = buffer;
                     target_size = buffer->numPoints();
                 }
 
                 // Apply transformation
-                std::cout << timestamp << "Transforming point cloud" << std::endl;
+                                lvr2::log::info("{}", fmt::streamed("Transforming point cloud"));
                 out_model->m_pointCloud = reduced;
                 transformPointCloud<double>(out_model, i->m_pose);
 
@@ -184,11 +185,11 @@ PointBufferPtr ScanDirectoryParser::randomSubSample(const size_t& tz)
                 std::stringstream name_stream;
                 Path p(i->m_filename);
                 name_stream << p.stem().string() << "_reduced" << ".ply";
-                std::cout << timestamp << "Saving data to " << name_stream.str() << std::endl;
+                                lvr2::log::info("{}{}", fmt::streamed("Saving data to "), fmt::streamed(name_stream.str()));
                 ModelFactory::saveModel(out_model, name_stream.str());
 
                 actual_points += target_size;
-                std::cout << timestamp << "Points written: " << actual_points << " / " << tz << std::endl;
+                                lvr2::log::info("{}{}{}{}", fmt::streamed("Points written: "), fmt::streamed(actual_points), fmt::streamed(" / "), fmt::streamed(tz));
             }
         }
     }
@@ -197,9 +198,9 @@ PointBufferPtr ScanDirectoryParser::randomSubSample(const size_t& tz)
 
 void ScanDirectoryParser::parseDirectory()
 {
-    std::cout << timestamp << "Parsing directory" << m_directory << std::endl;
-    std::cout << timestamp << "Point prefix and extension: " << m_pointPrefix << " " << m_pointExtension << std::endl;
-    std::cout << timestamp << "Pose prefix and extension: " << m_posePrefix << " " << m_poseExtension << std::endl;
+        lvr2::log::info("{}{}", fmt::streamed("Parsing directory"), fmt::streamed(m_directory));
+        lvr2::log::info("{}{}{}{}", fmt::streamed("Point prefix and extension: "), fmt::streamed(m_pointPrefix), fmt::streamed(" "), fmt::streamed(m_pointExtension));
+        lvr2::log::info("{}{}{}{}", fmt::streamed("Pose prefix and extension: "), fmt::streamed(m_posePrefix), fmt::streamed(" "), fmt::streamed(m_poseExtension));
 
     m_numPoints = 0;
     for(size_t i = m_start; i <= m_end; i++)
@@ -220,7 +221,7 @@ void ScanDirectoryParser::parseDirectory()
         size_t n = 0;
         if(exists(pointPath))
         {
-            std::cout << timestamp << "Counting points in file " << pointPath << std::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("Counting points in file "), fmt::streamed(pointPath));
             if(pointPath.extension() == ".3d" || pointPath.extension() == ".txt" || pointPath.extension() == ".pts")
             {
                 n = examineASCII(pointPath.string());
@@ -233,7 +234,7 @@ void ScanDirectoryParser::parseDirectory()
         }
         else
         {
-            std::cout << timestamp << "Point cloud file " << pointPath << " does not exist." << std::endl;
+                        lvr2::log::info("{}{}{}", fmt::streamed("Point cloud file "), fmt::streamed(pointPath), fmt::streamed(" does not exist."));
         }
 
         // Check for pose information file
@@ -242,15 +243,15 @@ void ScanDirectoryParser::parseDirectory()
         if(exists(posePath))
         {
             matrix = getTransformationFromFile<double>(posePath.string());
-            std::cout << timestamp << "Found transformation: " << posePath << " @ " << std::endl << matrix << std::endl;
+                        lvr2::log::info("{}{}{}{}{}", fmt::streamed("Found transformation: "), fmt::streamed(posePath), fmt::streamed(" @ "), fmt::streamed("\n"), fmt::streamed(matrix));
         }
         else
         {
-            std::cout << timestamp << "Scan pose file " << posePath << "does not exist. Will not transfrom." << std::endl;
+                        lvr2::log::info("{}{}{}", fmt::streamed("Scan pose file "), fmt::streamed(posePath), fmt::streamed("does not exist. Will not transfrom."));
         }
 
 
-        
+
         ScanInfo* info = new ScanInfo;
         info->m_filename     = std::string(pointPath.string());
         info->m_numPoints    = n;
@@ -258,9 +259,9 @@ void ScanDirectoryParser::parseDirectory()
 
         m_scans.push_back(info);
     }
-    std::cout << timestamp << "Finished parsing. Directory contains " << m_scans.size() << " scans with " << m_numPoints << " points." << std::endl;
+        lvr2::log::info("{}{}{}{}{}", fmt::streamed("Finished parsing. Directory contains "), fmt::streamed(m_scans.size()), fmt::streamed(" scans with "), fmt::streamed(m_numPoints), fmt::streamed(" points."));
 }
 
- 
+
 
 } // namespace lvr2

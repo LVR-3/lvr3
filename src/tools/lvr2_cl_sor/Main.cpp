@@ -31,6 +31,7 @@
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/DataStruct.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 #include "lvr2/util/IOUtils.hpp"
 //#include "Options.hpp"
 
@@ -62,9 +63,9 @@ void filter(lvr2::PointBufferPtr& cloud, lvr2::indexArray& inlier, size_t j)
         }
 //        cloud->removeFloatChannel(name);
         cloud_filtered->addFloatChannel(filtered, name);
-        
+
     }
-    
+
     std::vector<lvr2::UCharChannelPtr> channels_uchar;
     std::map<std::string, lvr2::Channel<unsigned char> >  uCharChannels;
     int ucharType = cloud->getAllChannelsOfType<unsigned char>(uCharChannels);
@@ -94,14 +95,13 @@ int main(int argc, char** argv){
     size_t num_points;
 
 
-    UCharChannelOptional colorsOpt = model->m_pointCloud->getUCharChannel("colors"); 
+    UCharChannelOptional colorsOpt = model->m_pointCloud->getUCharChannel("colors");
 
     // filter based on grayscale from rgb
-    // 
+    //
 //    if(colorsOpt)
 //    {
 //     		lvr2::uintArr inlier2 = lvr2::uintArr(new unsigned int[model->m_pointCloud->numPoints()]);
-//            std::cout << timestamp << "filter based on grayscale" << std::endl;
 //            size_t k = 0;
 //            for(size_t i = 0; i < colorsOpt->numElements(); ++i)
 //            {
@@ -115,8 +115,6 @@ int main(int argc, char** argv){
 //        	    }
 //            }
 //
-//	    std::cout << timestamp << "outliers " << model->m_pointCloud->numPoints() - k << std::endl;
-//	    std::cout << timestamp << "inliers " << k << std::endl;
 //	    filter(model->m_pointCloud, inlier2, k);
 //    }
 
@@ -125,32 +123,32 @@ int main(int argc, char** argv){
     {
         num_points = model->m_pointCloud->numPoints();
         points = model->m_pointCloud->getPointArray();
-        std::cout << timestamp << "Read " << num_points << " points from " << argv[1] << std::endl;
+                lvr2::log::info("{}{}{}{}", fmt::streamed("Read "), fmt::streamed(num_points), fmt::streamed(" points from "), fmt::streamed(argv[1]));
     }
     else
     {
-        std::cout << timestamp << "Warning: No point cloud data found in " << argv[1] << std::endl;
+                lvr2::log::warning("{}{}", fmt::streamed("Warning: No point cloud data found in "), fmt::streamed(argv[1]));
         return 0;
     }
 
     lvr2::uintArr inlier = lvr2::uintArr(new unsigned int[num_points]);
 
-    std::cout << timestamp << "Constructing kd-tree..." << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Constructing kd-tree..."));
     ClSOR sor(points, num_points, 40);
-    std::cout << timestamp << "Finished kd-tree construction." << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Finished kd-tree construction."));
 
 
     sor.calcDistances();
-    std::cout << timestamp << "Got Nearest Neighbors" << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Got Nearest Neighbors"));
     sor.calcStatistics();
-    std::cout << timestamp << "Got Statistics" << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Got Statistics"));
     sor.setMult(1.5);
 
     int j  = sor.getInliers(inlier);
 
-    std::cout << timestamp << "outliers " << num_points - j << std::endl;
-    std::cout << timestamp << "inliers " << j << std::endl;
-    
+        lvr2::log::info("{}{}", fmt::streamed("outliers "), fmt::streamed(num_points - j));
+        lvr2::log::info("{}{}", fmt::streamed("inliers "), fmt::streamed(j));
+
     filter(model->m_pointCloud, inlier, j);
 
 //    lvr2::PointBufferPtr cloud = model->m_pointCloud;
@@ -176,9 +174,9 @@ int main(int argc, char** argv){
 //        }
 ////        cloud->removeFloatChannel(name);
 //        cloud_filtered->addFloatChannel(filtered, name);
-//        
+//
 //    }
-//    
+//
 //    std::vector<lvr2::UCharChannelPtr> channels_uchar;
 //    std::map<std::string, lvr2::Channel<unsigned char> >  uCharChannels;
 //    int ucharType = cloud->getAllChannelsOfType<unsigned char>(uCharChannels);

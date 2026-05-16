@@ -1,12 +1,13 @@
 #include <lvr2/util/Logging.hpp>
-#include <spdlog/spdlog.h>
+
 #include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
 
 #include <cstdio>
 #include <utility>
 
 // This file is compiled with -fvisibility=hidden to prevent spdlog symbols
-// to be public in the dynamic library
+// from becoming public in the dynamic library.
 #ifdef LVR2_BUILDING_SHARED
     #define LVR2_API __attribute__ ((visibility ("default")))
 #else
@@ -16,36 +17,61 @@
 namespace lvr2
 {
 
-LVR2_API Logger::Logger()
+namespace
 {
-    m_logger = spdlog::stdout_color_mt("lvr2logger");
-    m_logger->set_pattern("[%H:%M:%S:%e]%^[%-7l]%$ %v");
-    m_level = LogLevel::info;
+
+std::shared_ptr<spdlog::logger> logger_instance()
+{
+    static std::shared_ptr<spdlog::logger> logger = [] {
+        if(auto existing = spdlog::get("lvr2logger"))
+        {
+            return existing;
+        }
+
+        auto created = spdlog::stdout_color_mt("lvr2logger");
+        created->set_pattern("[%H:%M:%S:%e]%^[%-7l]%$ %v");
+        created->set_level(spdlog::level::info);
+        return created;
+    }();
+
+    return logger;
 }
 
-LVR2_API void Logger::print()
+spdlog::level::level_enum to_spdlog_level(log::Level level)
 {
-    spdlog::level::level_enum level;
-    
-    switch(m_level)
+    switch(level)
     {
-        case LogLevel::trace: level = spdlog::level::trace; break;
-        case LogLevel::debug: level = spdlog::level::debug; break;
-        case LogLevel::info: level = spdlog::level::info; break;
-        case LogLevel::warning: level = spdlog::level::warn; break;
-        case LogLevel::error: level = spdlog::level::err; break;
-
+        case log::Level::trace: return spdlog::level::trace;
+        case log::Level::debug: return spdlog::level::debug;
+        case log::Level::info: return spdlog::level::info;
+        case log::Level::warning: return spdlog::level::warn;
+        case log::Level::error: return spdlog::level::err;
     }
 
-    m_logger->log(level, m_buffer.str());
-    m_buffer.str("");
-    m_buffer.clear();
+    return spdlog::level::info;
 }
 
-LVR2_API void Logger::flush()
+} // namespace
+
+namespace log
 {
-    m_logger->flush();
+
+LVR2_API void set_level(Level level)
+{
+    logger_instance()->set_level(to_spdlog_level(level));
 }
+
+LVR2_API void flush()
+{
+    logger_instance()->flush();
+}
+
+LVR2_API void write(Level level, std::string_view message)
+{
+    logger_instance()->log(to_spdlog_level(level), "{}", message);
+}
+
+} // namespace log
 
 struct MonitorState
 {

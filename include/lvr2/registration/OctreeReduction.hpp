@@ -62,8 +62,8 @@ public:
 
     /**
      * @brief Construct a new Octree Reduction Base object
-     * 
-     * @param pointBuffer       Point buffer with the initial point cloud 
+     *
+     * @param pointBuffer       Point buffer with the initial point cloud
      * @param voxelSize         Voxel size of the octree
      * @param minPointsPerVoxel Minimum points per voxel
      */
@@ -75,7 +75,7 @@ public:
 
 
     /**
-     * @brief Get the reduced point buffer 
+     * @brief Get the reduced point buffer
      */
     virtual PointBufferPtr getReducedPoints() = 0;
 
@@ -83,7 +83,7 @@ protected:
 
     /**
      * @brief Construct a new Octree Reduction Base object with an external point buffer
-     * 
+     *
      * @param numPoints         Number of points in the point buffer
      * @param voxelSize         Voxel size of the octree
      * @param minPointsPerVoxel Minimum points per voxel
@@ -107,7 +107,7 @@ protected:
     size_t              m_minPointsPerVoxel;
 
     /// Number of points in point buffer
-    size_t              m_numPoints; 
+    size_t              m_numPoints;
 };
 
 class RandomSampleOctreeReduction : public OctreeReductionBase
@@ -116,9 +116,9 @@ public:
     /**
      * @brief Constructs an random-sampling based octree that holds at least \ref minPointsPerVoxel
      *        randomly selected points per voxel
-     * 
+     *
      * @param pointBuffer       The point buffer with the initial point cloud
-     * @param voxelSize         Minimum size of a Leaf Node. Anything smaller will be 
+     * @param voxelSize         Minimum size of a Leaf Node. Anything smaller will be
      *                          condensed using the random sampling policy
      * @param minPointsPerVoxel Minimum number of points per voxel
      *                          The Octree recursion stops if the number of points in the voxel is smaller than this
@@ -127,11 +127,11 @@ public:
     RandomSampleOctreeReduction(PointBufferPtr pointBuffer, float voxelSize, size_t minPointsPerVoxel);
     /**
      * @brief Constructs an random-sampling octree from the given point array
-     * 
+     *
      * @param points            The points to be reduced. THIS DATA WILL BE MODIFIED IN PLACE.
-     * @param n                 The length of points. Will be updated to the number of points after 
+     * @param n                 The length of points. Will be updated to the number of points after
      *                          reduction.
-     * @param voxelSize         The minimum size of a Leaf Node. Anything smaller will be 
+     * @param voxelSize         The minimum size of a Leaf Node. Anything smaller will be
      *                          condensed using the sampling policy
      * @param minPointsPerVoxel Minimum number of points per voxel
      *                          The Octree recursion stops if the number of points in the voxel is smaller than this
@@ -141,7 +141,7 @@ public:
 
     /**
      * @brief Get the Reduced Points object. ONLY WORKS IF PointBufferPtr CONSTRUCTOR WAS USED
-     * 
+     *
      * @return PointBufferPtr The reduced points
      */
     PointBufferPtr getReducedPoints() override;
@@ -158,19 +158,19 @@ private:
     /// @param level            Octree depth
     void createOctree(size_t start, size_t n, const Vector3f& min, const Vector3f& max, unsigned int level = 0);
 
-    /// @brief Sorts the leaf points according to split value 
+    /// @brief Sorts the leaf points according to split value
     /// @param start            Start index of the points
     /// @param n                Number of points to distribute
     /// @param axis             Split axis
     /// @param splitValue       Split valie
-    /// @return 
+    /// @return
     size_t splitPoints(size_t start, size_t n, unsigned int axis, float splitValue);
 
     /// m_flags[i] == true iff m_points[i] should be deleted
-    bool*               m_flags; 
+    bool*               m_flags;
 
     /// Pointer to handled point array (not owned)
-    Vector3f*           m_points; 
+    Vector3f*           m_points;
 };
 
 class NearestCenterOctreeReduction : public OctreeReductionBase
@@ -178,9 +178,9 @@ class NearestCenterOctreeReduction : public OctreeReductionBase
 public:
       /**
      * @brief Constructs octtree that holds up to \ref minPointsPerVoxel
-     *        points per voxel. It selects one point per voxel which is 
+     *        points per voxel. It selects one point per voxel which is
      *        closest to the voxel center
-     * 
+     *
      * @param pointBuffer       The point buffer with the initial point cloud
      * @param voxelSize         Minimum size of a Leaf Node. Anything smaller will be
      *                          condensed with the point that is closest to the voxel center
@@ -191,11 +191,11 @@ public:
     NearestCenterOctreeReduction(PointBufferPtr pointBuffer, float voxelSize, size_t minPointsPerVoxel);
 
     /**
-     * @brief Get the Reduced Points object. 
-     * 
+     * @brief Get the Reduced Points object.
+     *
      * @return PointBufferPtr The reduced points
      */
-    PointBufferPtr getReducedPoints() override;   
+    PointBufferPtr getReducedPoints() override;
 
 private:
     /// @brief Recursive helper function to build the octree
@@ -206,7 +206,7 @@ private:
     /// @param level            Octree depth
     void createOctree(size_t* start, size_t* end, const Vector3f& min, const Vector3f& max, unsigned int level = 0);
 
-    /// @brief Sorts the leaf points according to split value 
+    /// @brief Sorts the leaf points according to split value
     /// @param start            Start index of the points
     /// @param end              Past-the-end index of the points
     /// @param axis             Split axis
@@ -217,13 +217,13 @@ private:
     /// Array representation of the initial point cloud
     floatArr                m_points;
 
-    /// Index array with the filtered points 
+    /// Index array with the filtered points
     std::vector<size_t>     m_samplePointIndices;
 };
 
 /**
  * @brief Reference implementation of an octree-based reduction algorithm
- * 
+ *
  */
 class OctreeReductionAlgorithm : public ReductionAlgorithm
 {
@@ -256,8 +256,7 @@ public:
         {
             return m_octree->getReducedPoints();
         }
-        lvr2::logout::get() 
-            << lvr2::warning << "[OctreeReduction] Cannot get reduced points without point buffer." << lvr2::endl;
+                lvr2::log::warning("{}", fmt::streamed("[OctreeReduction] Cannot get reduced points without point buffer."));
 
         return PointBufferPtr(new PointBuffer());
     }
@@ -266,7 +265,7 @@ private:
     /// Pointer to the octree that is used for reduction
     std::shared_ptr<OctreeReductionBase> m_octree;
 
-    /// Voxel size  
+    /// Voxel size
     float m_voxelSize;
 
     /// Minimum number of points

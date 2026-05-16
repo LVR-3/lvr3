@@ -33,6 +33,7 @@
 
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 #include "lvr2/algorithm/NormalAlgorithms.hpp"
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
@@ -53,7 +54,7 @@ using namespace lvr2;
 int main( int argc, char ** argv )
 {
   hdf5meshtool::Options options(argc, argv);
-  std::cout << timestamp << "Load HDF5 file structure..." << std::endl;
+    lvr2::log::info("{}", fmt::streamed("Load HDF5 file structure..."));
 
   using MeshToolStore = lvr2::io::mesh::Hdf5MeshStore;
 
@@ -85,8 +86,7 @@ int main( int argc, char ** argv )
     HalfEdgeMesh<BaseVector<float>> hem;
     size_t numFaces = meshBuffer->numFaces();
     size_t numVertices = meshBuffer->numVertices();
-    std::cout << timestamp << "Building mesh from buffers with " << numFaces
-      << " faces and " << numVertices << " vertices..." << std::endl;
+        lvr2::log::info("{}{}{}{}{}", fmt::streamed("Building mesh from buffers with "), fmt::streamed(numFaces), fmt::streamed(" faces and "), fmt::streamed(numVertices), fmt::streamed(" vertices..."));
 
     floatArr vertices = meshBuffer->getVertices();
     indexArray indices = meshBuffer->getFaceIndices();
@@ -116,7 +116,7 @@ int main( int argc, char ** argv )
     }
     if (invalid_face_cnt > 0)
     {
-      std::cout << timestamp << "Invalid faces found during HalfEdgeMesh construction: " << invalid_face_cnt << std::endl;
+            lvr2::log::info("{}{}", fmt::streamed("Invalid faces found during HalfEdgeMesh construction: "), fmt::streamed(invalid_face_cnt));
     }
 
     MeshToolStore hdf5;
@@ -141,41 +141,40 @@ int main( int argc, char ** argv )
     }
     if (faceNormalsOpt)
     {
-      std::cout << timestamp << "Using existing face normals..." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Using existing face normals..."));
       faceNormals = *faceNormalsOpt;
     }
     else
     {
-      std::cout << timestamp << "Computing face normals..." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Computing face normals..."));
       faceNormals = calcFaceNormals(hem);
     }
     if(options.getEdgeCollapseNum() > 0)
     {
       double percent = options.getEdgeCollapseNum() > 100 ? 1 : options.getEdgeCollapseNum() / 100.0;
       size_t numCollapse = static_cast<size_t>(percent * hem.numEdges());
-      std::cout << timestamp << "Reduce mesh by collapsing " << percent * 100
-        << "% of the edges (" << numCollapse << " out of " << hem.numEdges() << ")" << std::endl;
+            lvr2::log::info("{}{}{}{}{}{}{}", fmt::streamed("Reduce mesh by collapsing "), fmt::streamed(percent * 100), fmt::streamed("% of the edges ("), fmt::streamed(numCollapse), fmt::streamed(" out of "), fmt::streamed(hem.numEdges()), fmt::streamed(")"));
       simpleMeshReduction(hem, numCollapse, faceNormals);
     }
 
     // add mesh to file
     if(options.getEdgeCollapseNum() > 0 || !writeToHdf5Input)
     {
-      std::cout << timestamp << "Adding mesh to file..." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Adding mesh to file..."));
       // add mesh to file
       bool addedMesh = hdf5.addMesh(hem);
       if (addedMesh)
       {
-        std::cout << timestamp << "successfully added mesh" << std::endl;
+                lvr2::log::info("{}", fmt::streamed("successfully added mesh"));
       }
       else
       {
-        std::cout << timestamp << "could not add the mesh!" << std::endl;
+                lvr2::log::error("{}", fmt::streamed("could not add the mesh!"));
       }
     }
     else
     {
-      std::cout << timestamp << "Mesh already included." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Mesh already included."));
     }
 
     // add face normals to file
@@ -185,16 +184,16 @@ int main( int argc, char ** argv )
               hem, faceNormals, "face_normals");
       if(addedFaceNormals)
       {
-        std::cout << timestamp << "successfully added face normals" << std::endl;
+                lvr2::log::info("{}", fmt::streamed("successfully added face normals"));
       }
       else
       {
-        std::cout << timestamp << "could not add face normals!" << std::endl;
+                lvr2::log::error("{}", fmt::streamed("could not add face normals!"));
       }
     }
     else
     {
-      std::cout << timestamp << "Face normals already included." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Face normals already included."));
     }
 
     // vertex normals
@@ -206,12 +205,12 @@ int main( int argc, char ** argv )
     }
     if (vertexNormalsOpt)
     {
-      std::cout << timestamp << "Using existing vertex normals..." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Using existing vertex normals..."));
       vertexNormals = *vertexNormalsOpt;
     }
     else if (meshBuffer != nullptr && meshBuffer->hasVertexNormals())
     {
-      std::cout << timestamp << "Using existing vertex normals from mesh buffer..." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Using existing vertex normals from mesh buffer..."));
       const FloatChannelOptional channel_opt = meshBuffer->getChannel<float>("vertex_normals");
       if (channel_opt && channel_opt.get().width() == 3 and channel_opt.get().numElements() == hem.numVertices())
       {
@@ -224,32 +223,32 @@ int main( int argc, char ** argv )
       }
       else
       {
-        std::cerr << timestamp << "Error while reading vertex normals..." << std::endl;
+                lvr2::log::error("{}", fmt::streamed("Error while reading vertex normals..."));
       }
     }
 
     if(vertexNormals.numValues() == 0)
     {
-      std::cout << timestamp << "Computing vertex normals..." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Computing vertex normals..."));
       vertexNormals = calcVertexNormals(hem, faceNormals);
     }
     if (!vertexNormalsOpt || !writeToHdf5Input)
     {
-      std::cout << timestamp << "Adding vertex normals..." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Adding vertex normals..."));
       bool addedVertexNormals = hdf5.addDenseAttributeMap<DenseVertexMap<Normal<float>>>(
               hem, vertexNormals, "vertex_normals");
       if (addedVertexNormals)
       {
-        std::cout << timestamp << "successfully added vertex normals" << std::endl;
+                lvr2::log::info("{}", fmt::streamed("successfully added vertex normals"));
       }
       else
       {
-        std::cout << timestamp << "could not add vertex normals!" << std::endl;
+                lvr2::log::error("{}", fmt::streamed("could not add vertex normals!"));
       }
     }
     else
     {
-      std::cout << timestamp << "Vertex normals already included." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Vertex normals already included."));
     }
 
     // vertex colors
@@ -264,13 +263,13 @@ int main( int argc, char ** argv )
     }
     if (colorsOpt)
     {
-      std::cout << timestamp << "Using existing vertex colors..." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Using existing vertex colors..."));
       colors = *colorsOpt;
       colorsFoundInSource = true;
     }
     else if (meshBuffer != nullptr && (channel_opt = meshBuffer->getChannel<uint8_t>("vertex_colors"))
       && channel_opt && channel_opt.get().width() == 3 && channel_opt.get().numElements() == hem.numVertices()) {
-      std::cout << timestamp << "Using existing colors from mesh buffer..." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Using existing colors from mesh buffer..."));
       colorsFoundInSource = true;
 
       auto &channel = channel_opt.get();
@@ -282,28 +281,28 @@ int main( int argc, char ** argv )
     }
     if (!colorsOpt || !writeToHdf5Input)
     {
-      if (colorsFoundInSource) 
+      if (colorsFoundInSource)
       {
-        std::cout << timestamp << "Adding vertex colors found in source..." << std::endl;
+                lvr2::log::info("{}", fmt::streamed("Adding vertex colors found in source..."));
         bool addedVertexColors = hdf5.addDenseAttributeMap<DenseVertexMap<color>>(
             hem, colors, "vertex_colors");
         if (addedVertexColors)
         {
-          std::cout << timestamp << "successfully added vertex colors" << std::endl;
+                    lvr2::log::info("{}", fmt::streamed("successfully added vertex colors"));
         }
         else
         {
-          std::cout << timestamp << "could not add vertex colors!" << std::endl;
+                    lvr2::log::error("{}", fmt::streamed("could not add vertex colors!"));
         }
-      } 
-      else 
+      }
+      else
       {
-          std::cout << timestamp << "Skipping vertex colors: No colors found in input file." << std::endl;
+                    lvr2::log::info("{}", fmt::streamed("Skipping vertex colors: No colors found in input file."));
       }
     }
     else
     {
-      std::cout << timestamp << "Vertex colors already included." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Vertex colors already included."));
     }
 
 
@@ -316,31 +315,31 @@ int main( int argc, char ** argv )
     }
     if (averageAnglesOpt)
     {
-      std::cout << timestamp << "Using existing vertex average angles..." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Using existing vertex average angles..."));
       averageAngles = *averageAnglesOpt;
     }
     else
     {
-      std::cout << timestamp << "Computing vertex average angles..." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Computing vertex average angles..."));
       averageAngles = calcAverageVertexAngles(hem, vertexNormals);
     }
     if (!averageAnglesOpt || !writeToHdf5Input)
     {
-      std::cout << timestamp << "Adding vertex average angles..." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Adding vertex average angles..."));
       bool addedAverageAngles = hdf5.addDenseAttributeMap<DenseVertexMap<float>>(
               hem, averageAngles, "average_angles");
       if (addedAverageAngles)
       {
-        std::cout << timestamp << "successfully added vertex average angles" << std::endl;
+                lvr2::log::info("{}", fmt::streamed("successfully added vertex average angles"));
       }
       else
       {
-        std::cout << timestamp << "could not add vertex average angles!" << std::endl;
+                lvr2::log::error("{}", fmt::streamed("could not add vertex average angles!"));
       }
     }
     else
     {
-      std::cout << timestamp << "Vertex average angles already included." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Vertex average angles already included."));
     }
 
     // roughness
@@ -352,32 +351,31 @@ int main( int argc, char ** argv )
     }
     if (roughnessOpt)
     {
-      std::cout << timestamp << "Using existing roughness..." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Using existing roughness..."));
       roughness = *roughnessOpt;
     }
     else
     {
-      std::cout << timestamp << "Computing roughness with a local radius of "
-                << options.getLocalRadius() << "m ..." << std::endl;
+            lvr2::log::info("{}{}{}", fmt::streamed("Computing roughness with a local radius of "), fmt::streamed(options.getLocalRadius()), fmt::streamed("m ..."));
       roughness = calcVertexRoughness(hem, options.getLocalRadius(), vertexNormals);
     }
     if (!roughnessOpt || !writeToHdf5Input)
     {
-      std::cout << timestamp << "Adding roughness..." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Adding roughness..."));
       bool addedRoughness = hdf5.addDenseAttributeMap<DenseVertexMap<float>>(
               hem, roughness, "roughness");
       if (addedRoughness)
       {
-        std::cout << timestamp << "successfully added roughness." << std::endl;
+                lvr2::log::info("{}", fmt::streamed("successfully added roughness."));
       }
       else
       {
-        std::cout << timestamp << "could not add roughness!" << std::endl;
+                lvr2::log::error("{}", fmt::streamed("could not add roughness!"));
       }
     }
     else
     {
-      std::cout << timestamp << "Roughness already included." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Roughness already included."));
     }
 
     // height differences
@@ -389,32 +387,31 @@ int main( int argc, char ** argv )
     }
     if (heightDifferencesOpt)
     {
-      std::cout << timestamp << "Using existing height differences..." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Using existing height differences..."));
       heightDifferences = *heightDifferencesOpt;
     }
     else
     {
-      std::cout << timestamp << "Computing height diff with a local radius of "
-                << options.getLocalRadius() << "m ..." << std::endl;
+            lvr2::log::info("{}{}{}", fmt::streamed("Computing height diff with a local radius of "), fmt::streamed(options.getLocalRadius()), fmt::streamed("m ..."));
       heightDifferences = calcVertexHeightDifferences(hem, vertexNormals, options.getLocalRadius());
     }
     if (!heightDifferencesOpt || !writeToHdf5Input)
     {
-      std::cout << timestamp << "Adding roughness..." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Adding roughness..."));
       bool addedHeightDiff = hdf5.addDenseAttributeMap<DenseVertexMap<float>>(
               hem, heightDifferences, "height_diff");
       if (addedHeightDiff)
       {
-        std::cout << timestamp << "successfully added height differences." << std::endl;
+                lvr2::log::info("{}", fmt::streamed("successfully added height differences."));
       }
       else
       {
-        std::cout << timestamp << "could not add height differences!" << std::endl;
+                lvr2::log::error("{}", fmt::streamed("could not add height differences!"));
       }
     }
     else
     {
-      std::cout << timestamp << "Height differences already included." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Height differences already included."));
     }
 
 
@@ -427,32 +424,31 @@ int main( int argc, char ** argv )
     }
     if (borderCostsOpt)
     {
-      std::cout << timestamp << "Using existing border costs..." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Using existing border costs..."));
       borderCosts = *borderCostsOpt;
     }
     else
     {
-      std::cout << timestamp << "Computing border costs ... Setting border vertex costs to "
-                << options.getBorderVertexCost() << " ..." << std::endl;
+            lvr2::log::info("{}{}{}", fmt::streamed("Computing border costs ... Setting border vertex costs to "), fmt::streamed(options.getBorderVertexCost()), fmt::streamed(" ..."));
       borderCosts = calcBorderCosts(hem, 1.0);
     }
     if (!borderCostsOpt || !writeToHdf5Input)
     {
-      std::cout << timestamp << "Adding border costs..." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Adding border costs..."));
       bool addedBorderCosts = hdf5.addDenseAttributeMap<DenseVertexMap<float>>(
               hem, borderCosts, "border");
       if (addedBorderCosts)
       {
-        std::cout << timestamp << "successfully added border costs." << std::endl;
+                lvr2::log::info("{}", fmt::streamed("successfully added border costs."));
       }
       else
       {
-        std::cout << timestamp << "could not add border costs!" << std::endl;
+                lvr2::log::error("{}", fmt::streamed("could not add border costs!"));
       }
     }
     else
     {
-      std::cout << timestamp << "Border costs already included." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Border costs already included."));
     }
 
     // Free space above vertices
@@ -464,37 +460,36 @@ int main( int argc, char ** argv )
     }
     if (freeSpaceOpt)
     {
-      std::cout << timestamp << "Using existing free space ..." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Using existing free space ..."));
       freeSpace = freeSpaceOpt.value();
     }
     else
     {
-      std::cout << timestamp << "Computing free space ..." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Computing free space ..."));
       freeSpace = calcNormalClearance(hem, vertexNormals);
     }
     if (!freeSpaceOpt || !writeToHdf5Input)
     {
-      std::cout << timestamp << "Adding free space..." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Adding free space..."));
       bool addedBorderCosts = hdf5.addDenseAttributeMap<DenseVertexMap<float>>(
               hem, freeSpace, "freespace");
       if (addedBorderCosts)
       {
-        std::cout << timestamp << "successfully added free space." << std::endl;
+                lvr2::log::info("{}", fmt::streamed("successfully added free space."));
       }
       else
       {
-        std::cout << timestamp << "could not add free space!" << std::endl;
+                lvr2::log::error("{}", fmt::streamed("could not add free space!"));
       }
     }
     else
     {
-      std::cout << timestamp << "Free space already included." << std::endl;
+            lvr2::log::info("{}", fmt::streamed("Free space already included."));
     }
   }
   else
   {
-    std::cout << timestamp << "Error reading mesh data from "
-              << options.getOutputFile() << std::endl;
+        lvr2::log::error("{}{}", fmt::streamed("Error reading mesh data from "), fmt::streamed(options.getOutputFile()));
   }
 
   return 0;

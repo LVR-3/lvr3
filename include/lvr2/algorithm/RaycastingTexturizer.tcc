@@ -14,6 +14,7 @@
 #include <numeric>
 #include <variant>
 #include <atomic>
+#include <lvr2/util/Logging.hpp>
 
 using Eigen::Quaterniond;
 using Eigen::Quaternionf;
@@ -98,7 +99,7 @@ void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
 
             // Load all images
             for (auto group : camera->groups)
-            { 
+            {
                 for (auto elem : group->images)
                 {
                     ImageInfo info;
@@ -111,7 +112,7 @@ void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
             while (!processList.empty())
             {
                 // Get the element to process
-                auto [imagePtr, info] = processList.front();                
+                auto [imagePtr, info] = processList.front();
                 // Pop the element to be processed
                 processList.pop();
 
@@ -140,7 +141,7 @@ void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
         }
     }
 
-    lvr2::logout::get() << "[RaycastingTexturizer] Loaded " << m_images.size() << " images" << lvr2::endl;
+        lvr2::log::info("{}{}{}", fmt::streamed("[RaycastingTexturizer] Loaded "), fmt::streamed(m_images.size()), fmt::streamed(" images"));
 }
 
 template <typename BaseVecT>
@@ -217,7 +218,7 @@ TextureHandle RaycastingTexturizer<BaseVecT>::generateTexture(
     // Make sure the texture contains at least 1 pixel
     sizeX = std::max<unsigned short int>({sizeX, 1});
     sizeY = std::max<unsigned short int>({sizeY, 1});
-    
+
     TextureHandle texH = this->m_textures.push(
         this->initTexture(
             index,
@@ -231,7 +232,7 @@ TextureHandle RaycastingTexturizer<BaseVecT>::generateTexture(
 
     if (m_images.size() == 0)
     {
-        std::cout << timestamp << "[RaycastingTexturizer] No images set, cannot texturize cluster" << std::endl;
+                lvr2::log::info("{}", fmt::streamed("[RaycastingTexturizer] No images set, cannot texturize cluster"));
         return texH;
     }
 
@@ -306,7 +307,7 @@ void RaycastingTexturizer<BaseVecT>::paintTriangle(
 
     // Determine texel bb
     auto [minP, maxP] = texelTriangle.getAABoundingBox();
-    
+
     // Lambda to process a texel // uv has to be between 0 and tex_width/tex_heigth not 0 and 1
     auto ProcessTexel = [&](Vector2f uv, Vector2i texel)
     {
@@ -393,16 +394,16 @@ void RaycastingTexturizer<BaseVecT>::paintTexel(
     const std::vector<ImageInfo>& images)
 {
     for (ImageInfo img: images)
-    {   
+    {
         // Check if the point is visible
         if (!this->isVisible(img.cameraOrigin, point, faceH)) continue;
 
         cv::Vec3b color;
         // If the color could not be calculated process next image
         if (!this->calcPointColor(point, img, color)) continue;
-        
+
         setPixel(texel.x(), texel.y(), this->m_textures[texH], color);
-        
+
         // After the pixel is texturized we are done
         return;
     }
@@ -424,7 +425,7 @@ std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTextur
         [&](ImageInfo elem)
         {
             Vector3f to_triangle = (center - elem.cameraOrigin).normalized();
-            
+
             // 1 is 0 deg -1 is 180
             float sin_angle = to_triangle.dot(elem.viewDirectionWorld);
             // If the angle is smaller than 90 deg keep the image
@@ -500,7 +501,7 @@ std::vector<typename RaycastingTexturizer<BaseVecT>::ImageInfo> RaycastingTextur
         }
     );
 
-    // Return max 10 Images, this should be enough if we need 
+    // Return max 10 Images, this should be enough if we need
     // more then 10 the images are probably to far away to have good data anyway
     // and we can reduce the amount of traced rays especially for large amounts of images
     if (ret.size() <= 10)

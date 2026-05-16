@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 
 namespace YAML {
 
@@ -57,7 +58,7 @@ namespace YAML_UTIL
 {
 /**
  * @brief Check if the \ref node has a \ref tag_name Tag with value \ref required_value
- * 
+ *
  * @param node The node to check
  * @param decoder_name The decoder calling this function, used in error messages
  * @param tag_name The Tag to check for
@@ -69,16 +70,13 @@ inline bool ValidateNodeTag(const YAML::Node& node, const char* decoder_name, co
 {
     if(!node[tag_name])
     {
-        std::cout << lvr2::timestamp << "[YAML::convert<" << decoder_name << "> - decode] "
-                    << "Node has no '" << tag_name << "' Tag" << std::endl; 
+                lvr2::log::info("{}{}{}{}{}{}", fmt::streamed("[YAML::convert<"), fmt::streamed(decoder_name), fmt::streamed("> - decode] "), fmt::streamed("Node has no '"), fmt::streamed(tag_name), fmt::streamed("' Tag"));
         return false;
     }
     if (node[tag_name].as<std::string>() != required_value)
     {
         // different hierarchy level
-        std::cout << lvr2::timestamp << "[YAML::convert<" << decoder_name << "> - decode] " 
-                    << "Nodes " << tag_name << " '" << node[tag_name].as<std::string>()
-                    << "' is not '" <<  required_value << "'" << std::endl; 
+                lvr2::log::info("{}{}{}{}{}{}{}{}{}{}", fmt::streamed("[YAML::convert<"), fmt::streamed(decoder_name), fmt::streamed("> - decode] "), fmt::streamed("Nodes "), fmt::streamed(tag_name), fmt::streamed(" '"), fmt::streamed(node[tag_name].as<std::string>()), fmt::streamed("' is not '"), fmt::streamed(required_value), fmt::streamed("'"));
         return false;
     }
 
@@ -87,7 +85,7 @@ inline bool ValidateNodeTag(const YAML::Node& node, const char* decoder_name, co
 
 /**
  * @brief Checks if the entity and type tag of the \ref node exist and match \ref entity and \ref type respectively.
- * 
+ *
  * @param node The node to check
  * @param converter_name The name of the converter calling this function. Used in the error messages.
  * @param entity The desired value the 'entity' Tag should have

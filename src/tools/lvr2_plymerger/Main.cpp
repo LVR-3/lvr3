@@ -37,6 +37,7 @@
 #include <iostream>
 #include <fstream>
 #include <tuple>
+#include <lvr2/util/Logging.hpp>
 
 using std::ofstream;
 using std::cout;
@@ -59,13 +60,13 @@ void parsePLYHeader(
 
     if(!ply)
     {
-        std::cout << timestamp << "Could not open '" << filename << "." << endl;
+                lvr2::log::error("{}{}{}", fmt::streamed("Could not open '"), fmt::streamed(filename), fmt::streamed("."));
         return;
     }
 
     if ( !ply_read_header( ply ) )
     {
-       std::cout << timestamp << "Could not read header." << endl;
+              lvr2::log::error("{}", fmt::streamed("Could not read header."));
        return;
     }
 
@@ -102,7 +103,7 @@ void parsePLYHeader(
     // that the .ply does not contain point cloud data
     if(found_faces && found_vertices && !found_points)
     {
-        cout << timestamp << "Warning: While parsing '" << filename << "': Found mesh data without points." << endl;
+                lvr2::log::warning("{}{}{}", fmt::streamed("Warning: While parsing '"), fmt::streamed(filename), fmt::streamed("': Found mesh data without points."));
         //return;
     }
 
@@ -112,13 +113,13 @@ void parsePLYHeader(
 
     if(!ply)
     {
-        std::cout << timestamp << "Could not open '" << filename << "." << endl;
+                lvr2::log::error("{}{}{}", fmt::streamed("Could not open '"), fmt::streamed(filename), fmt::streamed("."));
         return;
     }
 
     if ( !ply_read_header( ply ) )
     {
-       std::cout << timestamp << "Could not read header." << endl;
+              lvr2::log::error("{}", fmt::streamed("Could not read header."));
        return;
     }
 
@@ -132,8 +133,6 @@ void parsePLYHeader(
         {
             if (!strcmp( name, "vertex" ) )
             {
-//                cout << timestamp << "Reading points from vertex field." << endl;
-//                cout << timestamp << "File contains " << n << " points." << endl;
                 p_ply_property prop = NULL;
                 numPoints = n;
                 while ((prop = ply_get_next_property(element, prop)))
@@ -141,12 +140,10 @@ void parsePLYHeader(
                     ply_get_property_info( prop, &name, NULL, NULL, NULL );
                     if ( !strcmp( name, "red" ) ||  !strcmp( name, "r" ))
                     {
-                        //cout << timestamp << "Found colors." << endl;
                         hasColors = true;
                     }
                     else if(!strcmp( name, "nx"))
                     {
-                        //cout << timestamp << "Found normals." << endl;
                         hasNormals = true;
                     }
                 }
@@ -156,8 +153,6 @@ void parsePLYHeader(
         {
             if (!strcmp( name, "point" ) )
             {
-//                cout << timestamp << "Reading points from point field." << endl;
-//                cout << timestamp << "File contains " << n << " points." << endl;
                 p_ply_property prop = NULL;
                 numPoints = n;
                 while ((prop = ply_get_next_property(element, prop)))
@@ -165,12 +160,10 @@ void parsePLYHeader(
                     ply_get_property_info( prop, &name, NULL, NULL, NULL );
                     if ( !strcmp( name, "red" ) ||  !strcmp( name, "r" ))
                     {
-                        //cout << timestamp << "Found colors." << endl;
                         hasColors = true;
                     }
                     else if(!strcmp( name, "nx"))
                     {
-                        //cout << timestamp << "Found normals." << endl;
                         hasNormals = true;
                     }
                 }
@@ -338,20 +331,20 @@ int main(int argc, char** argv)
             mergeNormals = true;
         }
 
-        cout << timestamp << "Parsed directory. Reading " << totalNumPoints << " points from " << ply_file_names.size() << " files." << endl;
+                lvr2::log::info("{}{}{}{}{}", fmt::streamed("Parsed directory. Reading "), fmt::streamed(totalNumPoints), fmt::streamed(" points from "), fmt::streamed(ply_file_names.size()), fmt::streamed(" files."));
         if(mergeNormals)
         {
-            cout << timestamp << "Merging normals." << endl;
+                        lvr2::log::info("{}", fmt::streamed("Merging normals."));
         }
 
         if(mergeColors)
         {
-            cout << timestamp << "Merging colors." << endl;
+                        lvr2::log::info("{}", fmt::streamed("Merging colors."));
         }
     }
     else
     {
-        std::cout << timestamp << options.inputDir() << " does not exist or is not a directory." << std::endl;
+                lvr2::log::info("{}{}", fmt::streamed(options.inputDir()), fmt::streamed(" does not exist or is not a directory."));
     }
 
     string outfile_name = options.outputFile();

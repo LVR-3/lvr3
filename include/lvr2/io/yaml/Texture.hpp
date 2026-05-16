@@ -2,21 +2,22 @@
 
 #include <yaml-cpp/yaml.h>
 #include <lvr2/texture/Texture.hpp>
+#include <lvr2/util/Logging.hpp>
 
 namespace YAML {
 
 /**
  * YAML-CPPs convert specialization
- * 
- * example: 
+ *
+ * example:
  */
 
 template<>
-struct convert<lvr2::Texture> 
+struct convert<lvr2::Texture>
 {
 
     static Node encode(const lvr2::Texture& texture) {
-        
+
         Node node;
         node["index"]           = (int64_t) texture.m_index;
         node["width"]           = (int64_t) texture.m_width;
@@ -28,47 +29,41 @@ struct convert<lvr2::Texture>
         return node;
     }
 
-    static bool decode(const Node& node, lvr2::Texture& texture) 
+    static bool decode(const Node& node, lvr2::Texture& texture)
     {
         if (!node["index"])
         {
-            std::cout << lvr2::timestamp << "[YAML::convert<Texture> - decode] " 
-                            << "Node has no tag 'index'." << std::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("[YAML::convert<Texture> - decode] "), fmt::streamed("Node has no tag 'index'."));
             return false;
         }
 
         if (!node["width"])
         {
-            std::cout << lvr2::timestamp << "[YAML::convert<Texture> - decode] " 
-                            << "Node has no tag 'width'." << std::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("[YAML::convert<Texture> - decode] "), fmt::streamed("Node has no tag 'width'."));
             return false;
         }
 
         if (!node["height"])
         {
-            std::cout << lvr2::timestamp << "[YAML::convert<Texture> - decode] " 
-                            << "Node has no tag 'height'." << std::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("[YAML::convert<Texture> - decode] "), fmt::streamed("Node has no tag 'height'."));
             return false;
         }
 
         if (!node["num_channels"])
         {
-            std::cout << lvr2::timestamp << "[YAML::convert<Texture> - decode] " 
-                            << "Node has no tag 'num_channels'." << std::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("[YAML::convert<Texture> - decode] "), fmt::streamed("Node has no tag 'num_channels'."));
             return false;
         }
 
         if (!node["channel_width"])
         {
-            std::cout << lvr2::timestamp << "[YAML::convert<Texture> - decode] " 
-                            << "Node has no tag 'channel_width'." << std::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("[YAML::convert<Texture> - decode] "), fmt::streamed("Node has no tag 'channel_width'."));
             return false;
         }
 
         if (!node["texel_size"])
         {
-            std::cout << lvr2::timestamp << "[YAML::convert<Texture> - decode] " 
-                            << "Node has no tag 'texel_size'." << std::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("[YAML::convert<Texture> - decode] "), fmt::streamed("Node has no tag 'texel_size'."));
             return false;
         }
 

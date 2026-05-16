@@ -18,6 +18,7 @@
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 
 #include <signal.h>
+#include <lvr2/util/Logging.hpp>
 
 using namespace lvr2;
 
@@ -35,7 +36,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options& op
     // Create point set surface object
     if (pcm_name == "PCL")
     {
-        std::cout << timestamp << "Using PCL as point cloud manager is not implemented yet!" << std::endl;
+                lvr2::log::info("{}", fmt::streamed("Using PCL as point cloud manager is not implemented yet!"));
         panic_unimplemented("PCL as point cloud manager");
     }
     else if (pcm_name == "FLANN" || pcm_name == "NANOFLANN")
@@ -45,8 +46,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options& op
     }
     else
     {
-        std::cout << timestamp << "Unable to create PointCloudManager." << std::endl;
-        std::cout << timestamp << "Unknown option '" << pcm_name << "'." << std::endl;
+                lvr2::log::error("{}", fmt::streamed("Unable to create PointCloudManager."));
+                lvr2::log::info("{}{}{}", fmt::streamed("Unknown option '"), fmt::streamed(pcm_name), fmt::streamed("'."));
         return nullptr;
     }
 
@@ -75,7 +76,7 @@ void saveMesh(int s = 0)
 
     ModelPtr m(new Model(res));
 
-    std::cout << timestamp << "Saving mesh." << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Saving mesh."));
     ModelFactory::saveModel(m, "triangle_init_mesh.ply");
     exit(0);
 }
@@ -99,7 +100,7 @@ int main(int argc, char** argv)
     // did model parse succeed
     if (!model)
     {
-        std::cout << timestamp << "IO Error: Unable to parse " << options.getInputFileName() << std::endl;
+                lvr2::log::error("{}{}", fmt::streamed("IO Error: Unable to parse "), fmt::streamed(options.getInputFileName()));
         return EXIT_FAILURE;
     }
 

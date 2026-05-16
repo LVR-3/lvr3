@@ -39,6 +39,7 @@
 #include "lvr2/io/ScanDirectoryParser.hpp"
 #include "lvr2/util/IOUtils.hpp"
 #include "lvr2/registration/OctreeReduction.hpp"
+#include <lvr2/util/Logging.hpp>
 
 using namespace lvr2;
 
@@ -54,30 +55,30 @@ int main(int argc, char** argv) {
 
     if (options.getTargetSize() && options.getVoxelSize())
     {
-        std::cout << timestamp << "Warning: Octree reduction and random reduction requested." << std::endl;
-        std::cout << timestamp << "Please chose set either octree voxel size with -v or target " << std::endl;
-        std::cout << timestamp << "size with random reduction using --targetSize." << std::endl;
+                lvr2::log::warning("{}", fmt::streamed("Warning: Octree reduction and random reduction requested."));
+                lvr2::log::info("{}", fmt::streamed("Please chose set either octree voxel size with -v or target "));
+                lvr2::log::info("{}", fmt::streamed("size with random reduction using --targetSize."));
         return 0;
     }
 
     if(options.getInputFile() != "")
     {
-        std::cout << timestamp << "Reading '" << options.getInputFile() << "." << std::endl;
+                lvr2::log::info("{}{}{}", fmt::streamed("Reading '"), fmt::streamed(options.getInputFile()), fmt::streamed("."));
         ModelPtr model = ModelFactory::readModel(options.getInputFile());
         if(model)
         {
             PointBufferPtr result = model->m_pointCloud;
             PointBufferPtr buffer = model->m_pointCloud;
-            
+
             // Reduce if requested using the specified technique
             if(options.getTargetSize())
             {
-                std::cout << timestamp << "Random sampling " << options.getTargetSize() << " points." << std::endl;
+                                lvr2::log::info("{}{}{}", fmt::streamed("Random sampling "), fmt::streamed(options.getTargetSize()), fmt::streamed(" points."));
                 result = subSamplePointBuffer(buffer, options.getTargetSize());
             }
             else if(options.getVoxelSize())
             {
-                std::cout << timestamp << "Octree reduction with voxel size " << options.getVoxelSize() << std::endl;
+                                lvr2::log::info("{}{}", fmt::streamed("Octree reduction with voxel size "), fmt::streamed(options.getVoxelSize()));
                 RandomSampleOctreeReduction oct(buffer, options.getVoxelSize(), 5);
                 result = oct.getReducedPoints();
             }
@@ -85,7 +86,7 @@ int main(int argc, char** argv) {
             // Convert coordinates of result buffer is nessessary
             if(options.convertToLVR())
             {
-                std::cout << timestamp << "Converting from SLAM6D to LVR coordinates" << std::endl;
+                                lvr2::log::info("{}", fmt::streamed("Converting from SLAM6D to LVR coordinates"));
                 slamToLVRInPlace(result);
             }
 
@@ -99,15 +100,14 @@ int main(int argc, char** argv) {
                 targetFileName = options.getOutputFile();
             }
 
-            std::cout << timestamp << "Saving '" << targetFileName << "'" << std::endl;
+                        lvr2::log::info("{}{}{}", fmt::streamed("Saving '"), fmt::streamed(targetFileName), fmt::streamed("'"));
             ModelFactory::saveModel(ModelPtr(new Model(result)), targetFileName);
         }
         else
         {
-            std::cout << timestamp << "Error: Could not load '"  
-                      << options.getInputFile() << "'." << std::endl;
+                        lvr2::log::error("{}{}{}", fmt::streamed("Error: Could not load '"), fmt::streamed(options.getInputFile()), fmt::streamed("'."));
         }
-        
+
     }
     else
     {
@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
         parser.setPosePrefix(options.getPosePrefix());
         parser.setPointCloudExtension(options.getScanExtension());
         parser.setPoseExtension(options.getPoseExtension());
-        parser.parseDirectory(); 
+        parser.parseDirectory();
 
         if(options.getTargetSize())
         {
@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
         }
 
     }
-    
-  
+
+
     return 0;
 }
