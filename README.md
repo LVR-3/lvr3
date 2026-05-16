@@ -216,8 +216,8 @@ Supported options:
                                         together with normals into a single 
                                         file called 'pointnormals.ply'
   -g [ --saveGrid ]                     Writes the generated grid to a file 
-                                        called 'fastgrid.grid. The result can 
-                                        be rendered with qviewer.
+                                        called 'fastgrid.grid'. The result can
+                                        be rendered with an external grid viewer.
   -s [ --saveOriginalData ]             Save the original points and the 
                                         estimated normals together with the 
                                         reconstruction into one file 

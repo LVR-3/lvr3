@@ -378,22 +378,6 @@ if(CUDA_FOUND)
         reconstruction/cuda/lbvh/normals_kernel.cu
     )
 
-    if(VTK_FOUND)
-        # Fix broken VTK flags
-        get_directory_property(dir_defs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
-        set(vtk_flags)
-        foreach(it ${dir_defs})
-            if(it MATCHES "vtk*")
-            list(APPEND vtk_flags ${it})
-            endif()
-        endforeach()
-
-        foreach(d ${vtk_flags})
-            remove_definitions(-D${d})
-        endforeach()
-    endif(VTK_FOUND)
-
-    
     # find NVRTC - runtime compilation library for CUDA C++
 	if (NOT DEFINED CUDA_NVRTC_LIBRARY)
         string(REGEX REPLACE cudart nvrtc CUDA_NVRTC_LIBRARY ${CUDA_CUDART_LIBRARY})

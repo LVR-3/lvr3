@@ -60,10 +60,12 @@ backend policy:
 
 ## Term inventory
 
+The numeric totals are a historical baseline captured before later storage-service and bundled-viewer removal work. Regenerate the counts before using them for current totals; the migration targets and contracts below remain authoritative.
+
 | Term | Matches | Files | Main concentration |
 |---|---:|---:|---|
 | `BaseIO` | 464 | 59 | `baseio`, `scanio`, `meshio`, public utility bridges |
-| `FeatureBuild` | 25 | 12 | `BaseIO.hpp`, `scanio`/`meshio` typedefs, viewer state |
+| `FeatureBuild` | 25 | 12 | `BaseIO.hpp`, `scanio`/`meshio` typedefs, historical viewer state removed with the bundled viewer |
 | `FeatureConstruct` | 81 | 22 | dependency wiring in `BaseIO.hpp`, `scanio`, `meshio` |
 | `AddFeatures` | 7 | 6 | old HDF5 tool/builders and label scan-project bridge |
 | `Merge<` | 31 | 20 | feature dependency composition in `scanio`, `meshio`, deprecated HDF5 |
@@ -77,7 +79,7 @@ backend policy:
 | `include/lvr2/io/scanio` | 33 | 386 | Rewrite as `lvr2::io::scan` services and delete CRTP feature headers. |
 | `include/lvr2/io/meshio` | 12 | 100 | Delete or route through existing mesh facade/storage services; do not keep public `meshio`. |
 | `include/lvr2/io/deprecated/hdf5` | 8 | 18 | Delete or rewrite only reachable helpers; no deprecated CRTP carry-forward. |
-| `src/tools` | 15 | 82 | Migrate non-viewer tools to `ProjectStore`/one-shot helpers; remove viewer. |
+| `src/tools` | 15 | 82 | Migrate remaining non-viewer tools to `ProjectStore`/one-shot helpers; bundled viewer paths were removed. |
 | `examples/scan_projects` | 4 | 41 | Rewrite examples to show `lvr2::io::scan` usage only. |
 | `src/liblvr2` utility/bridge files | 6 | 97 | Convert utility functions to call the new one-shot helpers internally. |
 
@@ -172,10 +174,7 @@ backend policy:
 - `src/tools/lvr2_reconstruct/Main.cpp` — `DirectoryIO`:2, `HDF5IO`:3
 - `src/tools/lvr2_scanproject_parser/Main.cpp` — `BaseIO`:1, `DirectoryIO`:1
 - `src/tools/lvr2_slam2hdf5/Main.cpp` — `HDF5IO`:2
-- `src/tools/lvr2_viewer/app/LVRMainWindow.cpp` — `FeatureBuild`:8, `DirectoryIO`:10, `HDF5IO`:13
-- `src/tools/lvr2_viewer/app/LVRMainWindow.hpp` — `FeatureBuild`:1
-- `src/tools/lvr2_viewer/widgets/LVRScanProjectItem.cpp` — `FeatureBuild`:2
-- `src/tools/lvr2_viewer/widgets/LVRScanProjectItem.hpp` — `FeatureBuild`:3, `DirectoryIO`:1
+- Historical `src/tools/lvr2_viewer/*` entries were removed; BaseIO migration work must not target viewer internals.
 
 ## Public and bundled migration map
 
@@ -186,7 +185,7 @@ backend policy:
 | Base-qualified `ScanProjectIO::load/save/loadMeta` calls | `examples/scan_projects/*/Main.cpp`, `src/liblvr2/util/ScanProjectUtils.cpp`, `include/lvr2/algorithm/ChunkingPipeline.tcc` | `ProjectStore::load()`, `ProjectStore::save(project)`, `ProjectStore::load_meta()` or one-shot helpers. | Tool/example migration before CRTP deletion. |
 | Existing `loadScanProject`/`saveScanProject` utility functions | `src/liblvr2/util/ScanProjectUtils.cpp`, `src/tools/lvr2_reconstruct/Main.cpp`, `src/tools/lvr2_scanproject_parser/Main.cpp` | Keep CLI behavior by delegating utilities to `lvr2::io::scan::load_project` / `save_project` until callers can use the new API directly. | Utility bridge migration. |
 | Tool-local `AddFeatures`/deprecated HDF5 builders | `src/tools/lvr2_hdf5_builder_2/Main.cpp`, `src/tools/lvr2_largescale_reconstruct_mpi/Main.cpp`, `src/liblvr2/io/scanio/LabelHDF5IO.cpp` | Replace with final scan/storage services or delete unreachable deprecated paths; do not expose feature composition. | Tool migration and deprecated wrapper deletion. |
-| `FeatureBuild<scanio::ScanProjectIO>` viewer state and dynamic casts | `src/tools/lvr2_viewer/app/LVRMainWindow.cpp`, `src/tools/lvr2_viewer/widgets/LVRScanProjectItem.*` | No migration inside the core repo. The bundled viewer is removed/detached; do not spend storage migration effort on viewer internals. | Viewer removal. |
+| Historical `FeatureBuild<scanio::ScanProjectIO>` viewer state and dynamic casts | Removed `src/tools/lvr2_viewer/*` files | No migration inside the core repo. The bundled viewer was removed; do not spend storage migration effort on viewer internals. | Complete. |
 | `meshio::DirectoryIO` / `meshio::HDF5IO` storage wrappers | `include/lvr2/io/meshio/*`, `src/tools/lvr2_reconstruct/Main.cpp`, `src/tools/lvr2_3dtiles/Main.cpp` | Route mesh assets through `lvr2::io::mesh` facade and any retained point-cloud/storage work through `lvr2::io::storage`; do not keep public `meshio`. | Unified I/O namespace and CRTP deletion. |
 
 ## Scan-project smoke commands

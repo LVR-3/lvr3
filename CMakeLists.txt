@@ -66,14 +66,10 @@ set(_LVR2_SYSTEM_PACKAGE_OPTOUTS
   CUDA
   RDB
   OpenCL2
-  VTK
   PCL
   OpenMP
   RiVLib
   Draco
-  Qt5
-  QVTK
-  Curses
   Doxygen
   GTest
   Python3
@@ -94,7 +90,6 @@ project(lvr2 VERSION 25.2.3)
 
 # OPTIONS
 option(LVR2_BUILD_EXAMPLES "Build the examples" OFF)
-option(LVR2_BUILD_VIEWER "Build lvr2_viewer" OFF)
 option(LVR2_BUILD_TOOLS "Build tools including lvr2_reconstruct" ON)
 option(LVR2_BUILD_TOOLS_EXPERIMENTAL "Build experimental tools" OFF)
 option(LVR2_WITH_KINFU "Compile LVR Kinfu" OFF)
@@ -512,65 +507,6 @@ if(LVR2_WITH_OPENCL)
   endif(OPENCL_FOUND)
 endif(LVR2_WITH_OPENCL)
 
-# TODO: I cannot move this section down to the 'add_subdirectory' part.
-# There must be some side effects on the way there 
-if(LVR2_BUILD_VIEWER)
-  #------------------------------------------------------------------------------
-  # Searching for VTK
-  #------------------------------------------------------------------------------
-  set(VTK_QT_VERSION 5)
-  lvr2_find_package(VTK REQUIRED)
-
-  if(DEFINED VTK_MAJOR_VERSION AND
-     (VTK_MAJOR_VERSION VERSION_EQUAL "8" OR VTK_MAJOR_VERSION VERSION_EQUAL "9"))
-    find_path(QVTK_OPENGL_WIDGET_INCLUDE_DIR
-      NAMES QVTKOpenGLWidget.h QVTKOpenGLNativeWidget.h
-      HINTS ${VTK_INCLUDE_DIRS})
-    if(NOT QVTK_OPENGL_WIDGET_INCLUDE_DIR)
-      message(FATAL_ERROR
-        "LVR2_BUILD_VIEWER with VTK ${VTK_MAJOR_VERSION} requires package-provided "
-        "QVTKOpenGLWidget/QVTKOpenGLNativeWidget headers. The vendored patched "
-        "QVTKOpenGLWidget copy was removed in vcpkg-first dependency policy.")
-    endif()
-    include_directories(BEFORE ${QVTK_OPENGL_WIDGET_INCLUDE_DIR})
-    if(VTK_MAJOR_VERSION VERSION_EQUAL "8")
-      list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK8)
-    else()
-      list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK9)
-    endif()
-  endif()
-  if(DEFINED VTK_MAJOR_VERSION AND VTK_MAJOR_VERSION VERSION_LESS "6")
-    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK5)
-  endif()
-
-  if(VTK_MAJOR_VERSION VERSION_EQUAL "7")
-      if(VTK_MINOR_VERSION VERSION_GREATER "0")
-          list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
-      endif()
-  endif()
-
-  if(VTK_MAJOR_VERSION VERSION_GREATER "7")
-    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
-  endif()
-
-  if(VTK_VERSION VERSION_GREATER "7")
-
-    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_VTK_GE_7_1)
-    set(VTK_COMPONENTS "${VTK_AVAILABLE_COMPONENTS}")
-    set(VTK_HAS_QT OFF)
-    foreach(VTK_COMPONENT ${VTK_COMPONENTS})
-      if("${VTK_COMPONENT}" STREQUAL "GUISupportQt")
-        set(VTK_HAS_QT ON)
-      endif()
-    endforeach()
-
-    message(STATUS "Found VTK (Version > 7)")
-    if(VTK_HAS_QT)
-      message(STATUS "Found VTK compoment QVTK")
-    endif()
-  endif()
-endif(LVR2_BUILD_VIEWER)
-
 #------------------------------------------------------------------------------
 ## Searching for PCL
 #------------------------------------------------------------------------------
@@ -785,16 +721,6 @@ install(DIRECTORY include/lvr2 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 list(APPEND LVR2_INSTALL_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR})
 
 ###############################################################################
-# VTK use file include. Has to be called after all CUDA code
-# was generated and compiled. The VTK definitions corrupt the
-# nvcc call
-###############################################################################
-
-if(DEFINED VTK_USE_FILE)
-  include(${VTK_USE_FILE})
-endif()
-
-###############################################################################
 # SET DEPENDENCIES
 ###############################################################################
 
@@ -960,38 +886,6 @@ if(LVR2_BUILD_EXAMPLES)
 endif()
 
 ###############################################################################
-# LVR2 VIEWER + LVR2 ASCII VIEWER
-###############################################################################
-if(LVR2_BUILD_VIEWER)
-
-  if(DEFINED VTK_USE_FILE)
-    include(${VTK_USE_FILE})
-  endif()
-
-  lvr2_find_package(Qt5 COMPONENTS Core Widgets Xml OpenGL)
-  if(Qt5_FOUND)
-      message(STATUS "Found QT5")
-      lvr2_find_package(QVTK)
-      if(QVTK_FOUND)
-        message(STATUS "Found QVTK ${QVTK_INCLUDE_DIR}")
-        include_directories(${QVTK_INCLUDE_DIR})
-        add_subdirectory(src/tools/lvr2_viewer)
-      elseif(DEFINED VTK_VERSION AND VTK_VERSION VERSION_GREATER "7" AND VTK_HAS_QT)
-        add_subdirectory(src/tools/lvr2_viewer)
-      endif(QVTK_FOUND)
-  endif(Qt5_FOUND)
-
-  lvr2_find_package(Curses)
-  if(CURSES_FOUND)
-      include_directories( ${CURSES_INCLUDE_DIRS} )
-  endif()
-
-  if(CURSES_FOUND AND embree_FOUND)
-    add_subdirectory(src/tools/lvr2_ascii_viewer)
-  endif()
-endif(LVR2_BUILD_VIEWER)
-
-###############################################################################
 # CMAKE FILES
 ###############################################################################
 include(CMakePackageConfigHelpers)
@@ -1002,7 +896,6 @@ set(_LVR_CMAKE_MODULES
     CMakeModules/FindLZ4.cmake
     CMakeModules/FindOpenNI.cmake
     CMakeModules/FindOpenNI2.cmake
-    CMakeModules/FindQVTK.cmake
 )
 
 install(EXPORT lvr2-targets

@@ -443,9 +443,8 @@ int main(int argc, char** argv)
         {
             Transformd pose = scans[i]->pose();
             cout << "Main:Pose Scan Nummer " << i << endl << pose << endl;
-            // The pose needs to be transposed before writing to hdf,
-            // because the lvr2_viewer expects finalPose in hdf transposed this way.
-            // The initial pose is saved NOT transposed in HDF
+            // Preserve the legacy HDF finalPose layout: final poses are stored
+            // transposed while initial poses are stored without transposition.
             pose.transposeInPlace();
             h5_ptr->MatrixIO::save("raw/scans/" + numOfScansInHDF[i], "finalPose", pose);
         }

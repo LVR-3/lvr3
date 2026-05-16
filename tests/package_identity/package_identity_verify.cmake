@@ -21,7 +21,6 @@ function(_copy_lvr_find_modules _lvr2_modules_dir _lvr3_modules_dir)
     "${_PROJECT_DIR}/CMakeModules/FindLZ4.cmake"
     "${_PROJECT_DIR}/CMakeModules/FindOpenNI.cmake"
     "${_PROJECT_DIR}/CMakeModules/FindOpenNI2.cmake"
-    "${_PROJECT_DIR}/CMakeModules/FindQVTK.cmake"
   )
   foreach(_module IN LISTS _LVR_MODULE_SOURCE)
     file(INSTALL DESTINATION "${_lvr2_modules_dir}" FILES "${_module}")
