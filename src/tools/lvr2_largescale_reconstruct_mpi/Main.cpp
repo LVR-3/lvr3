@@ -34,11 +34,9 @@
 #include "lvr2/config/lvropenmp.hpp"
 #include <random>
 #include <string>
-#include <lvr2/io/hdf5/ScanIO.hpp>
 #include <boost/filesystem.hpp>
-#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
-#include "lvr2/io/hdf5/ScanProjectIO.hpp"
-#include "lvr2/io/ScanIOUtils.hpp"
+#include "lvr2/io/ModelFactory.hpp"
+#include "lvr2/io/scan.hpp"
 #include <mpi.h>
 
 using std::cout;
@@ -61,12 +59,6 @@ typedef ClSurface GpuSurface;
 #endif
 
 using Vec = lvr2::BaseVector<float>;
-// using ScanHDF5IO = lvr2::Hdf5Build<lvr2::hdf5features::ScanIO>;
-
-using BaseHDF5IO = lvr2::Hdf5IO<>;
-
-// Extend IO with features (dependencies are automatically fetched)
-using HDF5IO = BaseHDF5IO::AddFeatures<lvr2::hdf5features::ScanProjectIO>;
 
 void sendClients(int size, bool start)
 {
@@ -144,16 +136,17 @@ int main(int argc, char** argv)
         std::shared_ptr<ChunkHashGrid> cm;
         BoundingBox<Vec> boundingBox;
 
-        HDF5IO hdf;
-
         //reconstruction from hdf5
-        if (extension == ".h5")
+        if (extension == ".h5" || extension == ".hdf5")
         {
-            // loadAllPreviewsFromHDF5(in, *project->project.get());
-            HDF5IO hdf;
-            hdf.open(in);
-            ScanProjectPtr scanProjectPtr = hdf.loadScanProject();
-            project->project = scanProjectPtr;
+            auto loaded = lvr2::io::scan::load_project(in, lvr2::io::scan::LoadOptions::hdf5());
+            if (!loaded)
+            {
+                std::cout << timestamp << "Unable to load HDF5 scan project: " << loaded.error().message << std::endl;
+                MPI_Finalize();
+                return EXIT_FAILURE;
+            }
+            project->project = loaded.value();
 
             for (int i = 0; i < project->project->positions.size(); i++)
             {
@@ -162,14 +155,27 @@ int main(int argc, char** argv)
             cm = std::shared_ptr<ChunkHashGrid>(new ChunkHashGrid(in, 50, boundingBox, options.getChunkSize()));
         } else
         {
-
-            ScanProject dirScanProject;
-            bool importStatus = loadScanProject(in, dirScanProject);
-            //reconstruction from ScanProject Folder
-            if (importStatus)
+            ScanProjectPtr loadedDirectoryProject;
+            if (boost::filesystem::is_directory(selectedFile))
             {
-                project->project = std::make_shared<ScanProject>(dirScanProject);
-                std::vector<bool> init(dirScanProject.positions.size(), true);
+                auto loadedDirectory = lvr2::io::scan::load_project(
+                    in,
+                    lvr2::io::scan::LoadOptions::directory_raw_ply());
+                if (loadedDirectory)
+                {
+                    loadedDirectoryProject = loadedDirectory.value();
+                }
+                else
+                {
+                    std::cout << timestamp << "Unable to load directory scan project: "
+                              << loadedDirectory.error().message << std::endl;
+                }
+            }
+            //reconstruction from ScanProject Folder
+            if (loadedDirectoryProject)
+            {
+                project->project = loadedDirectoryProject;
+                std::vector<bool> init(project->project->positions.size(), true);
                 project->changed = init;
             }
                 //reconstruction from a .ply file
@@ -180,8 +186,10 @@ int main(int argc, char** argv)
                 ScanPtr scan(new Scan);
 
                 scan->points = model->m_pointCloud;
+                LIDARPtr lidar(new LIDAR);
+                lidar->scans.push_back(scan);
                 ScanPositionPtr scanPosPtr = ScanPositionPtr(new ScanPosition());
-                scanPosPtr->scans.push_back(scan);
+                scanPosPtr->lidars.push_back(lidar);
                 project->project->positions.push_back(scanPosPtr);
                 project->changed.push_back(true);
             }
@@ -200,8 +208,10 @@ int main(int argc, char** argv)
                         ScanPtr scan(new Scan);
 
                         scan->points = model->m_pointCloud;
+                        LIDARPtr lidar(new LIDAR);
+                        lidar->scans.push_back(scan);
                         ScanPositionPtr scanPosPtr = ScanPositionPtr(new ScanPosition());
-                        scanPosPtr->scans.push_back(scan);
+                        scanPosPtr->lidars.push_back(lidar);
                         project->project->positions.push_back(scanPosPtr);
                         project->changed.push_back(true);
                     }

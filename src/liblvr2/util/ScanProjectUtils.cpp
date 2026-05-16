@@ -5,19 +5,139 @@
 #include "lvr2/util/TransformUtils.hpp"
 #include "lvr2/util/Logging.hpp"
 #include "lvr2/io/ModelFactory.hpp"
-#include "lvr2/io/scanio/HDF5IO.hpp"
-#include "lvr2/io/scanio/DirectoryIO.hpp"
-#include "lvr2/io/kernels/DirectoryKernel.hpp"
-#include "lvr2/io/kernels/HDF5Kernel.hpp"
+#include "lvr2/io/scan.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/iostreams/stream.hpp>
 
+#include <algorithm>
 #include <atomic>
+#include <cctype>
 
 namespace lvr2
 {
+
+namespace
+{
+
+std::string upperSchemaName(std::string schema)
+{
+    std::transform(schema.begin(), schema.end(), schema.begin(), [](unsigned char c) {
+        return static_cast<char>(std::toupper(c));
+    });
+    return schema;
+}
+
+bool isHdf5Path(const boost::filesystem::path& path)
+{
+    const std::string extension = path.extension().string();
+    return extension == ".h5" || extension == ".hdf5";
+}
+
+lvr2::io::storage::Error unsupportedDirectorySchemaError(const std::string& schema)
+{
+    return {lvr2::io::storage::ErrorCode::Unsupported,
+            "ProjectStore directory scan-project storage supports RAWPLY point data and RAW metadata-only layouts; schema '" + schema + "' is not supported by the new service path"};
+}
+
+lvr2::io::storage::Error unsupportedHdf5SchemaError(const std::string& schema)
+{
+    return {lvr2::io::storage::ErrorCode::Unsupported,
+            "ProjectStore HDF5 scan-project storage supports the HDF5 schema; schema '" + schema + "' is not supported by the new service path"};
+}
+
+lvr2::io::storage::Result<lvr2::io::scan::Schema> directoryProjectStoreSchema(const std::string& schema)
+{
+    const std::string name = upperSchemaName(schema);
+    if (name.empty() || name == "RAWPLY")
+    {
+        return lvr2::io::scan::Schema::raw_ply();
+    }
+    if (name == "RAW")
+    {
+        return lvr2::io::scan::Schema::raw();
+    }
+    return lvr2::io::storage::unexpected(unsupportedDirectorySchemaError(schema));
+}
+
+lvr2::io::storage::Result<lvr2::io::scan::Schema> hdf5ProjectStoreSchema(const std::string& schema)
+{
+    const std::string name = upperSchemaName(schema);
+    if (name.empty() || name == "HDF5")
+    {
+        return lvr2::io::scan::Schema::hdf5();
+    }
+    return lvr2::io::storage::unexpected(unsupportedHdf5SchemaError(schema));
+}
+
+lvr2::io::storage::Result<lvr2::io::scan::LoadOptions> loadOptionsForScanProject(
+    const std::string& schema,
+    const boost::filesystem::path& sourcePath,
+    bool loadData)
+{
+    lvr2::io::scan::LoadOptions options;
+    options.loadMode = loadData
+        ? lvr2::io::storage::LoadMode::Eager
+        : lvr2::io::storage::LoadMode::Lazy;
+
+    if (isHdf5Path(sourcePath))
+    {
+        auto hdf5Schema = hdf5ProjectStoreSchema(schema);
+        if (!hdf5Schema)
+        {
+            return lvr2::io::storage::unexpected(hdf5Schema.error());
+        }
+        options.kind = lvr2::io::storage::StorageKind::hdf5();
+        options.schema = hdf5Schema.value();
+    }
+    else
+    {
+        auto directorySchema = directoryProjectStoreSchema(schema);
+        if (!directorySchema)
+        {
+            return lvr2::io::storage::unexpected(directorySchema.error());
+        }
+        options.kind = lvr2::io::storage::StorageKind::directory();
+        options.schema = directorySchema.value();
+    }
+    return options;
+}
+
+lvr2::io::storage::Result<lvr2::io::scan::SaveOptions> saveOptionsForScanProject(
+    const std::string& schema,
+    const boost::filesystem::path& targetPath)
+{
+    lvr2::io::scan::SaveOptions options;
+    if (isHdf5Path(targetPath))
+    {
+        auto hdf5Schema = hdf5ProjectStoreSchema(schema);
+        if (!hdf5Schema)
+        {
+            return lvr2::io::storage::unexpected(hdf5Schema.error());
+        }
+        options.kind = lvr2::io::storage::StorageKind::hdf5();
+        options.schema = hdf5Schema.value();
+    }
+    else
+    {
+        auto directorySchema = directoryProjectStoreSchema(schema);
+        if (!directorySchema)
+        {
+            return lvr2::io::storage::unexpected(directorySchema.error());
+        }
+        options.kind = lvr2::io::storage::StorageKind::directory();
+        options.schema = directorySchema.value();
+    }
+    return options;
+}
+
+void logStorageError(const std::string& action, const lvr2::io::storage::Error& error)
+{
+    lvr2::logout::get() << lvr2::error << action << ": " << error.message << lvr2::endl;
+}
+
+} // namespace
 
 std::pair<ScanPtr, Transformd> scanFromProject(ScanProjectPtr project, size_t scanPositionNo, size_t lidarNo, size_t scanNo)
 {
@@ -46,11 +166,20 @@ std::pair<ScanPtr, Transformd> scanFromProject(ScanProjectPtr project, size_t sc
 
 ScanProjectPtr scanProjectFromHDF5(std::string file, const std::string& schemaName)
 {
-    HDF5KernelPtr kernel(new HDF5Kernel(file));
-    HDF5SchemaPtr schema = hdf5SchemaFromName(schemaName);
+    auto options = loadOptionsForScanProject(schemaName, boost::filesystem::path(file), false);
+    if (!options)
+    {
+        logStorageError("[Load Scan Project from HDF5] Unsupported scan-project options", options.error());
+        return nullptr;
+    }
 
-    lvr2::scanio::HDF5IO hdf5io(kernel, schema);
-    return hdf5io.ScanProjectIO::load();
+    auto loaded = lvr2::io::scan::load_project(file, options.value());
+    if (!loaded)
+    {
+        logStorageError("[Load Scan Project from HDF5] Unable to load scan project", loaded.error());
+        return nullptr;
+    }
+    return loaded.value();
 }
 
 ScanProjectPtr scanProjectFromFile(const std::string& file)
@@ -130,38 +259,32 @@ ScanProjectPtr scanProjectFromPLYFiles(const std::string &dir)
 ScanProjectPtr loadScanProject(const std::string& schema, const std::string& source, bool loadData)
 {
     boost::filesystem::path sourcePath(source);
-
-    // Check if we try to load from a directory
-    if(boost::filesystem::is_directory(sourcePath))
+    if (!boost::filesystem::is_directory(sourcePath) && !isHdf5Path(sourcePath))
     {
-        DirectorySchemaPtr dirSchema = directorySchemaFromName(schema, source);
-        DirectoryKernelPtr kernel(new DirectoryKernel(source));
-
-        if(dirSchema && kernel)
-        {
-            lvr2::scanio::DirectoryIOPtr dirio_in(new lvr2::scanio::DirectoryIO(kernel, dirSchema, loadData));
-            return dirio_in->ScanProjectIO::load();
-        }
-    }
-    // Check if we try to load a HDF5 file
-    else if(sourcePath.extension() == ".h5")
-    {
-        HDF5SchemaPtr hdf5Schema = hdf5SchemaFromName(schema);
-        HDF5KernelPtr kernel(new HDF5Kernel(source));
-
-        if(hdf5Schema && kernel)
-        {
-            lvr2::scanio::HDF5IOPtr hdf5io(new lvr2::scanio::HDF5IO(kernel, hdf5Schema, loadData));
-            return hdf5io->ScanProjectIO::load();
-        }
+        lvr2::logout::get() << lvr2::error << "[Load Scan Project] Source is neither a directory nor an HDF5 file: "
+                            << source << lvr2::endl;
+        return nullptr;
     }
 
-    // Loading failed. 
-    lvr2::logout::get() << lvr2::error << "[Load Scan Project] Could not create schema or kernel for loading." << lvr2::endl;
-    lvr2::logout::get() << lvr2::error << "[Load Scan Project] Schema name: " << schema << lvr2::endl;
-    lvr2::logout::get() << lvr2::error << "[Load Scan Project] Source: " << source << lvr2::endl;
+    auto options = loadOptionsForScanProject(schema, sourcePath, loadData);
+    if (!options)
+    {
+        logStorageError("[Load Scan Project] Unsupported scan-project options", options.error());
+        lvr2::logout::get() << lvr2::error << "[Load Scan Project] Schema name: " << schema << lvr2::endl;
+        lvr2::logout::get() << lvr2::error << "[Load Scan Project] Source: " << source << lvr2::endl;
+        return nullptr;
+    }
 
-    return nullptr;
+    auto loaded = lvr2::io::scan::load_project(source, options.value());
+    if (!loaded)
+    {
+        logStorageError("[Load Scan Project] Unable to load scan project", loaded.error());
+        lvr2::logout::get() << lvr2::error << "[Load Scan Project] Schema name: " << schema << lvr2::endl;
+        lvr2::logout::get() << lvr2::error << "[Load Scan Project] Source: " << source << lvr2::endl;
+        return nullptr;
+    }
+
+    return loaded.value();
 }
 
 ScanProjectPtr getSubProject(ScanProjectPtr project, std::vector<size_t> positions)
@@ -225,33 +348,19 @@ void saveScanProject(ScanProjectPtr& project, const std::string& schema, const s
     if(project)
     {
         boost::filesystem::path targetPath(target);
-        if(boost::filesystem::is_directory(target))
+        auto options = saveOptionsForScanProject(schema, targetPath);
+        if (!options)
         {
-            DirectorySchemaPtr dirSchema = directorySchemaFromName(schema, target);
-            DirectoryKernelPtr kernel(new DirectoryKernel(target));
-
-            if (dirSchema && kernel)
-            {
-                lvr2::scanio::DirectoryIOPtr dirio (new lvr2::scanio::DirectoryIO(kernel, dirSchema));
-                dirio->ScanProjectIO::save(project);
-            }
-
+            logStorageError("[Save Scan Project] Unsupported scan-project options", options.error());
+            lvr2::logout::get() << lvr2::error << "[Save Scan Project] Schema name: " << schema << lvr2::endl;
+            lvr2::logout::get() << lvr2::error << "[Save Scan Project] Target: " << target << lvr2::endl;
+            return;
         }
-        else if(targetPath.extension() == ".h5")
-        {
-            HDF5SchemaPtr hdf5Schema = hdf5SchemaFromName(schema);
-            HDF5KernelPtr kernel(new HDF5Kernel(target));
 
-            if (hdf5Schema && kernel)
-            {
-                lvr2::scanio::HDF5IO hdf5io(kernel, hdf5Schema);
-                hdf5io.ScanProjectIO::save(project);
-            }
-        }
-        else
+        auto saved = lvr2::io::scan::save_project(target, *project, options.value());
+        if (!saved)
         {
-            // Saving failed.
-            lvr2::logout::get() << lvr2::error << "[Save Scan Project] Could not create schema or kernel for saving." << lvr2::endl;
+            logStorageError("[Save Scan Project] Unable to save scan project", saved.error());
             lvr2::logout::get() << lvr2::error << "[Save Scan Project] Schema name: " << schema << lvr2::endl;
             lvr2::logout::get() << lvr2::error << "[Save Scan Project] Target: " << target << lvr2::endl;
         }
@@ -440,107 +549,61 @@ ScanProjectPtr loadScanPositionsExplicitly(
     const std::string& root,
     const std::vector<size_t>& positions)
 {
-    
     boost::filesystem::path targetPath(root);
-    if (boost::filesystem::is_directory(targetPath))
+    if (!boost::filesystem::is_directory(targetPath) && !isHdf5Path(targetPath))
     {
-        DirectorySchemaPtr dirSchema = directorySchemaFromName(schema, root);
-        DirectoryKernelPtr kernel(new DirectoryKernel(root));
+        lvr2::logout::get() << lvr2::error << "[Load Positions Explicitly] : Root is neither a directory nor an HDF5 file: "
+                            << root << lvr2::endl;
+        return nullptr;
+    }
 
-        if (dirSchema && kernel)
+    auto options = loadOptionsForScanProject(schema, targetPath, false);
+    if (!options)
+    {
+        logStorageError("[Load Positions Explicitly] : Unsupported scan-project options", options.error());
+        return nullptr;
+    }
+
+    auto opened = lvr2::io::scan::open_project(root, options.value());
+    if (!opened)
+    {
+        logStorageError("[Load Positions Explicitly] : Could not open scan project", opened.error());
+        return nullptr;
+    }
+
+    auto loaded = opened.value().load();
+    if (!loaded)
+    {
+        logStorageError("[Load Positions Explicitly] : Could not load scan project", loaded.error());
+        return nullptr;
+    }
+
+    ScanProjectPtr selected = loaded.value();
+    selected->positions.clear();
+
+    for (size_t i : positions)
+    {
+        ScanPositionPtr pos;
+        auto loadedPosition = opened.value().load_position(i);
+        if (loadedPosition)
         {
-            lvr2::scanio::DirectoryIOPtr dirio(new lvr2::scanio::DirectoryIO(kernel, dirSchema));
-            ScanProjectPtr p = dirio->ScanProjectIO::load();
-            
-            // Clear scan positions
-            p->positions.clear();
+            pos = loadedPosition.value();
+        }
 
-            // Iterator through given positions indices 
-            // and try to load them
-            for(size_t i : positions)
-            {
-                ScanPositionPtr pos = dirio->ScanPositionIO::load(i);
-                if(pos)
-                {
-                    lvr2::logout::get() << lvr2::info << "[Load Positions Explicitly] : Loading scan position " << i << lvr2::endl;
-                    p->positions.push_back(pos);
-                }
-                else
-                {
-                    lvr2::logout::get() << lvr2::info 
-                              << "[Load Positions Explicitly] : Position with index " 
-                              << i << " cannot be loaded from directory." << lvr2::endl;
-                }
-            }
-            return p;
+        if (pos)
+        {
+            lvr2::logout::get() << lvr2::info << "[Load Positions Explicitly] : Loading scan position " << i << lvr2::endl;
+            selected->positions.push_back(pos);
         }
         else
         {
-            if(!kernel)
-            {
-                lvr2::logout::get() << lvr2::warning 
-                          << "[Load Positions Explicitly] : Could not create directory kernel from root " 
-                          << root << lvr2::endl; 
-            }
-            if(!dirSchema)
-            {
-                lvr2::logout::get() << lvr2::warning 
-                          << "[Load Positions Explicitly] : Could not create directory schema from name " 
-                          << schema << lvr2::endl; 
-            }
+            lvr2::logout::get() << lvr2::warning
+                                << "[Load Positions Explicitly] : Position with index "
+                                << i << " cannot be loaded." << lvr2::endl;
         }
     }
-    else if (targetPath.extension() == ".h5")
-    {
-        HDF5SchemaPtr hdf5Schema = hdf5SchemaFromName(schema);
-        HDF5KernelPtr kernel(new HDF5Kernel(root));
 
-        if (hdf5Schema && kernel)
-        {
-            lvr2::scanio::HDF5IOPtr hdf5io(new lvr2::scanio::HDF5IO(kernel, hdf5Schema));
-
-            ScanProjectPtr p = hdf5io->ScanProjectIO::load();
-
-            // Clear scan positions
-            p->positions.clear();
-
-            // Iterator through given positions indices
-            // and try to load them
-            for (size_t i : positions)
-            {
-                ScanPositionPtr pos = hdf5io->ScanPositionIO::load(i);
-                if (pos)
-                {
-                    lvr2::logout::get() << lvr2::info << "[Load Positions Explicitly] : Loading scan position " << i << lvr2::endl;
-                    p->positions.push_back(pos);
-                }
-                else
-                {
-                    lvr2::logout::get() << lvr2::warning 
-                              << "[Load Positions Explicitly] : Position with index "
-                              << i << " cannot be loaded from HDF5 file." << lvr2::endl;
-                }
-            }
-            return p;
-        }
-        else
-        {
-            if(!kernel)
-            {
-                lvr2::logout::get() << lvr2::warning 
-                          << "[Load Positions Explicitly] : Could not create HDF5 kernel from root " 
-                          << root << lvr2::endl; 
-            }
-            if(!hdf5Schema)
-            {
-                lvr2::logout::get() << lvr2::warning 
-                          << "[Load Positions Explicitly] : Could not create HDF5 schema from name " 
-                          << schema << lvr2::endl; 
-            }
-        }
-    }
-    lvr2::logout::get() << lvr2::error << "[Load Positions Explicitly] : Could not load any data." << lvr2::endl;
-    return nullptr;
+    return selected;
 }
 
 size_t countPointsInScanProject(ScanProjectPtr project, bool firstScanOnly)

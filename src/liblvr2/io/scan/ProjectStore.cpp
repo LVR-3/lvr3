@@ -175,6 +175,24 @@ storage::Result<lvr2::PointBufferPtr> loadPoints(const std::shared_ptr<ProjectSt
     return state->context.backend->readPointBuffer(key);
 }
 
+storage::Status ensureSupportedPosition(const lvr2::ScanPositionPtr& position)
+{
+    if (!position)
+    {
+        return storage::unexpected(makeError(storage::ErrorCode::InvalidArgument,
+                                            "scan position pointer must not be null"));
+    }
+
+    if (!position->cameras.empty() || !position->hyperspectral_cameras.empty())
+    {
+        return storage::unexpected(makeError(
+            storage::ErrorCode::Unsupported,
+            "ProjectStore cannot save camera or hyperspectral payloads yet"));
+    }
+
+    return {};
+}
+
 storage::Status saveScan(ProjectStore::State& state,
                          std::size_t positionIndex,
                          std::size_t lidarIndex,
@@ -395,10 +413,10 @@ storage::Status savePosition(ProjectStore::State& state,
                              std::size_t positionIndex,
                              const lvr2::ScanPositionPtr& position)
 {
-    if (!position)
+    auto supported = ensureSupportedPosition(position);
+    if (!supported)
     {
-        return storage::unexpected(makeError(storage::ErrorCode::InvalidArgument,
-                                            "scan position pointer must not be null"));
+        return supported;
     }
 
     for (std::size_t lidarIndex = 0; lidarIndex < position->lidars.size(); ++lidarIndex)
@@ -493,6 +511,16 @@ SaveOptions saveOptionsFor(storage::StorageKind kind, Schema schema, storage::Lo
     options.schema = schema;
     options.loadMode = mode;
     return options;
+}
+
+LoadOptions loadOptionsFor(const SaveOptions& options)
+{
+    LoadOptions openOptions;
+    openOptions.kind = options.kind;
+    openOptions.schema = options.schema;
+    openOptions.loadMode = options.loadMode;
+    openOptions.hdf5Options = options.hdf5Options;
+    return openOptions;
 }
 
 } // namespace
@@ -649,6 +677,75 @@ storage::Status ProjectStore::save(const lvr2::ScanProject& project) const
     return {};
 }
 
+storage::Result<lvr2::ScanPositionPtr> ProjectStore::load_position(std::size_t positionIndex) const
+{
+    if (!state_ || !state_->context.backend || !state_->schema)
+    {
+        return storage::unexpected(makeError(storage::ErrorCode::OpenFailed,
+                                            "project store is not open"));
+    }
+    return loadPosition(state_, positionIndex);
+}
+
+storage::Status ProjectStore::save_position(std::size_t positionIndex,
+                                            const lvr2::ScanPositionPtr& position) const
+{
+    if (!state_ || !state_->context.backend || !state_->schema)
+    {
+        return storage::unexpected(makeError(storage::ErrorCode::OpenFailed,
+                                            "project store is not open"));
+    }
+    return savePosition(*state_, positionIndex, position);
+}
+
+storage::Result<lvr2::LIDARPtr> ProjectStore::load_lidar(std::size_t positionIndex,
+                                                         std::size_t lidarIndex) const
+{
+    if (!state_ || !state_->context.backend || !state_->schema)
+    {
+        return storage::unexpected(makeError(storage::ErrorCode::OpenFailed,
+                                            "project store is not open"));
+    }
+    return loadLidar(state_, positionIndex, lidarIndex);
+}
+
+storage::Status ProjectStore::save_lidar(std::size_t positionIndex,
+                                         std::size_t lidarIndex,
+                                         const lvr2::LIDARPtr& lidar) const
+{
+    if (!state_ || !state_->context.backend || !state_->schema)
+    {
+        return storage::unexpected(makeError(storage::ErrorCode::OpenFailed,
+                                            "project store is not open"));
+    }
+    return saveLidar(*state_, positionIndex, lidarIndex, lidar);
+}
+
+storage::Result<lvr2::ScanPtr> ProjectStore::load_scan(std::size_t positionIndex,
+                                                       std::size_t lidarIndex,
+                                                       std::size_t scanIndex) const
+{
+    if (!state_ || !state_->context.backend || !state_->schema)
+    {
+        return storage::unexpected(makeError(storage::ErrorCode::OpenFailed,
+                                            "project store is not open"));
+    }
+    return loadScan(state_, positionIndex, lidarIndex, scanIndex);
+}
+
+storage::Status ProjectStore::save_scan(std::size_t positionIndex,
+                                        std::size_t lidarIndex,
+                                        std::size_t scanIndex,
+                                        const lvr2::ScanPtr& scan) const
+{
+    if (!state_ || !state_->context.backend || !state_->schema)
+    {
+        return storage::unexpected(makeError(storage::ErrorCode::OpenFailed,
+                                            "project store is not open"));
+    }
+    return saveScan(*state_, positionIndex, lidarIndex, scanIndex, scan);
+}
+
 storage::Result<storage::MetaValue> ProjectStore::load_meta() const
 {
     if (!state_ || !state_->context.backend || !state_->schema)
@@ -673,6 +770,7 @@ storage::Result<ProjectStore> open_project(const std::string& uri,
     request.uri = uri;
     request.kind = options.kind;
     request.loadMode = options.loadMode;
+    request.hdf5 = options.hdf5Options;
 
     auto backend = registry.open(request);
     if (!backend)
@@ -733,12 +831,7 @@ storage::Status save_project(const std::string& uri,
                              const SaveOptions& options,
                              const storage::StorageRegistry& registry)
 {
-    LoadOptions openOptions;
-    openOptions.kind = options.kind;
-    openOptions.schema = options.schema;
-    openOptions.loadMode = options.loadMode;
-
-    auto store = open_project(uri, openOptions, registry);
+    auto store = open_project(uri, loadOptionsFor(options), registry);
     if (!store)
     {
         return forwardStatus(store.error());
@@ -750,12 +843,7 @@ storage::Status save_project(const std::string& uri,
                              const lvr2::ScanProject& project,
                              const SaveOptions& options)
 {
-    LoadOptions openOptions;
-    openOptions.kind = options.kind;
-    openOptions.schema = options.schema;
-    openOptions.loadMode = options.loadMode;
-
-    auto store = open_project(uri, openOptions);
+    auto store = open_project(uri, loadOptionsFor(options));
     if (!store)
     {
         return forwardStatus(store.error());

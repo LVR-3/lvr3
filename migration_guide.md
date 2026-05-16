@@ -268,9 +268,23 @@ auto saved = lvr2::io::scan::save_project(
     lvr2::io::scan::SaveOptions::hdf5());
 ```
 
-The first service path supports minimal point-buffer round trips through the
-raw-PLY directory layout; raw channel-directory point storage remains a later
-migration step and fails explicitly until implemented.
+Bundled scan-project examples and scan-project utility callers now use these
+`ProjectStore`/one-shot helpers instead of manual `DirectoryKernel`/`HDF5Kernel`
+construction and base-qualified `ScanProjectIO::load()` calls. `ProjectStore`
+also exposes narrow non-template `load_position`, `load_lidar`, `load_scan`,
+`save_position`, `save_lidar`, and `save_scan` methods for tool code that used
+lower-level scan-project CRTP features.
+
+The first service path supports point-buffer round trips through the raw-PLY
+directory layout and HDF5 scan-project layout. Raw channel-directory point
+storage, arbitrary user-subclassed directory schemas, camera/image/hyperspectral
+payload services, and remaining mesh/generic HDF5 wrappers are still
+deletion/rewrite work for the final BaseIO removal slice. The migrated
+scan-project utility bridge fails explicitly for unsupported directory/HDF5
+schemas or unsupported camera/hyperspectral payload saves instead of silently
+reinterpreting or truncating data. The HDF5 builder preview array path now writes
+through the same `StorageBackend`/`StorageRegistry` open path used by
+ProjectStore.
 
 The new storage implementation must use one `StorageBackend`/`StorageRegistry`
 path for Directory, HDF5, fake/test, plugin, and future custom/IP backends. It

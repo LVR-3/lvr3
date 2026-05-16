@@ -3,6 +3,7 @@
 
 #include <tl/expected.hpp>
 
+#include <cstddef>
 #include <functional>
 #include <map>
 #include <memory>
@@ -112,11 +113,23 @@ struct MetaValue
     std::string text;
 };
 
+struct FloatArrayView
+{
+    const float* data = nullptr;
+    std::vector<std::size_t> dimensions;
+};
+
+struct Hdf5OpenOptions
+{
+    unsigned int compressionLevel = 9;
+};
+
 struct OpenRequest
 {
     std::string uri;
     StorageKind kind = StorageKind::auto_detect();
     LoadMode loadMode = LoadMode::Lazy;
+    Hdf5OpenOptions hdf5;
 };
 
 struct BackendInfo
@@ -139,6 +152,7 @@ public:
     virtual Status writeMeta(const MetaKey& key, const MetaValue& value) = 0;
     virtual Result<lvr2::PointBufferPtr> readPointBuffer(const DataKey& key) const = 0;
     virtual Status writePointBuffer(const DataKey& key, const lvr2::PointBufferPtr& buffer) = 0;
+    virtual Status writeFloatArray(const DataKey& key, const FloatArrayView& array) = 0;
 };
 
 using StorageFactory = std::function<Result<std::unique_ptr<StorageBackend>>(const OpenRequest&)>;
@@ -186,6 +200,8 @@ static_assert(!std::is_convertible<LoadMode, int>::value,
 static_assert(std::is_same<Result<lvr2::PointBufferPtr>,
                            tl::expected<lvr2::PointBufferPtr, Error>>::value,
               "storage result must stay backed by tl::expected");
+static_assert(std::is_default_constructible<FloatArrayView>::value,
+              "storage float-array views must remain simple value options");
 static_assert(std::is_same<Status, tl::expected<void, Error>>::value,
               "storage status must stay backed by tl::expected");
 static_assert(!std::is_copy_constructible<StorageContext>::value,

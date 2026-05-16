@@ -1,11 +1,5 @@
 #include "lvr2/util/ScanProjectUtils.hpp"
 #include "lvr2/types/ScanTypes.hpp"
-#include "lvr2/io/baseio/BaseIO.hpp"
-#include "lvr2/io/kernels/DirectoryKernel.hpp"
-#include "lvr2/io/schema/ScanProjectSchemaRaw.hpp"
-#include "lvr2/io/scanio/ScanProjectIO.hpp"
-#include "lvr2/io/scanio/DirectoryIO.hpp"
-#include "lvr2/io/schema/ScanProjectSchemaRdbx.hpp"
 #include "lvr2/registration/OctreeReduction.hpp"
 
 #include "Options.hpp"
@@ -16,7 +10,6 @@
 #include <thread>
 
 using namespace lvr2;
-using namespace lvr2::scanio;
 
 #include "lvr2/util/Logging.hpp"
 

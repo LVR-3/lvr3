@@ -5,6 +5,9 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <boost/shared_array.hpp>
+
+#include <algorithm>
 #include <exception>
 #include <memory>
 #include <stdexcept>
@@ -22,6 +25,16 @@ Error makeBackendError(ErrorCode code,
                        std::string name = {})
 {
     return {code, std::move(message), info.uri, std::move(group), std::move(name)};
+}
+
+std::size_t elementCount(const std::vector<std::size_t>& dimensions)
+{
+    std::size_t count = 1;
+    for (std::size_t dimension : dimensions)
+    {
+        count *= dimension;
+    }
+    return dimensions.empty() ? 0 : count;
 }
 
 class KernelStorageBackend final : public StorageBackend
@@ -249,6 +262,48 @@ public:
         return {};
     }
 
+    Status writeFloatArray(const DataKey& key, const FloatArrayView& array) override
+    {
+        if (!kernel_)
+        {
+            return unexpected(makeBackendError(ErrorCode::OpenFailed,
+                                               "storage backend is not open",
+                                               info_,
+                                               key.group,
+                                               key.name));
+        }
+
+        const std::size_t values = elementCount(array.dimensions);
+        if (values > 0 && !array.data)
+        {
+            return unexpected(makeBackendError(ErrorCode::InvalidArgument,
+                                               "float array data must not be null",
+                                               info_,
+                                               key.group,
+                                               key.name));
+        }
+
+        try
+        {
+            boost::shared_array<float> copy(new float[values]);
+            if (values > 0)
+            {
+                std::copy(array.data, array.data + values, copy.get());
+            }
+            kernel_->saveFloatArray(key.group, key.name, array.dimensions, copy);
+        }
+        catch (const std::exception& e)
+        {
+            return unexpected(makeBackendError(ErrorCode::WriteFailed,
+                                               e.what(),
+                                               info_,
+                                               key.group,
+                                               key.name));
+        }
+
+        return {};
+    }
+
 private:
     BackendInfo info_;
     lvr2::FileKernelPtr kernel_;
@@ -273,7 +328,9 @@ Result<std::unique_ptr<StorageBackend>> openHdf5Kernel(const OpenRequest& reques
     try
     {
         BackendInfo info{StorageKind::hdf5(), request.uri, "hdf5"};
-        lvr2::FileKernelPtr kernel = std::make_shared<lvr2::HDF5Kernel>(request.uri);
+        lvr2::HDF5KernelConfig config;
+        config.compressionLevel = request.hdf5.compressionLevel;
+        lvr2::FileKernelPtr kernel = std::make_shared<lvr2::HDF5Kernel>(request.uri, config);
         return std::unique_ptr<StorageBackend>(new KernelStorageBackend(std::move(info), std::move(kernel)));
     }
     catch (const std::exception& e)

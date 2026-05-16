@@ -34,13 +34,7 @@
 
 #include "lvr2/reconstruction/SearchTreeFlann.hpp"
 #include "lvr2/reconstruction/LargeScaleReconstruction.hpp"
-#include "lvr2/io/kernels/HDF5Kernel.hpp"
-#include "lvr2/io/kernels/DirectoryKernel.hpp"
-#include "lvr2/io/scanio/ScanProjectIO.hpp"
-#include "lvr2/io/scanio/DirectoryIO.hpp"
-#include "lvr2/io/scanio/HDF5IO.hpp"
-#include "lvr2/io/schema/ScanProjectSchemaHDF5.hpp"
-#include "lvr2/io/schema/ScanProjectSchemaRaw.hpp"
+#include "lvr2/io/scan.hpp"
 #include "lvr2/util/IOUtils.hpp"
 
 #include "Options.hpp"
@@ -49,7 +43,6 @@
 using std::cout;
 using std::endl;
 using namespace lvr2;
-using namespace lvr2::scanio;
 
 #if defined CUDA_FOUND
 #define GPU_FOUND
@@ -62,11 +55,6 @@ typedef ClSurface GpuSurface;
 #endif
 
 using Vec = lvr2::BaseVector<float>;
-
-// using BaseHDF5IO = lvr2::Hdf5IO<>;
-
-// Extend IO with features (dependencies are automatically fetched)
-// using HDF5IO = BaseHDF5IO::AddFeatures<lvr2::hdf5features::ScanProjectIO>;
 
 int main(int argc, char** argv)
 {
@@ -96,39 +84,71 @@ int main(int argc, char** argv)
     ScanProjectEditMarkPtr project(new ScanProjectEditMark);
 
     //reconstruction from hdf5
-    if (extension == ".h5")
+    if (extension == ".h5" || extension == ".hdf5")
     {
         std::cout << timestamp << "Reading project from HDF5 file" << std::endl;
-        HDF5KernelPtr hdf5kernel(new HDF5Kernel(input));
-        HDF5SchemaPtr schema(new ScanProjectSchemaHDF5());
-        HDF5IOPtr hdf5io(new HDF5IO(hdf5kernel, schema));
-        project->kernel = hdf5kernel;
-        project->schema = schema;
+        auto loaded = lvr2::io::scan::load_project(input, lvr2::io::scan::LoadOptions::hdf5());
+        if (!loaded)
+        {
+            std::cerr << timestamp << "Unable to load HDF5 scan project: " << loaded.error().message << std::endl;
+            return EXIT_FAILURE;
+        }
 
-        project->project = hdf5io->ScanProjectIO::load();
-
+        project->project = loaded.value();
         project->changed.resize(project->project->positions.size(), true);
     }
     else
     {
-
-        ScanProjectPtr dirScanProject;
-        
-        DirectoryKernelPtr dirKernel(new DirectoryKernel(input));
-        DirectorySchemaPtr dirSchema(new ScanProjectSchemaRaw(input));
-        DirectoryIOPtr dirio(new DirectoryIO(dirKernel, dirSchema));
-        dirScanProject = dirio->ScanProjectIO::load();
-        project->kernel = dirKernel;
-        project->schema = dirSchema;
-
         //reconstruction from ScanProject Folder
-        if(dirScanProject) 
+        if(boost::filesystem::is_directory(selectedFile))
         {
-            project->project = dirScanProject;
-            project->changed.resize(dirScanProject->positions.size(), true);
+            auto loaded = lvr2::io::scan::load_project(
+                input,
+                lvr2::io::scan::LoadOptions::directory_raw_ply());
+            if (loaded)
+            {
+                project->project = loaded.value();
+                project->changed.resize(project->project->positions.size(), true);
+            }
+            else
+            {
+                std::cout << timestamp << "Unable to load directory scan project: "
+                          << loaded.error().message << std::endl;
+                std::cout << timestamp << "Trying directory as a folder of .ply files" << std::endl;
+
+                // Setup basic scan project structure
+                project->project.reset(new ScanProject);
+                for (auto file : boost::filesystem::directory_iterator(selectedFile))
+                {
+                    auto path = file.path();
+                    if(path.extension() != ".ply")
+                    {
+                        std::cout << timestamp << "Skipping file: " << path << std::endl;
+                        continue;
+                    }
+
+                    std::cout << timestamp << "Using file: " << path << std::endl;
+
+                    // Create new Scan
+                    ScanPtr scan(new Scan);
+                    scan->points_loader = [path](){ return ModelFactory::readModel(path.string())->m_pointCloud; };
+
+                    // Wrap scan into lidar object
+                    LIDARPtr lidar(new LIDAR);
+                    lidar->scans.push_back(scan);
+
+                    // Put lidar into new scan position
+                    ScanPositionPtr position(new ScanPosition);
+                    position->lidars.push_back(lidar);
+
+                    // Add new scan position to scan project
+                    project->project->positions.push_back(position);
+                    project->changed.push_back(true);
+                }
+            }
         }
         //reconstruction from a .ply file
-        else if(!boost::filesystem::is_directory(selectedFile))
+        else
         {
             std::cout << timestamp << "Reading single file: " << selectedFile << std::endl;
             ModelPtr model = ModelFactory::readModel(input);
@@ -150,40 +170,6 @@ int main(int argc, char** argv)
             project->project->positions.push_back(scanPosPtr);
 
             project->changed.push_back(true);
-        }
-        else
-        {
-            // Reconstruction from a folder of .ply files
-
-            // Setup basic scan project structure
-            project->project.reset(new ScanProject);
-            for (auto file : boost::filesystem::directory_iterator(selectedFile))
-            {
-                auto path = file.path();
-                if(path.extension() != ".ply")
-                {
-                    std::cout << timestamp << "Skipping file: " << path << std::endl;
-                    continue;
-                }
-
-                std::cout << timestamp << "Using file: " << path << std::endl;
-
-                // Create new Scan
-                ScanPtr scan(new Scan);
-                scan->points_loader = [path](){ return ModelFactory::readModel(path.string())->m_pointCloud; };
-
-                // Wrap scan into lidar object
-                LIDARPtr lidar(new LIDAR);
-                lidar->scans.push_back(scan);
-
-                // Put lidar into new scan position
-                ScanPositionPtr position(new ScanPosition);
-                position->lidars.push_back(lidar);
-
-                // Add new scan position to scan project
-                project->project->positions.push_back(position);
-                project->changed.push_back(true);
-            }
         }
     }
 

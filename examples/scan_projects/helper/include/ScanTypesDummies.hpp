@@ -32,6 +32,13 @@ ScanProjectPtr dummyScanProject();
  */
 ScanProjectPtr dummyScanProjectMinimal();
 
+/**
+ * @brief Generates a ProjectStore-compatible scan project fixture.
+ *
+ * The first storage service path persists scan/LIDAR point-buffer data.
+ */
+ScanProjectPtr dummyScanProjectStorage();
+
 } // namespace lvr2
 
 #endif // LVR2_EXAMPLES_SCANTYPES_DUMMIES_HPP
