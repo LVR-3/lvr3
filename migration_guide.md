@@ -246,7 +246,7 @@ replacement public API will live under `lvr2::io`:
 ```cpp
 auto store = lvr2::io::scan::open_directory(
     path,
-    lvr2::io::scan::Schema::raw(),
+    lvr2::io::scan::Schema::raw_ply(),
     lvr2::io::storage::LoadMode::Lazy);
 store.save(*project);
 auto loaded = store.load();
@@ -257,12 +257,16 @@ One-shot helpers are the intended simple path for tools and examples:
 ```cpp
 auto loaded = lvr2::io::scan::load_project(
     path,
-    lvr2::io::scan::LoadOptions::directory_raw());
+    lvr2::io::scan::LoadOptions::directory_raw_ply());
 auto saved = lvr2::io::scan::save_project(
     path,
     *project,
     lvr2::io::scan::SaveOptions::hdf5());
 ```
+
+The first service path supports minimal point-buffer round trips through the
+raw-PLY directory layout; raw channel-directory point storage remains a later
+migration step and fails explicitly until implemented.
 
 The new storage implementation must use one `StorageBackend`/`StorageRegistry`
 path for Directory, HDF5, fake/test, plugin, and future custom/IP backends. It

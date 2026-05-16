@@ -59,6 +59,9 @@ set(LVR2_SOURCES
     io/GridIO.cpp
     io/ModelFactory.cpp
     io/MeshIOFacade.cpp
+    io/storage/StorageRegistry.cpp
+    io/storage/FileKernelStorageBackend.cpp
+    io/scan/ProjectStore.cpp
     # io/ScanDataManager.cpp
     io/ScanDirectoryParser.cpp
     io/schema/ScanProjectSchemaRaw.cpp
