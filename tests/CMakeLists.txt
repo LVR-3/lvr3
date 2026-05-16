@@ -57,6 +57,18 @@ set_tests_properties(lvr2_static_assert_contracts_compile
     LABELS "cpp;contracts;header"
 )
 
+add_executable(lvr2_storage_io_header_compile
+  test_storage_io_header_compile.cpp
+)
+target_include_directories(lvr2_storage_io_header_compile PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_compile_features(lvr2_storage_io_header_compile PRIVATE cxx_std_17)
+target_link_libraries(lvr2_storage_io_header_compile PRIVATE tl::expected)
+add_test(NAME lvr2_storage_io_header_compile COMMAND lvr2_storage_io_header_compile)
+set_tests_properties(lvr2_storage_io_header_compile
+  PROPERTIES
+    LABELS "cpp;io;scan;storage;header"
+)
+
 add_test(
   NAME lvr2_removed_public_mesh_io_headers
   COMMAND ${CMAKE_COMMAND}
@@ -275,6 +287,19 @@ if(_LVR2_GTEST_MAIN_TARGET)
     lvr2
   )
 
+  add_executable(lvr2_storage_project_store_gtest
+    test_storage_project_store.cpp
+  )
+  target_include_directories(lvr2_storage_project_store_gtest PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+  target_compile_features(lvr2_storage_project_store_gtest PRIVATE cxx_std_17)
+  target_link_libraries(lvr2_storage_project_store_gtest PRIVATE
+    ${_LVR2_GTEST_MAIN_TARGET}
+    lvr2
+  )
+
   include(GoogleTest)
   gtest_discover_tests(lvr2_smoke_gtest
     PROPERTIES
@@ -291,6 +316,10 @@ if(_LVR2_GTEST_MAIN_TARGET)
   gtest_discover_tests(lvr2_search_grid_contracts_gtest
     PROPERTIES
       LABELS "cpp;geometry;search;grid"
+  )
+  gtest_discover_tests(lvr2_storage_project_store_gtest
+    PROPERTIES
+      LABELS "cpp;io;scan;storage"
   )
 
   add_executable(lvr2_mesh_io_assimp_gtest

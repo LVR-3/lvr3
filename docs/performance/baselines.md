@@ -67,7 +67,7 @@ Directory/HDF5 checks through CTest or a focused smoke binary:
 python3 tests/performance/record_baseline.py \
   --output build/performance-baselines/storage-projectstore-scanproject-simple.json \
   --label storage-projectstore-scanproject-simple -- \
-  ctest --test-dir build-vcpkg-release --output-on-failure -R 'storage.*project.*(directory|hdf5)'
+  ctest --test-dir build-vcpkg-release --output-on-failure -R 'storage.*project'
 ```
 
 See `docs/io/baseio-removal-inventory.md` for the inventory and the required

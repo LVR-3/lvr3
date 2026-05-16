@@ -181,7 +181,7 @@ backend policy:
 
 | Current surface | Representative files | Target shape | Migration owner |
 |---|---|---|---|
-| Manual `DirectoryKernel` + `ScanProjectSchemaRaw` + `scanio::DirectoryIO` | `examples/scan_projects/simple/Main.cpp`, `examples/scan_projects/schema/Main.cpp`, `src/liblvr2/util/ScanProjectUtils.cpp` | `auto store = lvr2::io::scan::open_directory(path, lvr2::io::scan::Schema::raw(), lvr2::io::storage::LoadMode::Lazy); store.save(project); auto loaded = store.load();` | Storage service implementation, then example/tool migration. |
+| Manual `DirectoryKernel` + `ScanProjectSchemaRaw` + `scanio::DirectoryIO` | `examples/scan_projects/simple/Main.cpp`, `examples/scan_projects/schema/Main.cpp`, `src/liblvr2/util/ScanProjectUtils.cpp` | `auto store = lvr2::io::scan::open_directory(path, lvr2::io::scan::Schema::raw_ply(), lvr2::io::storage::LoadMode::Lazy); store.save(project); auto loaded = store.load();` for the minimal point-buffer path; raw channel-directory storage remains a later migration step. | Storage service implementation, then example/tool migration. |
 | Manual `HDF5Kernel` + `ScanProjectSchemaHDF5` + `scanio::HDF5IO` | `examples/scan_projects/simple/Main.cpp`, `examples/scan_projects/compression/Main.cpp`, `src/tools/lvr2_hdf5_convert_old/Main.cpp` | `auto store = lvr2::io::scan::open_hdf5(path, lvr2::io::scan::Schema::hdf5(), lvr2::io::storage::LoadMode::Lazy);` | Storage service implementation, then example/tool migration. |
 | Base-qualified `ScanProjectIO::load/save/loadMeta` calls | `examples/scan_projects/*/Main.cpp`, `src/liblvr2/util/ScanProjectUtils.cpp`, `include/lvr2/algorithm/ChunkingPipeline.tcc` | `ProjectStore::load()`, `ProjectStore::save(project)`, `ProjectStore::load_meta()` or one-shot helpers. | Tool/example migration before CRTP deletion. |
 | Existing `loadScanProject`/`saveScanProject` utility functions | `src/liblvr2/util/ScanProjectUtils.cpp`, `src/tools/lvr2_reconstruct/Main.cpp`, `src/tools/lvr2_scanproject_parser/Main.cpp` | Keep CLI behavior by delegating utilities to `lvr2::io::scan::load_project` / `save_project` until callers can use the new API directly. | Utility bridge migration. |
@@ -219,11 +219,11 @@ cmake --preset system-optout-release \
 cmake --build --preset build-system-optout-release --target lvr2_examples_scanprojects_simple
 ```
 
-After the service replacement lands, add focused CTest coverage with these names
-or equivalent labels:
+After the service replacement lands, run the focused CTest coverage with these
+names or equivalent labels:
 
 ```bash
-ctest --test-dir build-vcpkg-release --output-on-failure -R 'storage.*(directory|hdf5|fake|project)'
+ctest --test-dir build-vcpkg-release --output-on-failure -R 'storage.*project|storage_io_contract_guard|unified_io_namespace_guard'
 ctest --test-dir build-vcpkg-release --output-on-failure -L 'io;scan;storage'
 ```
 
@@ -235,6 +235,26 @@ The required scenarios are:
    the same generated minimal scan project.
 3. Fake/in-memory test backend registers through the same registry and exercises
    the same `ProjectStore` path.
+
+The new public usage is intentionally shorter than manual kernel/schema setup:
+
+```cpp
+auto opened = lvr2::io::scan::open_directory(
+    path, lvr2::io::scan::Schema::raw_ply(), lvr2::io::storage::LoadMode::Eager);
+if (opened) {
+    opened->save(project);
+    auto loaded = opened->load();
+}
+```
+
+One-shot helpers use the same open path:
+
+```cpp
+auto loaded = lvr2::io::scan::load_project(
+    path, lvr2::io::scan::LoadOptions::directory_raw_ply());
+auto saved = lvr2::io::scan::save_project(
+    h5_path, project, lvr2::io::scan::SaveOptions::hdf5());
+```
 
 ## Performance baseline commands
 
@@ -252,7 +272,7 @@ python3 tests/performance/record_baseline.py \
 python3 tests/performance/record_baseline.py \
   --output build/performance-baselines/storage-projectstore-scanproject-simple.json \
   --label storage-projectstore-scanproject-simple -- \
-  ctest --test-dir build-vcpkg-release --output-on-failure -R 'storage.*project.*(directory|hdf5)'
+  ctest --test-dir build-vcpkg-release --output-on-failure -R 'storage.*project'
 ```
 
 For larger local data, wrap the existing CLI route and the new helper route with
