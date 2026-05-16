@@ -5,11 +5,11 @@ assumptions while keeping the public build default at C++17.
 
 ## Mesh facade public header
 
-File: `include/lvr2/mesh/io.hpp`
+File: `include/lvr2/io/mesh.hpp`
 
-- `mesh::Format` and `mesh::ErrorCode` remain scoped enum vocabularies and do
+- `lvr2::io::mesh::Format` and `lvr2::io::mesh::ErrorCode` remain scoped enum vocabularies and do
   not implicitly convert to integers.
-- `mesh::Result<T>` and `mesh::Status` remain aliases backed by
+- `lvr2::io::mesh::Result<T>` and `lvr2::io::mesh::Status` remain aliases backed by
   `tl::expected`, matching the accepted C++17 result policy.
 - `LoadOptions` and `SaveOptions` remain default-constructible and copyable.
 - Default load options keep suffix-based format detection.

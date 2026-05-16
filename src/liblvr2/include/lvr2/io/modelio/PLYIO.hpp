@@ -1,5 +1,5 @@
 // Private implementation header retained for in-tree legacy dispatch.
-// Not installed as public API; use <lvr2/mesh/io.hpp> in downstream code.
+// Not installed as public API; use <lvr2/io/mesh.hpp> in downstream code.
 /**
  * Copyright (c) 2018, University Osnabrück
  * All rights reserved.

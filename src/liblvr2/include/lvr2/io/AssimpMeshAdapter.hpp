@@ -1,14 +1,12 @@
 #ifndef LVR2_IO_PRIVATE_MESH_ADAPTER_HPP
 #define LVR2_IO_PRIVATE_MESH_ADAPTER_HPP
 
-#include "lvr2/mesh/io.hpp"
+#include "lvr2/io/mesh.hpp"
 #include "lvr2/types/MeshBuffer.hpp"
 
 #include <filesystem>
 
-namespace lvr2
-{
-namespace mesh
+namespace lvr2::io::mesh
 {
 namespace detail
 {
@@ -19,7 +17,6 @@ Status saveWithPrivateMeshBackend(const MeshBufferPtr& mesh,
                                   const SaveOptions& options);
 
 } // namespace detail
-} // namespace mesh
-} // namespace lvr2
+} // namespace lvr2::io::mesh
 
 #endif // LVR2_IO_PRIVATE_MESH_ADAPTER_HPP

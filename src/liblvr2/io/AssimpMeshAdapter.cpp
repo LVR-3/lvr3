@@ -14,9 +14,7 @@
 #include <utility>
 #include <vector>
 
-namespace lvr2
-{
-namespace mesh
+namespace lvr2::io::mesh
 {
 namespace detail
 {
@@ -327,5 +325,4 @@ Status saveWithPrivateMeshBackend(const MeshBufferPtr& mesh,
 }
 
 } // namespace detail
-} // namespace mesh
-} // namespace lvr2
+} // namespace lvr2::io::mesh

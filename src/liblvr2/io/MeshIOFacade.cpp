@@ -1,4 +1,4 @@
-#include "lvr2/mesh/io.hpp"
+#include "lvr2/io/mesh.hpp"
 
 #include "lvr2/io/AssimpMeshAdapter.hpp"
 #include "lvr2/types/MeshBuffer.hpp"
@@ -9,9 +9,7 @@
 #include <filesystem>
 #include <string>
 
-namespace lvr2
-{
-namespace mesh
+namespace lvr2::io::mesh
 {
 namespace
 {
@@ -248,5 +246,4 @@ Status save(const MeshBufferPtr& mesh, const std::filesystem::path& path, const 
     }
 }
 
-} // namespace mesh
-} // namespace lvr2
+} // namespace lvr2::io::mesh
