@@ -1,3 +1,3 @@
-# Schema ScanProjectIO example
+# Schema ProjectStore example
 
-Saving and loading Scanprojects with selfmade schemas.
+Saving and loading scan projects with the `lvr2::io::scan` ProjectStore API and the supported raw-PLY/HDF5 schema options.

@@ -2,56 +2,60 @@
 #include <memory>
 #include <lvr2/types/Variant.hpp>
 
-// LOG << "hello world" << std::endl;
 #include "../helper/include/Logging.hpp"
-// dummyScanProject()
-#include "../helper/include/ScanTypesDummies.hpp"
-// comparison of scan project entities
 #include "../helper/include/ScanTypesCompare.hpp"
+#include "../helper/include/ScanTypesDummies.hpp"
 
-// internally used structure for handling sensor data
+#include "lvr2/io/scan.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 
-// DirectoryIO includes
-#include "lvr2/io/scanio/DirectoryIO.hpp"
-#include "lvr2/io/scanio/DirectoryKernel.hpp"
-#include "lvr2/io/scanio/ScanProjectSchemaRaw.hpp"
-
-// Hdf5IO includes
-#include "lvr2/io/scanio/HDF5IO.hpp"
-#include "lvr2/io/scanio/HDF5Kernel.hpp"
-#include "lvr2/io/scanio/ScanProjectSchemaHDF5.hpp"
-
 using namespace lvr2;
-// // using this is only temporary until old IO is deleted
-using lvr2::scanio::HDF5IO;
 
-void directoryIOExample(ScanProjectPtr sp)
+namespace
 {
-    // specify a directory to store the data into
+
+void reportStorageError(const std::string& action, const lvr2::io::storage::Error& error)
+{
+    LOG(Logger::WARNING) << action << " failed: " << error.message << std::endl;
+}
+
+void directoryProjectStoreExample(ScanProjectPtr sp)
+{
     std::string filename = "examples_sp_simple/dirio_data";
 
-    // create IO
-    // - Kernel: Directory
-    // - Schema: Raw
-    DirectoryKernelPtr kernel(new DirectoryKernel(filename));
-    DirectorySchemaPtr schema(new ScanProjectSchemaRaw(filename));
-    DirectoryIO dirio(kernel, schema);
+    LOG(Logger::DEBUG) << "Save complete scan project to '" << filename << "'" << std::endl;
+    auto opened = lvr2::io::scan::open_directory(
+        filename,
+        lvr2::io::scan::Schema::raw_ply(),
+        lvr2::io::storage::LoadMode::Eager);
+    if (!opened)
+    {
+        reportStorageError("Open directory scan project", opened.error());
+        return;
+    }
 
-    LOG(Logger::DEBUG) << "Save complete scan project to '" << filename << "'" << std::endl; 
-    dirio.save(sp);
+    auto& store = opened.value();
+    auto saved = store.save(*sp);
+    if (!saved)
+    {
+        reportStorageError("Save directory scan project", saved.error());
+        return;
+    }
 
     LOG(Logger::DEBUG) << "Load scan project into new buffer" << std::endl;
-
-    // Load scan project again but into a new buffer
-    // - alternative: dirio.loadScanProject();
-    auto sp_loaded = dirio.ScanProjectIO::load();
-    
-    // check if the dummy scan scan project equals the saved and loaded scan project
-    if(equal(sp, sp_loaded))
+    auto loaded = store.load();
+    if (!loaded)
     {
-        LOG(Logger::DEBUG) << "DirectoryIO saves and loads correctly." << std::endl;
-    } else {
+        reportStorageError("Load directory scan project", loaded.error());
+        return;
+    }
+
+    if (equal(sp, loaded.value()))
+    {
+        LOG(Logger::DEBUG) << "Directory ProjectStore saves and loads correctly." << std::endl;
+    }
+    else
+    {
         LOG(Logger::WARNING) << "Something went wrong. Saved and loaded scan project are not equal" << std::endl;
     }
 
@@ -59,31 +63,43 @@ void directoryIOExample(ScanProjectPtr sp)
     LOG(Logger::DEBUG) << "- You can use 'tree' to show the entire directory structure" << std::endl;
 }
 
-void hdf5IOExample(ScanProjectPtr sp)
+void hdf5ProjectStoreExample(ScanProjectPtr sp)
 {
-    // specify a hdf5 file to store the data into
     std::string filename = "examples_sp_simple/hdf5io_data.h5";
 
-    // create IO
-    // - Kernel: Hdf5
-    // - Schema: Hdf5
-    HDF5KernelPtr kernel(new HDF5Kernel(filename));
-    HDF5SchemaPtr schema(new ScanProjectSchemaHDF5());
-    HDF5IO hdf5io(kernel, schema);
+    LOG(Logger::DEBUG) << "Save complete scan project to '" << filename << "'" << std::endl;
+    auto opened = lvr2::io::scan::open_hdf5(
+        filename,
+        lvr2::io::scan::Schema::hdf5(),
+        lvr2::io::storage::LoadMode::Eager);
+    if (!opened)
+    {
+        reportStorageError("Open HDF5 scan project", opened.error());
+        return;
+    }
 
-    LOG(Logger::DEBUG) << "Save complete scan project to '" << filename << "'" << std::endl; 
-    hdf5io.save(sp);
+    auto& store = opened.value();
+    auto saved = store.save(*sp);
+    if (!saved)
+    {
+        reportStorageError("Save HDF5 scan project", saved.error());
+        return;
+    }
 
     LOG(Logger::DEBUG) << "Load scan project into new buffer" << std::endl;
-    // Load scan project again but into a new buffer
-    // - alternative: hdf5io.loadScanProject();
-    auto sp_loaded = hdf5io.ScanProjectIO::load();
-    
-    // check if the dummy scan scan project equals the saved and loaded scan project
-    if(equal(sp, sp_loaded))
+    auto loaded = store.load();
+    if (!loaded)
     {
-        LOG(Logger::DEBUG) << "Hdf5IO saves and loads correctly." << std::endl;
-    } else {
+        reportStorageError("Load HDF5 scan project", loaded.error());
+        return;
+    }
+
+    if (equal(sp, loaded.value()))
+    {
+        LOG(Logger::DEBUG) << "HDF5 ProjectStore saves and loads correctly." << std::endl;
+    }
+    else
+    {
         LOG(Logger::WARNING) << "Something went wrong. Saved and loaded scan project are not equal" << std::endl;
     }
 
@@ -91,32 +107,26 @@ void hdf5IOExample(ScanProjectPtr sp)
     LOG(Logger::DEBUG) << "- You can use 'HDFCompass' to view the entire hdf5 structure" << std::endl;
 }
 
+} // namespace
 
 int main(int argc, char** argv)
 {
     LOG.setLoggerLevel(Logger::DEBUG);
 
     LOG(Logger::HIGHLIGHT) << "ScanProjects Simple" << std::endl;
-    // generate 
 
     LOG(Logger::DEBUG) << "Generating dataset, wait." << std::endl;
-    ScanProjectPtr sp = dummyScanProjectMinimal();
+    ScanProjectPtr sp = dummyScanProjectStorage();
 
-    LOG(Logger::INFO) << "1. Example: DirectoryIO" << std::endl;
+    LOG(Logger::INFO) << "1. Example: Directory ProjectStore" << std::endl;
     LOG.tab();
-    directoryIOExample(sp);
+    directoryProjectStoreExample(sp);
     LOG.deltab();
 
-    LOG(Logger::INFO) << "2. Example: Hdf5IO" << std::endl; 
+    LOG(Logger::INFO) << "2. Example: HDF5 ProjectStore" << std::endl;
     LOG.tab();
-    hdf5IOExample(sp);
+    hdf5ProjectStoreExample(sp);
     LOG.deltab();
-
-    //// Further comments:
-    // Hdf5IO takes longer to store and read because of internal compressions
-    // this makes the hdf5 file smaller compared to the directory structure
-    // if you want more speed you can adjust the compression level as 
-    // shown in the compression example
 
     return 0;
 }

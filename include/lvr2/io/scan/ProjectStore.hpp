@@ -3,6 +3,7 @@
 
 #include "lvr2/io/storage.hpp"
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -10,6 +11,9 @@
 namespace lvr2
 {
 
+struct Scan;
+struct LIDAR;
+struct ScanPosition;
 struct ScanProject;
 
 } // namespace lvr2
@@ -54,6 +58,7 @@ struct LoadOptions
     storage::StorageKind kind = storage::StorageKind::directory();
     Schema schema = Schema::raw_ply();
     storage::LoadMode loadMode = storage::LoadMode::Lazy;
+    storage::Hdf5OpenOptions hdf5Options;
 
     static LoadOptions directory_raw();
     static LoadOptions directory_raw_ply();
@@ -65,6 +70,7 @@ struct SaveOptions
     storage::StorageKind kind = storage::StorageKind::directory();
     Schema schema = Schema::raw_ply();
     storage::LoadMode loadMode = storage::LoadMode::Lazy;
+    storage::Hdf5OpenOptions hdf5Options;
 
     static SaveOptions directory_raw();
     static SaveOptions directory_raw_ply();
@@ -87,6 +93,21 @@ public:
 
     storage::Result<std::shared_ptr<lvr2::ScanProject>> load() const;
     storage::Status save(const lvr2::ScanProject& project) const;
+    storage::Result<std::shared_ptr<lvr2::ScanPosition>> load_position(std::size_t positionIndex) const;
+    storage::Status save_position(std::size_t positionIndex,
+                                  const std::shared_ptr<lvr2::ScanPosition>& position) const;
+    storage::Result<std::shared_ptr<lvr2::LIDAR>> load_lidar(std::size_t positionIndex,
+                                                            std::size_t lidarIndex) const;
+    storage::Status save_lidar(std::size_t positionIndex,
+                               std::size_t lidarIndex,
+                               const std::shared_ptr<lvr2::LIDAR>& lidar) const;
+    storage::Result<std::shared_ptr<lvr2::Scan>> load_scan(std::size_t positionIndex,
+                                                          std::size_t lidarIndex,
+                                                          std::size_t scanIndex) const;
+    storage::Status save_scan(std::size_t positionIndex,
+                              std::size_t lidarIndex,
+                              std::size_t scanIndex,
+                              const std::shared_ptr<lvr2::Scan>& scan) const;
     storage::Result<storage::MetaValue> load_meta() const;
 
 private:
@@ -130,6 +151,8 @@ static_assert(std::is_default_constructible<LoadOptions>::value,
               "scan load options must remain default constructible");
 static_assert(std::is_default_constructible<SaveOptions>::value,
               "scan save options must remain default constructible");
+static_assert(std::is_default_constructible<storage::Hdf5OpenOptions>::value,
+              "storage HDF5 open options must remain simple value options");
 
 } // namespace lvr2::io::scan
 

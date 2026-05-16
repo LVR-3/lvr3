@@ -1,24 +1,24 @@
 #include "Options.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
-#include "lvr2/io/IOUtils.hpp"
-#include "lvr2/io/ScanIOUtils.hpp"
-#include "lvr2/io/hdf5/ScanProjectIO.hpp"
-#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
+#include "lvr2/io/scan.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/util/Timestamp.hpp"
 
 #include <boost/filesystem.hpp>
+#include <boost/shared_array.hpp>
+
+#include <algorithm>
+#include <cstdio>
+#include <iostream>
+#include <vector>
 
 using namespace lvr2;
 
-using BaseHDF5IO = lvr2::Hdf5IO<>;
-
-// Extend IO with features (dependencies are automatically fetched)
-using HDF5IO =
-    BaseHDF5IO::AddFeatures<lvr2::hdf5features::ScanProjectIO, lvr2::hdf5features::ArrayIO>;
-
 bool m_usePreviews;
 int m_previewReductionFactor;
+
+namespace
+{
 
 template <typename T>
 boost::shared_array<T> reduceData(boost::shared_array<T> data,
@@ -27,26 +27,101 @@ boost::shared_array<T> reduceData(boost::shared_array<T> data,
                                   unsigned int reductionFactor,
                                   size_t* reducedDataCount)
 {
-    *reducedDataCount = dataCount / reductionFactor + 1;
+    const unsigned int step = std::max(1u, reductionFactor);
+    *reducedDataCount = dataCount == 0 ? 0 : ((dataCount - 1) / step) + 1;
 
-    boost::shared_array<T> reducedData =
-        boost::shared_array<T>(new T[(*reducedDataCount) * dataWidth]);
+    boost::shared_array<T> reducedData(new T[(*reducedDataCount) * dataWidth]);
 
     size_t reducedDataIdx = 0;
     for (size_t i = 0; i < dataCount; i++)
     {
-        if (i % reductionFactor == 0)
+        if (i % step == 0)
         {
             std::copy(data.get() + i * dataWidth,
                       data.get() + (i + 1) * dataWidth,
                       reducedData.get() + reducedDataIdx * dataWidth);
-
             reducedDataIdx++;
         }
     }
 
     return reducedData;
 }
+
+ScanPtr firstScan(const ScanPositionPtr& position)
+{
+    if (!position || position->lidars.empty() || !position->lidars[0] || position->lidars[0]->scans.empty())
+    {
+        return {};
+    }
+    return position->lidars[0]->scans[0];
+}
+
+lvr2::io::storage::Status writePreviews(const std::string& outputFile,
+                                        const ScanProjectPtr& scanProject)
+{
+    auto registry = lvr2::io::storage::make_default_registry();
+    lvr2::io::storage::OpenRequest request;
+    request.uri = outputFile;
+    request.kind = lvr2::io::storage::StorageKind::hdf5();
+
+    auto backend = registry.open(request);
+    if (!backend)
+    {
+        return lvr2::io::storage::unexpected(backend.error());
+    }
+
+    for (size_t i = 0; i < scanProject->positions.size(); i++)
+    {
+        char buffer[128];
+        std::snprintf(buffer, sizeof(buffer), "%08zu", i);
+        std::string nr_str(buffer);
+        std::string previewGroupName = "/preview/" + nr_str;
+
+        std::cout << timestamp << "Generating preview for position " << nr_str << std::endl;
+
+        ScanPtr scanPtr = firstScan(scanProject->positions[i]);
+        if (!scanPtr)
+        {
+            std::cout << timestamp << "No scan payload for preview position " << nr_str << std::endl;
+            continue;
+        }
+        if (!scanPtr->points && scanPtr->loadable())
+        {
+            scanPtr->load();
+        }
+        if (!scanPtr->points)
+        {
+            std::cout << timestamp << "No point data for preview position " << nr_str << std::endl;
+            continue;
+        }
+
+        floatArr points = scanPtr->points->getPointArray();
+        if (points)
+        {
+            size_t numPreview = 0;
+            const unsigned int reduction = m_previewReductionFactor > 0
+                ? static_cast<unsigned int>(m_previewReductionFactor)
+                : 1u;
+            floatArr previewData = reduceData(points,
+                                              scanPtr->points->numPoints(),
+                                              3,
+                                              reduction,
+                                              &numPreview);
+
+            std::vector<size_t> previewDim = {numPreview, 3};
+            lvr2::io::storage::FloatArrayView view{previewData.get(), previewDim};
+            auto wrote = backend.value()->writeFloatArray({previewGroupName, "points"}, view);
+            if (!wrote)
+            {
+                return wrote;
+            }
+        }
+    }
+
+    return {};
+}
+
+} // namespace
 
 int main(int argc, char** argv)
 {
@@ -58,9 +133,6 @@ int main(int argc, char** argv)
 
     m_usePreviews = options.getPreview();
     m_previewReductionFactor = options.getPreviewReductionRatio();
-
-    HDF5IO hdf;
-    uint pos = 0;
 
     // check if input directory exists
     if (!boost::filesystem::exists(inputDir))
@@ -91,20 +163,36 @@ int main(int argc, char** argv)
         std::cout << timestamp << "File already exists. Expanding File..." << std::endl;
 
         // get existing scans
-        hdf.open(outputPath.string());
-        existingScanProject = hdf.loadScanProject();
-        exitsts = true;
-    }
-    else
-    {
-        hdf.open(outputPath.string());
+        auto loaded = lvr2::io::scan::load_project(
+            outputPath.string(),
+            lvr2::io::scan::LoadOptions::hdf5());
+        if (loaded)
+        {
+            existingScanProject = loaded.value();
+            exitsts = true;
+        }
+        else
+        {
+            std::cout << timestamp << "Unable to load existing HDF5 scan project: "
+                      << loaded.error().message << std::endl;
+            exitsts = false;
+        }
     }
 
-    ScanProjectPtr scanProject(new ScanProject());
+    ScanProjectPtr scanProject;
 
     // reading scan project from given directory into ScanProject
     std::cout << timestamp << "Reading ScanProject from directory" << std::endl;
-    loadScanProject(inputDir, *scanProject);
+    auto loadedInput = lvr2::io::scan::load_project(
+        inputDir.string(),
+        lvr2::io::scan::LoadOptions::directory_raw_ply());
+    if (!loadedInput)
+    {
+        std::cout << timestamp << "Unable to load input scan project: "
+                  << loadedInput.error().message << std::endl;
+        return 1;
+    }
+    scanProject = loadedInput.value();
 
     // saving ScanProject into HDF5 file
     std::cout << timestamp << "Writing ScanProject to HDF5" << std::endl;
@@ -114,43 +202,40 @@ int main(int argc, char** argv)
         {
             existingScanProject->positions.push_back(scanPosPtr);
         }
-        hdf.save(existingScanProject);
+        auto saved = lvr2::io::scan::save_project(
+            outputPath.string(),
+            *existingScanProject,
+            lvr2::io::scan::SaveOptions::hdf5());
+        if (!saved)
+        {
+            std::cout << timestamp << "Unable to save HDF5 scan project: " << saved.error().message << std::endl;
+            return 1;
+        }
     }
     else
     {
-        hdf.save(scanProject);
+        auto saved = lvr2::io::scan::save_project(
+            outputPath.string(),
+            *scanProject,
+            lvr2::io::scan::SaveOptions::hdf5());
+        if (!saved)
+        {
+            std::cout << timestamp << "Unable to save HDF5 scan project: " << saved.error().message << std::endl;
+            return 1;
+        }
     }
 
     if (m_usePreviews)
     {
-        for (int i = 0; i < scanProject->positions.size(); i++)
+        auto previews = writePreviews(outputPath.string(), scanProject);
+        if (!previews)
         {
-            char buffer[128];
-            sprintf(buffer, "%08d", i);
-            string nr_str(buffer);
-            std::string previewGroupName = "/preview/" + nr_str;
-
-            std::cout << timestamp << "Generating preview for position " << nr_str << std::endl;
-
-            ScanPositionPtr scanPositionPtr = scanProject->positions[i];
-
-            ScanPtr scanPtr = scanPositionPtr->scans[0];
-            floatArr points = scanPtr->points->getPointArray();
-
-            if (points)
-            {
-                size_t numPreview;
-                floatArr previewData = reduceData(points,
-                                                  scanPtr->points->numPoints(),
-                                                  3,
-                                                  m_previewReductionFactor,
-                                                  &numPreview);
-
-                std::vector<size_t> previewDim = {numPreview, 3};
-                hdf.save<float>(previewGroupName, "points", previewDim, previewData);
-            }
+            std::cout << timestamp << "Unable to write preview arrays: "
+                      << previews.error().message << std::endl;
+            return 1;
         }
     }
 
     std::cout << timestamp << "Program finished" << std::endl;
+    return 0;
 }

@@ -171,6 +171,17 @@ public:
         return {};
     }
 
+    lvr2::io::storage::Status writeFloatArray(const lvr2::io::storage::DataKey& key,
+                                              const lvr2::io::storage::FloatArrayView& array) override
+    {
+        (void)array;
+        return lvr2::io::storage::unexpected({lvr2::io::storage::ErrorCode::Unsupported,
+                                              "float arrays are not implemented by the fake backend",
+                                              uri_,
+                                              key.group,
+                                              key.name});
+    }
+
 private:
     bool hasGroup(const std::string& group) const
     {
@@ -225,6 +236,25 @@ TEST(StorageRegistryProjectStore, FakeBackendUsesRegistryPath)
     expectProjectRoundTrip(loaded.value());
 }
 
+TEST(StorageRegistryProjectStore, RejectsUnsupportedCameraPayloads)
+{
+    lvr2::io::storage::StorageRegistry registry;
+    ASSERT_TRUE(registry.add(lvr2::io::storage::StorageKind::named("fake"), openMemory));
+
+    auto options = lvr2::io::scan::LoadOptions::directory_raw_ply();
+    options.kind = lvr2::io::storage::StorageKind::named("fake");
+
+    auto opened = lvr2::io::scan::open_project("memory://project", options, registry);
+    ASSERT_TRUE(opened) << opened.error().message;
+
+    auto project = makeProject();
+    project->positions[0]->cameras.push_back(std::make_shared<lvr2::Camera>());
+
+    auto saved = opened.value().save(*project);
+    ASSERT_FALSE(saved);
+    EXPECT_EQ(saved.error().code, lvr2::io::storage::ErrorCode::Unsupported);
+}
+
 TEST(StorageProjectStore, DirectoryRoundTrip)
 {
     const auto root = uniqueTempPath("-directory");
@@ -241,6 +271,19 @@ TEST(StorageProjectStore, DirectoryRoundTrip)
     auto loaded = opened.value().load();
     ASSERT_TRUE(loaded) << loaded.error().message;
     expectProjectRoundTrip(loaded.value());
+
+    auto position = opened.value().load_position(1);
+    ASSERT_TRUE(position) << position.error().message;
+    ASSERT_TRUE(position.value());
+    ASSERT_EQ(position.value()->lidars.size(), 1u);
+
+    auto scan = opened.value().load_scan(1, 0, 0);
+    ASSERT_TRUE(scan) << scan.error().message;
+    ASSERT_TRUE(scan.value());
+    ASSERT_TRUE(scan.value()->points || scan.value()->loadable());
+    scan.value()->load();
+    ASSERT_TRUE(scan.value()->points);
+    EXPECT_EQ(scan.value()->points->numPoints(), 2u);
 
     std::filesystem::remove_all(root, ec);
 }
@@ -302,6 +345,11 @@ TEST(StorageProjectStore, Hdf5RoundTrip)
     auto loaded = opened.value().load();
     ASSERT_TRUE(loaded) << loaded.error().message;
     expectProjectRoundTrip(loaded.value());
+
+    auto lidar = opened.value().load_lidar(1, 0);
+    ASSERT_TRUE(lidar) << lidar.error().message;
+    ASSERT_TRUE(lidar.value());
+    ASSERT_EQ(lidar.value()->scans.size(), 1u);
 
     std::filesystem::remove(file, ec);
 }

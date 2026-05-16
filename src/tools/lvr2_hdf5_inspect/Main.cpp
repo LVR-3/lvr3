@@ -2,7 +2,6 @@
 
 #include "Options.hpp"
 
-#include <lvr2/io/scanio/HDF5IO.hpp>
 #include <lvr2/util/Hdf5Util.hpp>
 
 #include <boost/filesystem.hpp>

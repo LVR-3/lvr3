@@ -445,5 +445,18 @@ ScanProjectPtr dummyScanProjectMinimal()
     return ret;
 }
 
+ScanProjectPtr dummyScanProjectStorage()
+{
+    ScanProjectPtr ret = dummyScanProjectMinimal();
+    for (ScanPositionPtr& position : ret->positions)
+    {
+        if (position)
+        {
+            position->cameras.clear();
+            position->hyperspectral_cameras.clear();
+        }
+    }
+    return ret;
+}
 
 } // namespace lvr2

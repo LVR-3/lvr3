@@ -42,13 +42,7 @@
 #include "lvr2/config/LSROptionsYamlExtensions.hpp"
 #include "lvr2/config/SLAMOptionsYamlExtensions.hpp"
 #include "lvr2/registration/RegistrationPipeline.hpp"
-#include "lvr2/io/kernels/HDF5Kernel.hpp"
-#include "lvr2/io/kernels/DirectoryKernel.hpp"
-#include "lvr2/io/scanio/HDF5IO.hpp"
-#include "lvr2/io/scanio/DirectoryIO.hpp"
-#include "lvr2/io/scanio/ScanProjectIO.hpp"
-#include "lvr2/io/schema/ScanProjectSchemaHDF5.hpp"
-#include "lvr2/io/schema/ScanProjectSchemaRaw.hpp"
+#include "lvr2/io/scan.hpp"
 
 
 
@@ -162,36 +156,42 @@ void ChunkingPipeline<BaseVecT>::practicabilityAnalysis(HalfEdgeMesh<BaseVecT>& 
 template <typename BaseVecT>
 bool ChunkingPipeline<BaseVecT>::getScanProject(const boost::filesystem::path& dirPath)
 {
-    HDF5KernelPtr kernel(new HDF5Kernel(dirPath.string()));
-    HDF5SchemaPtr schema(new ScanProjectSchemaHDF5);
-    lvr2::scanio::HDF5IO io(kernel, schema);
-  
-    // Load scans from hdf5
-    ScanProjectPtr scanProjectPtr = io.ScanProjectIO::load();
+    auto hdf5Project = lvr2::io::scan::load_project(
+        m_hdf5Path.string(),
+        lvr2::io::scan::LoadOptions::hdf5());
+    if (!hdf5Project)
+    {
+        std::cout << timestamp << "Could not load existing HDF5 scan project: "
+                  << hdf5Project.error().message << std::endl;
+        return false;
+    }
+    ScanProjectPtr scanProjectPtr = hdf5Project.value();
 
-    // Load scans from directory
-    ScanProjectPtr dirScanProject;
-    DirectorySchemaPtr dirSchema(new ScanProjectSchemaRaw(dirPath.string()));
-    DirectoryKernelPtr dirKernel(new DirectoryKernel(dirPath.string()));
-    lvr2::scanio::DirectoryIO dirIO(dirKernel, dirSchema);
-    dirScanProject = dirIO.ScanProjectIO::load();
+    auto directoryProject = lvr2::io::scan::load_project(
+        dirPath.string(),
+        lvr2::io::scan::LoadOptions::directory_raw_ply());
+    if (!directoryProject)
+    {
+        std::cout << timestamp << "Could not load directory scan project: "
+                  << directoryProject.error().message << std::endl;
+        return false;
+    }
+    ScanProjectPtr dirScanProject = directoryProject.value();
 
     ScanProjectEditMark tmpScanProject;
     std::vector<bool> init(scanProjectPtr->positions.size(), false);
     tmpScanProject.changed = init;
 
-    if (!dirScanProject)
+    const auto existingPositions = scanProjectPtr->positions.size();
+    const auto directoryPositions = dirScanProject->positions.size();
+    const auto newPositions = directoryPositions > existingPositions
+        ? directoryPositions - existingPositions
+        : 0;
+    std::cout << timestamp << "Found " << newPositions << " new scanPosition(s)" << std::endl;
+    for (std::size_t i = existingPositions; i < directoryPositions; i++)
     {
-        return false;
-    }
-    else
-    {
-        std::cout << timestamp << "Found " << dirScanProject->positions.size() - scanProjectPtr->positions.size() << " new scanPosition(s)" << std::endl;
-        for (int i = scanProjectPtr->positions.size(); i < dirScanProject->positions.size(); i++)
-        {
-            scanProjectPtr->positions.push_back(dirScanProject->positions[i]);
-            tmpScanProject.changed.push_back(true);
-        }
+        scanProjectPtr->positions.push_back(dirScanProject->positions[i]);
+        tmpScanProject.changed.push_back(true);
     }
 
     tmpScanProject.project = scanProjectPtr;
@@ -233,16 +233,31 @@ bool ChunkingPipeline<BaseVecT>::start(const boost::filesystem::path& scanDir)
     std::cout << timestamp << "Finished registration!" << std::endl;
 
     // Save raw data
-    HDF5KernelPtr hdf5kernel(new HDF5Kernel(m_hdf5Path.string()));
-    HDF5SchemaPtr hdf5schema(new ScanProjectSchemaHDF5());
-    lvr2::scanio::HDF5IO hdf5io(hdf5kernel, hdf5schema);
+    auto hdf5Store = lvr2::io::scan::open_hdf5(
+        m_hdf5Path.string(),
+        lvr2::io::scan::Schema::hdf5(),
+        lvr2::io::storage::LoadMode::Lazy);
+    if (!hdf5Store)
+    {
+        std::cout << timestamp << "Could not open HDF5 output project: "
+                  << hdf5Store.error().message << std::endl;
+        m_running = false;
+        return false;
+    }
 
     for (size_t idx = 0; idx < m_scanProject->changed.size(); idx++)
     {
         if (m_scanProject->changed[idx])
         {
             // Only save changed scanPositions
-            hdf5io.ScanPositionIO::save(idx, m_scanProject->project->positions[idx]);
+            auto saved = hdf5Store.value().save_position(idx, m_scanProject->project->positions[idx]);
+            if (!saved)
+            {
+                std::cout << timestamp << "Could not save changed scan position " << idx << ": "
+                          << saved.error().message << std::endl;
+                m_running = false;
+                return false;
+            }
         }
     }
 
