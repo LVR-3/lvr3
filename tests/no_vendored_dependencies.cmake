@@ -28,8 +28,15 @@ endif()
 set(_dependency_policy_cmake_files
   "${LVR2_SOURCE_DIR}/CMakeLists.txt"
   "${LVR2_SOURCE_DIR}/src/liblvr2/CMakeLists.txt"
+  "${LVR2_SOURCE_DIR}/src/tools/CMakeLists.txt"
   "${LVR2_SOURCE_DIR}/tests/CMakeLists.txt"
 )
+file(GLOB _dependency_policy_project_cmake_files
+  LIST_DIRECTORIES false
+  "${LVR2_SOURCE_DIR}/cmake/*.cmake"
+  "${LVR2_SOURCE_DIR}/cmake/modules/*.cmake"
+)
+list(APPEND _dependency_policy_cmake_files ${_dependency_policy_project_cmake_files})
 file(GLOB_RECURSE _dependency_policy_nested_cmake_files
   LIST_DIRECTORIES false
   "${LVR2_SOURCE_DIR}/src/tools/*/CMakeLists.txt"

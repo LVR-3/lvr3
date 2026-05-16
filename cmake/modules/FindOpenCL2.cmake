@@ -1,5 +1,5 @@
 ########################################################################
-# Find OpenCL Wrapper 
+# Find OpenCL Wrapper
 # This is a find_package(catkin) wrapper for packages
 # that are able to be build with and without ros
 # The syntax is the same as find_package(catkin)

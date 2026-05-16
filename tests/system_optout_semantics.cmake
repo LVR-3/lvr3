@@ -2,7 +2,7 @@ if(NOT DEFINED LVR2_SOURCE_DIR)
   get_filename_component(LVR2_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
 endif()
 
-include("${LVR2_SOURCE_DIR}/CMakeModules/Lvr2DependencyPolicy.cmake")
+include("${LVR2_SOURCE_DIR}/cmake/Lvr3DependencyPolicy.cmake")
 
 set(_dependency_policy_tmp "$ENV{TMPDIR}")
 if(NOT _dependency_policy_tmp)

@@ -17,10 +17,8 @@ set(_IDENTITY_CONSUMER_DIR "${_WORK_ROOT}/package_identity_consumer")
 
 function(_copy_lvr_find_modules _lvr2_modules_dir _lvr3_modules_dir)
   set(_LVR_MODULE_SOURCE
-    "${_PROJECT_DIR}/CMakeModules/FindFLANN.cmake"
-    "${_PROJECT_DIR}/CMakeModules/FindLZ4.cmake"
-    "${_PROJECT_DIR}/CMakeModules/FindOpenNI.cmake"
-    "${_PROJECT_DIR}/CMakeModules/FindOpenNI2.cmake"
+    "${_PROJECT_DIR}/cmake/modules/FindFLANN.cmake"
+    "${_PROJECT_DIR}/cmake/modules/FindLZ4.cmake"
   )
   foreach(_module IN LISTS _LVR_MODULE_SOURCE)
     file(INSTALL DESTINATION "${_lvr2_modules_dir}" FILES "${_module}")
@@ -177,7 +175,7 @@ set(LVR2_FOUND \${lvr2_FOUND})
   file(WRITE "${_LVR3_CONFIG_DIR}/lvr3-config-version.cmake"
 "set(PACKAGE_VERSION \"25.2.3\")\nset(PACKAGE_VERSION_EXACT TRUE)\nset(PACKAGE_VERSION_COMPATIBLE TRUE)\n")
 
-  file(READ "${_PROJECT_DIR}/CMakeModules/lvr3-config.cmake.in" _LVR3_CONFIG_TEMPLATE)
+  file(READ "${_PROJECT_DIR}/cmake/lvr3-config.cmake.in" _LVR3_CONFIG_TEMPLATE)
   set(_PACKAGE_INIT "set(PACKAGE_PREFIX_DIR \"${_prefix}\")
 macro(check_required_components _NAME)
   foreach(_component \${\${_NAME}_FIND_COMPONENTS})
@@ -193,9 +191,28 @@ endmacro()")
 endfunction()
 
 set(_ENV_PREFIX "$ENV{LVR2_PACKAGE_IDENTITY_INSTALL_PREFIX}")
+set(_ENV_DEPENDENCY_PREFIX_PATH "$ENV{LVR2_PACKAGE_IDENTITY_CMAKE_PREFIX_PATH}")
+set(_ENV_TOOLCHAIN_FILE "$ENV{LVR2_PACKAGE_IDENTITY_TOOLCHAIN_FILE}")
 set(_PREFIX_REQUESTED FALSE)
 set(_PACKAGE_PREFIXES "")
 set(_PACKAGE_SHAPES "")
+
+set(_PACKAGE_IDENTITY_CMAKE_ENV_COMMAND "")
+if(NOT _ENV_DEPENDENCY_PREFIX_PATH STREQUAL "")
+  list(APPEND _PACKAGE_IDENTITY_CMAKE_ENV_COMMAND
+    "${CMAKE_COMMAND}" -E env "CMAKE_PREFIX_PATH=${_ENV_DEPENDENCY_PREFIX_PATH}"
+  )
+endif()
+
+set(_PACKAGE_IDENTITY_CONSUMER_ARGS "")
+if(NOT _ENV_TOOLCHAIN_FILE STREQUAL "")
+  if(NOT EXISTS "${_ENV_TOOLCHAIN_FILE}")
+    message(FATAL_ERROR "LVR2_PACKAGE_IDENTITY_TOOLCHAIN_FILE is set but '${_ENV_TOOLCHAIN_FILE}' does not exist.")
+  endif()
+  list(APPEND _PACKAGE_IDENTITY_CONSUMER_ARGS
+    "-DCMAKE_TOOLCHAIN_FILE=${_ENV_TOOLCHAIN_FILE}"
+  )
+endif()
 
 if(DEFINED ENV{LVR2_PACKAGE_IDENTITY_INSTALL_PREFIX} AND NOT _ENV_PREFIX STREQUAL "")
   set(_PREFIX_REQUESTED TRUE)
@@ -249,12 +266,13 @@ foreach(_index RANGE 0 ${_LAST_PREFIX_INDEX})
 
   foreach(_case IN LISTS _CASES)
     execute_process(
-      COMMAND "${CMAKE_COMMAND}"
+      COMMAND ${_PACKAGE_IDENTITY_CMAKE_ENV_COMMAND} "${CMAKE_COMMAND}"
         -S "${_IDENTITY_CONSUMER_DIR}"
         -B "${_IDENTITY_CONSUMER_DIR}/build-${_shape}-${_case}"
         -DCHECK_PREFIX=${_prefix}
         -DCHECK_ORDER=${_case}
         -DCHECK_SHAPE=${_shape}
+        ${_PACKAGE_IDENTITY_CONSUMER_ARGS}
       RESULT_VARIABLE _rv
       OUTPUT_VARIABLE _out
       ERROR_VARIABLE _err
@@ -269,12 +287,13 @@ foreach(_index RANGE 0 ${_LAST_PREFIX_INDEX})
 
   foreach(_case IN LISTS _EXPECTED_FAILURE_CASES)
     execute_process(
-      COMMAND "${CMAKE_COMMAND}"
+      COMMAND ${_PACKAGE_IDENTITY_CMAKE_ENV_COMMAND} "${CMAKE_COMMAND}"
         -S "${_IDENTITY_CONSUMER_DIR}"
         -B "${_IDENTITY_CONSUMER_DIR}/build-${_shape}-${_case}"
         -DCHECK_PREFIX=${_prefix}
         -DCHECK_ORDER=${_case}
         -DCHECK_SHAPE=${_shape}
+        ${_PACKAGE_IDENTITY_CONSUMER_ARGS}
       RESULT_VARIABLE _rv
       OUTPUT_VARIABLE _out
       ERROR_VARIABLE _err

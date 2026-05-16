@@ -11,7 +11,18 @@ foreach(_removed_viewer_path IN ITEMS
   endif()
 endforeach()
 
-file(READ "${LVR2_SOURCE_DIR}/CMakeLists.txt" _root_cmake)
+set(_viewer_cmake_files "${LVR2_SOURCE_DIR}/CMakeLists.txt")
+file(GLOB _viewer_project_cmake_files
+  LIST_DIRECTORIES false
+  "${LVR2_SOURCE_DIR}/cmake/*.cmake"
+  "${LVR2_SOURCE_DIR}/src/tools/CMakeLists.txt"
+)
+list(APPEND _viewer_cmake_files ${_viewer_project_cmake_files})
+set(_root_cmake "")
+foreach(_viewer_cmake_file IN LISTS _viewer_cmake_files)
+  file(READ "${_viewer_cmake_file}" _viewer_cmake_text)
+  string(APPEND _root_cmake "\n# ${_viewer_cmake_file}\n${_viewer_cmake_text}")
+endforeach()
 foreach(_forbidden_root_token IN ITEMS
     "LVR2_BUILD_VIEWER"
     "add_subdirectory(src/tools/lvr2_viewer)"
@@ -36,7 +47,7 @@ foreach(_forbidden_manifest_token IN ITEMS "\"viewer\"" "\"qt5-base\"" "\"vtk\""
   endif()
 endforeach()
 
-file(READ "${LVR2_SOURCE_DIR}/CMakeModules/lvr2-config.cmake.in" _lvr2_config)
+file(READ "${LVR2_SOURCE_DIR}/cmake/lvr2-config.cmake.in" _lvr2_config)
 if(_lvr2_config MATCHES "find_dependency[ \\t\\r\\n]*\\([ \\t\\r\\n]*VTK")
   message(FATAL_ERROR "Installed package config must not advertise viewer-only VTK dependency")
 endif()

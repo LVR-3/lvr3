@@ -8,7 +8,7 @@ set(_packaging_required_files
   debian/rules
   debian/liblvr2-dev.install
   debian/liblvr2-cuda-dev.install
-  CMakeModules/lvr2-packaging.cmake
+  cmake/Lvr3Packaging.cmake
 )
 foreach(_packaging_file IN LISTS _packaging_required_files)
   if(NOT EXISTS "${LVR2_SOURCE_DIR}/${_packaging_file}")
@@ -46,7 +46,7 @@ foreach(_viewer_dep IN ITEMS libvtk6-qt-dev libvtk9-qt-dev qtbase5-dev)
   endif()
 endforeach()
 
-file(READ "${LVR2_SOURCE_DIR}/CMakeModules/lvr2-packaging.cmake" _cpack_packaging)
+file(READ "${LVR2_SOURCE_DIR}/cmake/Lvr3Packaging.cmake" _cpack_packaging)
 foreach(_debian_dep IN ITEMS libassimp-dev libexpected-dev libspdlog-dev libtbb-dev libtiff-dev libgdal-dev libhdf5-dev pkg-config)
   if(NOT _cpack_packaging MATCHES "(^|[; \n])${_debian_dep}([; \n)]|$)")
     message(FATAL_ERROR "CPack Debian metadata must include verified package-backed dependency '${_debian_dep}'")

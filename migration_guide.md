@@ -44,8 +44,7 @@ Compatibility guarantees:
   - `lvr3::lvr3` as the canonical alias to the aggregate `lvr2::lvr2` target.
   - `lvr3::lvr3_static` when a static target is installed.
 - `LVR3_USE_STATIC_LIBS` mirrors `LVR2_USE_STATIC_LIBS` for `LVR3_LIBRARIES`; the canonical target remains the aggregate target.
-- Custom CMake find modules remain installed; `lvr3` config also exposes module
-  lookup path so `find_dependency`-based consumers keep working.
+- Only audited compatibility CMake find modules remain installed; `lvr3` config also exposes the remaining module lookup path so `find_dependency`-based consumers keep working.
 - No package names, install directories (`share/lvr2`, `package.xml`), C++ namespaces,
   CLI/tool names, options, or Debian package names are changed.
 
@@ -84,6 +83,10 @@ cmake -S . -B build-system -DLVR2_WITH_VCPKG=OFF
 ```
 
 Common package escape hatches follow the `LVR2_USE_SYSTEM_<PKG>` pattern, including `LVR2_USE_SYSTEM_TL_EXPECTED`, `LVR2_USE_SYSTEM_TBB`, `LVR2_USE_SYSTEM_SPDLOG`, `LVR2_USE_SYSTEM_HIGHFIVE`, `LVR2_USE_SYSTEM_RPLY`, `LVR2_USE_SYSTEM_LASLIB`, `LVR2_USE_SYSTEM_OPENCV`, `LVR2_USE_SYSTEM_HDF5`, and `LVR2_USE_SYSTEM_EIGEN3`. `CMakeSettings.json` is still kept for compatibility. Assimp is required privately for mesh I/O and is intentionally not exposed as a package-specific LVR option.
+
+## CMake file layout and module audit
+
+The top-level `CMakeLists.txt` is now orchestration only. Build responsibilities live in project-owned files under `cmake/`, while `src/liblvr2`, `src/tools`, `tests`, and `examples` own their target lists. Internal helper/config templates moved out of `CMakeModules/`, and retained audited local `Find*.cmake` compatibility exceptions now live under `cmake/modules/`. See `docs/cmake/module-audit.md` for the remaining modules and removal conditions. Stale local Find modules for unused OpenNI/OpenNI2, GeoTIFF, old Embree, and the legacy TBB shim were removed.
 
 ## Bundled viewer removal
 
@@ -286,7 +289,7 @@ find_package(LVR2 REQUIRED)
 target_link_libraries(my_app ${LVR2_LIBRARIES})
 ```
 
-to 
+to
 
 
 ```cmake
@@ -296,4 +299,4 @@ target_link_libraries(my_app lvr2::lvr2)
 ```
 
 > [!NOTE]
-> The old-style CMake is still available in 25.2.0 but it's obsolete and you will be forced to update it in the next major release. 
+> The old-style CMake is still available in 25.2.0 but it's obsolete and you will be forced to update it in the next major release.

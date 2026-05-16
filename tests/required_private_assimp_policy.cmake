@@ -2,7 +2,19 @@ if(NOT DEFINED LVR2_SOURCE_DIR OR LVR2_SOURCE_DIR STREQUAL "")
   message(FATAL_ERROR "LVR2_SOURCE_DIR must be provided")
 endif()
 
-file(READ "${LVR2_SOURCE_DIR}/CMakeLists.txt" _TOP_CMAKE)
+set(_CMAKE_POLICY_FILES
+  "${LVR2_SOURCE_DIR}/CMakeLists.txt"
+)
+file(GLOB _CMAKE_POLICY_INCLUDED_FILES
+  LIST_DIRECTORIES false
+  "${LVR2_SOURCE_DIR}/cmake/*.cmake"
+)
+list(APPEND _CMAKE_POLICY_FILES ${_CMAKE_POLICY_INCLUDED_FILES})
+set(_TOP_CMAKE "")
+foreach(_CMAKE_POLICY_FILE IN LISTS _CMAKE_POLICY_FILES)
+  file(READ "${_CMAKE_POLICY_FILE}" _CMAKE_POLICY_TEXT)
+  string(APPEND _TOP_CMAKE "\n# ${_CMAKE_POLICY_FILE}\n${_CMAKE_POLICY_TEXT}")
+endforeach()
 file(READ "${LVR2_SOURCE_DIR}/CMakePresets.json" _PRESETS_JSON)
 file(READ "${LVR2_SOURCE_DIR}/vcpkg.json" _VCPKG_JSON)
 
@@ -33,7 +45,7 @@ if(NOT _VCPKG_JSON MATCHES "\"assimp\"")
   message(FATAL_ERROR "vcpkg manifest must include assimp as a default dependency")
 endif()
 
-if(_VCPKG_JSON MATCHES [["assimp"[ 	
+if(_VCPKG_JSON MATCHES [["assimp"[
 ]*:]])
   message(FATAL_ERROR "assimp must not remain a feature-only dependency")
 endif()

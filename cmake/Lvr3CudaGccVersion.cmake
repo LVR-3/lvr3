@@ -20,7 +20,7 @@
 # 4.1	                                4.5
 # 4.0	                                4.4
 
-# Usage: 
+# Usage:
 # max_cuda_gcc_version(CUDA_VERSION MAX_CUDA_GCC_VERSION)
 # message(STATUS "Maximum allowed gcc version for cuda is: ${MAX_CUDA_GCC_VERSION}")
 function(max_cuda_gcc_version _CUDA_VERSION _MAX_GCC_VERSION)
