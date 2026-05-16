@@ -169,6 +169,17 @@ set_tests_properties(lvr2_packaging_policy
 )
 
 add_test(
+  NAME lvr2_no_bundled_viewer
+  COMMAND ${CMAKE_COMMAND}
+    -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+    -P ${CMAKE_CURRENT_LIST_DIR}/no_bundled_viewer.cmake
+)
+set_tests_properties(lvr2_no_bundled_viewer
+  PROPERTIES
+    LABELS "cmake;viewer;dependencies"
+)
+
+add_test(
   NAME lvr2_storage_io_contract_guard
   COMMAND ${CMAKE_COMMAND}
     -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}

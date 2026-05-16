@@ -87,7 +87,7 @@ Options::Options(int argc, char** argv) : BaseOption(argc, argv)
         "Exports original point cloud data together with normals into a single file called "
         "'pointnormals.ply'")("saveGrid,g",
                               "Writes the generated grid to a file called 'fastgrid.grid. The "
-                              "result can be rendered with qviewer.")(
+                              "result can be rendered with an external grid viewer.")(
         "saveOriginalData,s",
         "Save the original points and the estimated normals together with the reconstruction into "
         "one file ('triangle_mesh.ply')")(

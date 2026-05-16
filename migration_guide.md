@@ -65,7 +65,7 @@ cmake --preset vcpkg-system-tbb-tl-release
 
 Vendored dependencies under `ext/` were removed. `spdlog`, `HighFive`, `rply`, and `LASlib` now come from packages; `spdmon` was replaced by a small LVR-owned progress monitor implementation. The old `ExternalProject_Add` download path for 3D Tiles was also removed; keep `LVR2_WITH_3DTILES=OFF` until a package-backed Cesium Native path is added.
 
-Assimp is now part of the default vcpkg manifest dependency set because mesh asset I/O requires the private backend. Optional vcpkg features must be requested alongside the matching CMake options for other packages. For example, use `-DVCPKG_MANIFEST_FEATURES=viewer -DLVR2_BUILD_VIEWER=ON` for the viewer, `-DVCPKG_MANIFEST_FEATURES=pcl -DLVR2_WITH_PCL=ON` for PCL tools, and `-DVCPKG_MANIFEST_FEATURES=draco` for optional Draco support.
+Assimp is now part of the default vcpkg manifest dependency set because mesh asset I/O requires the private backend. Optional vcpkg features must be requested alongside the matching CMake options for other packages. For example, use `-DVCPKG_MANIFEST_FEATURES=pcl -DLVR2_WITH_PCL=ON` for PCL tools and `-DVCPKG_MANIFEST_FEATURES=draco` for optional Draco support.
 
 `LVR2_IGNORE_SYSTEM_PACKAGES` defaults to `ON` when vcpkg is enabled. To intentionally use a system package with the vcpkg toolchain, enable that package's explicit escape hatch. The matching vcpkg installed prefix is ignored for that package lookup so the system package wins instead of acting only as a fallback:
 
@@ -85,6 +85,10 @@ cmake -S . -B build-system -DLVR2_WITH_VCPKG=OFF
 
 Common package escape hatches follow the `LVR2_USE_SYSTEM_<PKG>` pattern, including `LVR2_USE_SYSTEM_TL_EXPECTED`, `LVR2_USE_SYSTEM_TBB`, `LVR2_USE_SYSTEM_SPDLOG`, `LVR2_USE_SYSTEM_HIGHFIVE`, `LVR2_USE_SYSTEM_RPLY`, `LVR2_USE_SYSTEM_LASLIB`, `LVR2_USE_SYSTEM_OPENCV`, `LVR2_USE_SYSTEM_HDF5`, and `LVR2_USE_SYSTEM_EIGEN3`. `CMakeSettings.json` is still kept for compatibility. Assimp is required privately for mesh I/O and is intentionally not exposed as a package-specific LVR option.
 
+## Bundled viewer removal
+
+The Qt/VTK `lvr2_viewer` and the ncurses/Embree `lvr2_ascii_viewer` are no longer built or installed from the core LVR3 tree. The `LVR2_BUILD_VIEWER` option and the `viewer` vcpkg feature were removed with their viewer-only Qt, QVTK, VTK, and Curses discovery. Use the external viewer project or another mesh/point-cloud viewer for interactive visualization.
+
 ## ROS and Debian packaging
 
 ROS and Debian packaging currently preserve the historical `lvr2` identity: `package.xml`, Debian source and binary package names, CLI/tool names, C++ namespaces, and `share/lvr2` installation are unchanged. The `lvr3` identity is available through the installed CMake package facade for CMake consumers.
@@ -97,7 +101,7 @@ Debian packaging uses the distributor/system-package escape hatch instead of the
 
 The shared-only flags are required because mesh asset I/O uses a required private Assimp backend that must not leak through exported static target interfaces. Development packages no longer install static archives or vendored HighFive artifacts.
 
-Verified ROS/Debian dependency names were added for package-backed dependencies introduced by the modernization work, including Assimp, tl-expected (`libexpected-dev`), spdlog, TBB, TIFF, GDAL, HDF5, OpenCV, VTK 9, Eigen, Boost, YAML-CPP, OpenGL/GLUT, and OpenCL. HighFive, rply, and LASlib/LAStools remain required by the package-backed system build, but verified Jammy/Noble Debian package names and rosdep keys are not recorded yet; distributors may need local packages or rosdep rules for those dependencies before full system-package Debian builds pass.
+Verified ROS/Debian dependency names were added for package-backed dependencies introduced by the modernization work, including Assimp, tl-expected (`libexpected-dev`), spdlog, TBB, TIFF, GDAL, HDF5, OpenCV, Eigen, Boost, YAML-CPP, OpenGL/GLUT, and OpenCL. HighFive, rply, and LASlib/LAStools remain required by the package-backed system build, but verified Jammy/Noble Debian package names and rosdep keys are not recorded yet; distributors may need local packages or rosdep rules for those dependencies before full system-package Debian builds pass.
 
 ## Opt-in sanitizer, fuzz, and performance baseline hooks
 

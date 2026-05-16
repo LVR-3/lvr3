@@ -134,11 +134,6 @@ if(@RDB_FOUND@)
   find_dependency(RDB)
 endif(@RDB_FOUND@)
 
-# VTK
-if(@VTK_FOUND@)
-    find_dependency(VTK)
-endif()
-
 # pcl
 if(@PCL_FOUND@)
   find_dependency(PCL)
