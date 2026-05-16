@@ -19,7 +19,6 @@
 #include "lvr2/reconstruction/TetraederBox.hpp"
 
 #include "lvr2/algorithm/FinalizeAlgorithms.hpp"
-#include "lvr2/io/hdf5/HDF5FeatureBase.hpp"
 
 #include "lvr2/io/modelio/PLYIO.hpp"
 
@@ -53,12 +52,6 @@ constexpr int MAP_RESOLUTION = 64;
 
 /// Scale for the boudingbox vectors
 constexpr int SCALE = 1000;
-
-/// HDF5 class structure for saving meshes
-// using HDF5MeshToolIO = lvr2::Hdf5IO<lvr2::hdf5features::ArrayIO,
-//                                     lvr2::hdf5features::ChannelIO,
-//                                     lvr2::hdf5features::VariantChannelIO,
-//                                     lvr2::hdf5features::MeshIO>;
 
 /**
  * @brief Tells the user how to call this program

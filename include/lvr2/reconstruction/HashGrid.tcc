@@ -33,7 +33,6 @@
  */
 
 #include "lvr2/geometry/BaseMesh.hpp"
-#include "lvr2/io/ChunkIO.hpp"
 #include "lvr2/util/Progress.hpp"
 #include "lvr2/util/Timestamp.hpp"
 #include "lvr2/reconstruction/FastReconstructionTables.hpp"

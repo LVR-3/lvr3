@@ -37,8 +37,7 @@
 
 #include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/types/PointBuffer.hpp"
-#include "lvr2/io/deprecated/hdf5/HDF5FeatureBase.hpp"
-#include "lvr2/io/deprecated/hdf5/ChunkIO.hpp"
+#include "lvr2/io/storage/ChunkStore.hpp"
 
 #include <list>
 #include <unordered_map>
@@ -69,7 +68,7 @@ class ChunkHashGrid
   public:
     using val_type = boost::variant<MeshBufferPtr, PointBufferPtr>;
 
-    using io = Hdf5Build<hdf5features::ChunkIO>;
+    using io = lvr2::io::storage::ChunkStore;
 
     /**
      * @brief class to load chunks from an HDF5 file

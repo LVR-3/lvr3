@@ -54,14 +54,18 @@ foreach(_lvr2_root IN LISTS _lvr2_code_roots)
   endif()
 endforeach()
 
-# Stage-aware replacement root scan: legacy scanio/baseio/meshio/modelio CRTP
-# headers still exist until I07-I09, but new lvr2::io replacement roots must not
-# carry those public split namespaces or the old CRTP lattice forward.
+# Final replacement root scan: the old split storage feature headers are gone;
+# new lvr2::io replacement roots must not carry public split namespaces or the
+# old feature lattice forward.
 set(_lvr2_replacement_files
   "${LVR2_SOURCE_DIR}/include/lvr2/io/mesh.hpp"
+  "${LVR2_SOURCE_DIR}/include/lvr2/io/storage/ChunkStore.hpp"
   "${LVR2_SOURCE_DIR}/src/liblvr2/io/MeshIOFacade.cpp"
   "${LVR2_SOURCE_DIR}/src/liblvr2/include/lvr2/io/AssimpMeshAdapter.hpp"
+  "${LVR2_SOURCE_DIR}/src/liblvr2/include/lvr2/io/MeshStores.hpp"
   "${LVR2_SOURCE_DIR}/src/liblvr2/io/AssimpMeshAdapter.cpp"
+  "${LVR2_SOURCE_DIR}/src/liblvr2/io/MeshStores.cpp"
+  "${LVR2_SOURCE_DIR}/src/liblvr2/io/ChunkStore.cpp"
 )
 
 set(_lvr2_replacement_roots
@@ -92,7 +96,10 @@ set(_lvr2_banned_replacement_terms
   "FeatureConstruct"
   "AddFeatures"
   "Merge<"
-  "ScanProjectIO::"
+  "ScanProjectIO"
+  "MatrixIO::"
+  "ArrayIO::"
+  "ScanIO::"
   "namespace meshio"
   "namespace scanio"
   "namespace modelio"

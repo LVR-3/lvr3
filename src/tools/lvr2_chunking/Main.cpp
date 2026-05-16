@@ -34,7 +34,7 @@
 
 #include "Options.hpp"
 #include "lvr2/algorithm/ChunkManager.hpp"
-#include "lvr2/io/deprecated/hdf5/HDF5FeatureBase.hpp"
+#include "lvr2/io/MeshStores.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 
 #include <boost/filesystem.hpp>
@@ -97,13 +97,8 @@ int main(int argc, char** argv)
         lvr2::MeshBufferPtr meshBuffer;
         if (extension == ".h5")
         {
-            using HDF5MeshToolIO = lvr2::Hdf5IO<lvr2::hdf5features::ArrayIO,
-                                                lvr2::hdf5features::ChannelIO,
-                                                lvr2::hdf5features::VariantChannelIO,
-                                                lvr2::hdf5features::MeshIO>;
-            HDF5MeshToolIO hdf5;
-            hdf5.open(files[0]);
-            meshBuffer = hdf5.loadMesh(options.getMeshGroup());
+            lvr2::io::mesh::Hdf5MeshStore hdf5(files[0]);
+            meshBuffer = hdf5.load_mesh(options.getMeshGroup());
         }
         else // use model reader
         {

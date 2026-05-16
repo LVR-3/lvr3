@@ -29,9 +29,6 @@
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/geometry/PMPMesh.hpp"
 #include "lvr2/algorithm/pmp/SurfaceNormals.h"
-#include "lvr2/io/baseio/ChannelIO.hpp"
-#include "lvr2/io/baseio/ArrayIO.hpp"
-#include "lvr2/io/baseio/VariantChannelIO.hpp"
 #include "lvr2/io/Tiles3dIO.hpp"
 #include "lvr2/io/mesh.hpp"
 #include "lvr2/reconstruction/VirtualGrid.hpp"
@@ -66,11 +63,6 @@
 
 namespace lvr2
 {
-    using LSRWriter = lvr2::Hdf5IO<lvr2::hdf5features::ArrayIO,
-            lvr2::hdf5features::ChannelIO,
-            lvr2::hdf5features::VariantChannelIO,
-            lvr2::hdf5features::MeshIO>;
-
     template<typename BaseVecT>
     LargeScaleReconstruction<BaseVecT>::LargeScaleReconstruction(LSROptions options)
         : m_options(options)
