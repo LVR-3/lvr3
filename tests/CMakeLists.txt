@@ -145,6 +145,17 @@ set_tests_properties(lvr2_packaging_policy
     LABELS "cmake;packaging;ros;debian"
 )
 
+add_test(
+  NAME lvr2_storage_io_contract_guard
+  COMMAND ${CMAKE_COMMAND}
+    -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+    -P ${CMAKE_CURRENT_LIST_DIR}/storage_io_contract_guard.cmake
+)
+set_tests_properties(lvr2_storage_io_contract_guard
+  PROPERTIES
+    LABELS "cmake;io;scan;storage;contracts"
+)
+
 if(LVR2_MESH_IO_ASSIMP_AVAILABLE)
   add_executable(lvr2_assimp_adapter_smoke
     test_assimp_adapter_smoke.cpp

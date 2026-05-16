@@ -235,6 +235,39 @@ PLY mesh facade load/save no longer uses legacy `PLYIO`; the private `ModelFacto
 
 Private Assimp adapter coverage is guarded by `lvr2_no_public_assimp_leakage`, `lvr2_no_legacy_mesh_facade_usage`, package-identity interface checks, and Assimp-enabled mesh facade tests.
 
+## Planned BaseIO scan-project/storage removal
+
+The remaining `BaseIO`, `FeatureBuild`, `FeatureConstruct`, feature-template,
+`scanio`, `meshio`, and deprecated HDF5 storage paths are deletion targets. The
+replacement public API will live under `lvr2::io`:
+
+```cpp
+auto store = lvr2::io::scan::open_directory(
+    path,
+    lvr2::io::scan::Schema::raw(),
+    lvr2::io::storage::LoadMode::Lazy);
+store.save(*project);
+auto loaded = store.load();
+```
+
+One-shot helpers are the intended simple path for tools and examples:
+
+```cpp
+auto loaded = lvr2::io::scan::load_project(
+    path,
+    lvr2::io::scan::LoadOptions::directory_raw());
+auto saved = lvr2::io::scan::save_project(
+    path,
+    *project,
+    lvr2::io::scan::SaveOptions::hdf5());
+```
+
+The new storage implementation must use one `StorageBackend`/`StorageRegistry`
+path for Directory, HDF5, fake/test, plugin, and future custom/IP backends. It
+must not add CRTP compatibility aliases, a built-in-only backend selector, or a
+second extension path. See `docs/io/baseio-removal-inventory.md` for the current
+inventory, migration map, smoke commands, and performance baseline commands.
+
 ## 25.1.0 -> 25.2.0
 
 
