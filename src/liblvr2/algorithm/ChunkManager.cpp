@@ -41,6 +41,7 @@
 #include <algorithm>
 #include <boost/filesystem.hpp>
 #include <cmath>
+#include <lvr2/util/Logging.hpp>
 
 namespace
 {
@@ -88,9 +89,7 @@ ChunkManager::ChunkManager(std::vector<MeshBufferPtr> meshes,
     setChunkSize(chunksize);
     if (meshes.size() != layers.size())
     {
-        std::cerr << lvr2::timestamp << "Number of meshes and layers do not match: \n"
-                  << "Num meshes: " << meshes.size() << "\n"
-                  << "Num layers: " << layers.size() << std::endl;
+                lvr2::log::error("{}{}{}{}{}{}", fmt::streamed("Number of meshes and layers do not match: \n"), fmt::streamed("Num meshes: "), fmt::streamed(meshes.size()), fmt::streamed("\n"), fmt::streamed("Num layers: "), fmt::streamed(layers.size()));
 
         return;
     }

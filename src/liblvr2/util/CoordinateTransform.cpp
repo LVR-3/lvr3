@@ -34,6 +34,7 @@
 
 #include "lvr2/util/CoordinateTransform.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <iostream>
@@ -59,12 +60,12 @@ void convert(COORD_SYSTEM from, COORD_SYSTEM to, float* point)
 		}
 		else
 		{
-			cout << timestamp << "Target coordinate system not supported." << endl;
+						lvr2::log::info("{}", fmt::streamed("Target coordinate system not supported."));
 		}
 	}
 	else
 	{
-		cout << timestamp << "Source coordinate system not supported." << endl;
+				lvr2::log::info("{}", fmt::streamed("Source coordinate system not supported."));
 	}
 }
 

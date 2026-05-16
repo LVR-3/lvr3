@@ -3,6 +3,7 @@
 #include "lvr2/io/ModelFactory.hpp"
 
 #include <boost/range/iterator_range.hpp>
+#include <lvr2/util/Logging.hpp>
 
 namespace lvr2
 {
@@ -20,7 +21,6 @@ void DirectoryKernel::saveMeshBuffer(
 
     ModelPtr model(new Model);
     model->m_mesh = buffer;
-    // std::cout << timestamp << "Directory Kernel::saveMeshBuffer(): " << p.string() << std::endl;
     ModelFactory::saveModel(model, p.string());
 }
 
@@ -36,7 +36,6 @@ void DirectoryKernel::savePointBuffer(
     }
     ModelPtr model(new Model);
     model->m_pointCloud = buffer;
-    // std::cout << timestamp << "Directory Kernel::savePointBuffer(): " << p.string() << std::endl;
     ModelFactory::saveModel(model, p.string());
 }
 
@@ -50,7 +49,6 @@ void DirectoryKernel::saveImage(
     {
         boost::filesystem::create_directories(p.parent_path());
     }
-    // std::cout << timestamp << "Directory Kernel::saveImage(): " << p.string() << std::endl;
 
     cv::imwrite(p.string(), image);
 }
@@ -65,7 +63,6 @@ void DirectoryKernel::saveMetaYAML(
     {
         boost::filesystem::create_directories(p.parent_path());
     }
-    // std::cout << timestamp << "Directory Kernel::saveMetaYAML(): " << p.string() << std::endl;
     saveMetaInformation(p.string(), node);
 }
 
@@ -76,7 +73,7 @@ MeshBufferPtr DirectoryKernel::loadMeshBuffer(
     MeshBufferPtr ret;
 
     boost::filesystem::path p = getAbsolutePath(group, container);
-    std::cout << timestamp << "Directory Kernel::loadMeshBuffer(): " << p.string() << std::endl;
+        lvr2::log::info("{}{}", fmt::streamed("Directory Kernel::loadMeshBuffer(): "), fmt::streamed(p.string()));
     ModelPtr model = ModelFactory::readModel(p.string());
     if (model)
     {
@@ -97,7 +94,7 @@ PointBufferPtr DirectoryKernel::loadPointBuffer(
     {
         ret = model->m_pointCloud;
     }
-    
+
     return ret;
 }
 
@@ -107,7 +104,6 @@ boost::optional<cv::Mat> DirectoryKernel::loadImage(
 {
     boost::filesystem::path p = getAbsolutePath(group, container);
     boost::optional<cv::Mat> opt;
-    // std::cout << timestamp << "Directory Kernel::loadImage: " << p.string() << std::endl;
     if(boost::filesystem::exists(p))
     {
         opt = cv::imread(p.string());
@@ -127,7 +123,6 @@ bool DirectoryKernel::loadMetaYAML(
     YAML::Node& n) const
 {
     boost::filesystem::path p = getAbsolutePath(group, container);
-    // std::cout << timestamp << "Directory Kernel::loadMetaYAML: " << p.string() << std::endl;
     YAML::Node node = loadMetaInformation(p.string());
     n = node;
 
@@ -202,7 +197,7 @@ std::vector<std::string> DirectoryKernel::listDatasets(const std::string& group)
         bfs::directory_iterator end_itr;
         for(bfs::directory_iterator itr(pg); itr != end_itr; ++itr)
         {
-            if (bfs::is_regular_file(itr->path())) 
+            if (bfs::is_regular_file(itr->path()))
             {
                 if(!isMeta(itr->path().filename().string()))
                 {
@@ -210,69 +205,69 @@ std::vector<std::string> DirectoryKernel::listDatasets(const std::string& group)
                 }
             }
         }
-    }       
+    }
 
     return ret;
 }
 
 charArr DirectoryKernel::loadCharArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
-    return loadArray<char>(group, container, dims);   
+    return loadArray<char>(group, container, dims);
 }
 
 ucharArr DirectoryKernel::loadUCharArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
-    return loadArray<unsigned char>(group, container, dims);   
+    return loadArray<unsigned char>(group, container, dims);
 }
 
 shortArr DirectoryKernel::loadShortArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
-    return loadArray<short>(group, container, dims);   
+    return loadArray<short>(group, container, dims);
 }
 
 ushortArr DirectoryKernel::loadUShortArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
-    return loadArray<unsigned short>(group, container, dims);   
+    return loadArray<unsigned short>(group, container, dims);
 }
 
 uint16Arr DirectoryKernel::loadUInt16Array(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
-    return loadArray<uint16_t>(group, container, dims);   
+    return loadArray<uint16_t>(group, container, dims);
 }
 
 intArr DirectoryKernel::loadIntArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
-    return loadArray<int>(group, container, dims);   
+    return loadArray<int>(group, container, dims);
 }
 
 uintArr DirectoryKernel::loadUIntArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
-    return loadArray<unsigned int>(group, container, dims);   
+    return loadArray<unsigned int>(group, container, dims);
 }
 
 lintArr DirectoryKernel::loadLIntArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
-    return loadArray<long int>(group, container, dims);   
+    return loadArray<long int>(group, container, dims);
 }
 
 ulintArr DirectoryKernel::loadULIntArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
-    return loadArray<unsigned long int>(group, container, dims);   
+    return loadArray<unsigned long int>(group, container, dims);
 }
 
 floatArr DirectoryKernel::loadFloatArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
-    return loadArray<float>(group, container, dims);   
+    return loadArray<float>(group, container, dims);
 }
 
 doubleArr DirectoryKernel::loadDoubleArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
-    return loadArray<double>(group, container, dims);   
+    return loadArray<double>(group, container, dims);
 }
 
 boolArr DirectoryKernel::loadBoolArray(const std::string& group, const std::string& container, std::vector<size_t>& dims) const
 {
-    return loadArray<bool>(group, container, dims);   
+    return loadArray<bool>(group, container, dims);
 }
 
 void DirectoryKernel::saveCharArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<char>& data) const

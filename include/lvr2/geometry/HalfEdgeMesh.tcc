@@ -42,6 +42,7 @@
 #include "lvr2/attrmaps/AttrMaps.hpp"
 #include "lvr2/util/Panic.hpp"
 #include "lvr2/util/Debug.hpp"
+#include <lvr2/util/Logging.hpp>
 
 
 namespace lvr2
@@ -82,8 +83,7 @@ HalfEdgeMesh<BaseVecT>::HalfEdgeMesh(MeshBufferPtr ptr)
         }
         catch(PanicException exception)
         {
-            std::cerr << timestamp << "Warning loop detected. Omitting face "
-                      << v1.idx() << " " << v2.idx() << " " << v3.idx() << std::endl;
+                        lvr2::log::error("{}{}{}{}{}{}", fmt::streamed("Warning loop detected. Omitting face "), fmt::streamed(v1.idx()), fmt::streamed(" "), fmt::streamed(v2.idx()), fmt::streamed(" "), fmt::streamed(v3.idx()));
         }
     }
 }
@@ -248,7 +248,7 @@ FaceHandle HalfEdgeMesh<BaseVecT>::addFace(VertexHandle v1H, VertexHandle v2H, V
                       });
 
             auto eH = eHOpt.unwrap();
-            
+
             DOINDEBUG(dout() << "(B) ... setting " << eH << ".next = " << eOutH << std::endl);
 
             if (previousNexts.find(eH.idx()) == previousNexts.end())
@@ -1741,10 +1741,10 @@ void HalfEdgeMesh<BaseVecT>::splitVertex(EdgeHandle eH,
 
 /**
  * @brief Fills holes of a maximum contour size (meaning maximum number of edges making up the contour) in the mesh
- * 
+ *
  * @tparam BaseVecT base vector
  * @param maxSize maximum number of edges belonging to the contour
- * @return size_t 
+ * @return size_t
  */
 template <typename BaseVecT>
 void HalfEdgeMesh<BaseVecT>::fillHoles(size_t maxSize)
@@ -1809,7 +1809,7 @@ void HalfEdgeMesh<BaseVecT>::fillHoles(size_t maxSize)
         contours.push_back(currContour);
     }
 
-    std::cout << timestamp << "Found " << contours.size() << " holes" << std::endl;
+        lvr2::log::info("{}{}{}", fmt::streamed("Found "), fmt::streamed(contours.size()), fmt::streamed(" holes"));
 
     string comment = timestamp.getElapsedTime() + "Removing holes";
     ProgressBar progress(contours.size(), comment);
@@ -1826,7 +1826,7 @@ void HalfEdgeMesh<BaseVecT>::fillHoles(size_t maxSize)
                 addFace(contour[0], contour[1], contour[2]);
                 continue;
             }
-            
+
             // calculate the averge point of the contour and adding it to the mesh
             BaseVecT middle = getV(contour[0]).pos;
             for (size_t i = 1; i < contour.size(); i++)
@@ -1850,7 +1850,7 @@ void HalfEdgeMesh<BaseVecT>::fillHoles(size_t maxSize)
             {
                 this->splitVertex(middleH);
             }
-           
+
 
         }
         catch(PanicException exception)
@@ -1863,8 +1863,8 @@ void HalfEdgeMesh<BaseVecT>::fillHoles(size_t maxSize)
 
 /**
  * @brief Smooths the mesh using the laplacian smoothing approach
- * 
- * @tparam BaseVecT 
+ *
+ * @tparam BaseVecT
  * @param smoothFactor   Determines how much the center point is moved into the direction of the average vector to it
  * @param numSmoothings  Determines how often laplacian smoothing is applied to the mesh (default: 1)
  */
@@ -1888,7 +1888,7 @@ void HalfEdgeMesh<BaseVecT>::laplacianSmoothing(float smoothFactor, int numSmoot
             }
 
             avg_vec /= n_vertices.size();
-            
+
             //smoothing factor is used to determine how much the vertex is moved in the calculated direction
             BaseVecT avg_vec_factorized(avg_vec[0] * smoothFactor,
                                         avg_vec[1] * smoothFactor,

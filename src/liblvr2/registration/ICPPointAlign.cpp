@@ -34,6 +34,7 @@
 #include "lvr2/registration/ICPPointAlign.hpp"
 #include "lvr2/registration/EigenSVDPointAlign.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 
 #include <iomanip>
 #include <chrono>
@@ -94,7 +95,7 @@ Transformd ICPPointAlign::match()
 
         if (m_verbose)
         {
-            std::cout << timestamp << "ICP Error is " << ret << " in iteration " << iteration << " / " << m_maxIterations << " using " << pairs << " points." << std::endl;
+                        lvr2::log::error("{}{}{}{}{}{}{}{}{}", fmt::streamed("ICP Error is "), fmt::streamed(ret), fmt::streamed(" in iteration "), fmt::streamed(iteration), fmt::streamed(" / "), fmt::streamed(m_maxIterations), fmt::streamed(" using "), fmt::streamed(pairs), fmt::streamed(" points."));
         }
 
         // Check minimum distance

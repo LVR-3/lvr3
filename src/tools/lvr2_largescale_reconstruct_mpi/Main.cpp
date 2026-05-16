@@ -53,6 +53,7 @@ typedef CudaSurface GpuSurface;
 #define GPU_FOUND
 
 #include "lvr2/reconstruction/opencl/ClSurface.hpp"
+#include <lvr2/util/Logging.hpp>
 
 
 typedef ClSurface GpuSurface;
@@ -142,7 +143,7 @@ int main(int argc, char** argv)
             auto loaded = lvr2::io::scan::load_project(in, lvr2::io::scan::LoadOptions::hdf5());
             if (!loaded)
             {
-                std::cout << timestamp << "Unable to load HDF5 scan project: " << loaded.error().message << std::endl;
+                                lvr2::log::error("{}{}", fmt::streamed("Unable to load HDF5 scan project: "), fmt::streamed(loaded.error().message));
                 MPI_Finalize();
                 return EXIT_FAILURE;
             }
@@ -167,8 +168,7 @@ int main(int argc, char** argv)
                 }
                 else
                 {
-                    std::cout << timestamp << "Unable to load directory scan project: "
-                              << loadedDirectory.error().message << std::endl;
+                                        lvr2::log::error("{}{}", fmt::streamed("Unable to load directory scan project: "), fmt::streamed(loadedDirectory.error().message));
                 }
             }
             //reconstruction from ScanProject Folder

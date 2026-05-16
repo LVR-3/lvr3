@@ -51,6 +51,7 @@ typedef CudaSurface GpuSurface;
 #elif defined OPENCL_FOUND
 #define GPU_FOUND
 #include "lvr2/reconstruction/opencl/ClSurface.hpp"
+#include <lvr2/util/Logging.hpp>
 typedef ClSurface GpuSurface;
 #endif
 
@@ -86,11 +87,11 @@ int main(int argc, char** argv)
     //reconstruction from hdf5
     if (extension == ".h5" || extension == ".hdf5")
     {
-        std::cout << timestamp << "Reading project from HDF5 file" << std::endl;
+                lvr2::log::info("{}", fmt::streamed("Reading project from HDF5 file"));
         auto loaded = lvr2::io::scan::load_project(input, lvr2::io::scan::LoadOptions::hdf5());
         if (!loaded)
         {
-            std::cerr << timestamp << "Unable to load HDF5 scan project: " << loaded.error().message << std::endl;
+                        lvr2::log::error("{}{}", fmt::streamed("Unable to load HDF5 scan project: "), fmt::streamed(loaded.error().message));
             return EXIT_FAILURE;
         }
 
@@ -112,9 +113,8 @@ int main(int argc, char** argv)
             }
             else
             {
-                std::cout << timestamp << "Unable to load directory scan project: "
-                          << loaded.error().message << std::endl;
-                std::cout << timestamp << "Trying directory as a folder of .ply files" << std::endl;
+                                lvr2::log::error("{}{}", fmt::streamed("Unable to load directory scan project: "), fmt::streamed(loaded.error().message));
+                                lvr2::log::info("{}", fmt::streamed("Trying directory as a folder of .ply files"));
 
                 // Setup basic scan project structure
                 project->project.reset(new ScanProject);
@@ -123,11 +123,11 @@ int main(int argc, char** argv)
                     auto path = file.path();
                     if(path.extension() != ".ply")
                     {
-                        std::cout << timestamp << "Skipping file: " << path << std::endl;
+                                                lvr2::log::info("{}{}", fmt::streamed("Skipping file: "), fmt::streamed(path));
                         continue;
                     }
 
-                    std::cout << timestamp << "Using file: " << path << std::endl;
+                                        lvr2::log::info("{}{}", fmt::streamed("Using file: "), fmt::streamed(path));
 
                     // Create new Scan
                     ScanPtr scan(new Scan);
@@ -150,7 +150,7 @@ int main(int argc, char** argv)
         //reconstruction from a .ply file
         else
         {
-            std::cout << timestamp << "Reading single file: " << selectedFile << std::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("Reading single file: "), fmt::streamed(selectedFile));
             ModelPtr model = ModelFactory::readModel(input);
 
             // Create new scan object and mark scan data as loaded
@@ -188,7 +188,7 @@ int main(int argc, char** argv)
     cm.reset();
     fs::remove_all(options.m_options.tempDir);
 
-    std::cout << timestamp << "Program end." << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Program end."));
 
     return 0;
 }

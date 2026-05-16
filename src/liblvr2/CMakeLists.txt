@@ -220,6 +220,7 @@ if(LVR2_BUILD_STATIC_LIBS)
         PUBLIC
         Eigen3::Eigen
         tl::expected
+        ${LVR2_FMT_TARGET}
         ${LVR2_HIGHFIVE_TARGET}
     )
 
@@ -232,6 +233,7 @@ if(LVR2_BUILD_STATIC_LIBS)
     target_link_libraries(lvr2_static
         PUBLIC
         tl::expected
+        ${LVR2_FMT_TARGET}
         ${LVR2_HIGHFIVE_TARGET}
         ${LVR2_INTERNAL_DEPENDENCIES_STATIC}
         ${LVR2_LIB_DEPENDENCIES}
@@ -266,6 +268,7 @@ if(BUILD_SHARED_LIBS)
         PUBLIC
         Eigen3::Eigen
         tl::expected
+        ${LVR2_FMT_TARGET}
         ${LVR2_HIGHFIVE_TARGET}
         ${LVR2_INTERNAL_DEPENDENCIES_SHARED}
         ${LVR2_LIB_DEPENDENCIES}

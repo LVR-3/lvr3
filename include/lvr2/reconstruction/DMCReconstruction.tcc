@@ -36,6 +36,7 @@
 #include "metrics/DMCReconstructionMetric.hpp"
 #include <vector>
 #include <random>
+#include <lvr2/util/Logging.hpp>
 using std::vector;
 namespace lvr2
 {
@@ -105,7 +106,7 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
     int cellCounter = 0;
     for(int cur_Level = levels; cur_Level > 0; --cur_Level)
     {
-        
+
         // calculating stepwidth at current level for transformation into real world coordinates
         if(cur_Level < levels)
         {
@@ -116,7 +117,7 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
 
         CellHandle ch_end = parent.end();
         int levelCellCounter = 0;
-        
+
 
         // visiting all cells of the octree
         for (CellHandle ch = parent.root(); ch != ch_end; ++ch)
@@ -251,7 +252,7 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
 
                         // this is not necessarily a dual leaf
                         DualLeaf<BaseVecT, BoxT> *leaf = new DualLeaf<BaseVecT, BoxT>(corners);
-                        
+
                         // only calculate cell error for levels bigger than detla
 
                         if(cur_Level > delta)
@@ -275,7 +276,7 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
 
                             double current_error = reconstructionMetric->get_distance(this->m_surface, points, corners, leaf, dual);
 
-                            
+
 
                             // split descision happens here
                             // compare value of the metric to max error of dmc reconstruction instance
@@ -291,7 +292,7 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
                             {
                                 markToSplit = true;
                             }
-            
+
                         }
                         // if the level is smaller or equals delta, mark to split anyways
                         else
@@ -299,12 +300,12 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
                             splitting_pos.push_back(idx);
                             markToSplit = true;
                         }
-                        
+
                         delete(leaf);
                     }
                     idx++;
                 }
-                
+
                 if(markToSplit)
                 {
                     vector<coord<float>*> points;
@@ -385,9 +386,9 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
             }
         // end of visiting all cells of the octree
         }
-        
-        std::cout << timestamp << "[BigVolumen] LevelCellCounter of " << cellCounter << " cells at level " << cur_Level << std::endl;
-    
+
+                lvr2::log::info("{}{}{}{}", fmt::streamed("[BigVolumen] LevelCellCounter of "), fmt::streamed(cellCounter), fmt::streamed(" cells at level "), fmt::streamed(cur_Level));
+
     // end of visiting the current level
     }
 }
@@ -564,24 +565,21 @@ template<typename BaseVecT, typename BoxT>
 void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &mesh)
 {
     // start building adaptive octree
-    string comment = timestamp.getElapsedTime() + "[DMCReconstruction] Creating Octree...";
-    std::cout << comment << std::endl;
-    
+    lvr2::log::info("[DMCReconstruction] Creating Octree...");
 
     // metric is set here
     DMCReconstructionMetric<BaseVecT, BoxT> *reconstructionMetric = new MSRMetric<BaseVecT, BoxT>;
-    
+
     buildTree(*octree, m_maxLevel, m_dual, reconstructionMetric, 0);
 
-    comment = timestamp.getElapsedTime() + "[DMCReconstruction] Cleaning up RAM...";
-    std::cout << comment << std::endl;
+    lvr2::log::info("[DMCReconstruction] Cleaning up RAM...");
     m_pointHandler->clear();
 
-    comment = timestamp.getElapsedTime() + "[DMCReconstruction] Creating Mesh ";
+    std::string comment = "[DMCReconstruction] Creating Mesh ";
     m_progressBar = new ProgressBar(m_leaves, comment);
     traverseTree(mesh, *octree);
     delete(octree);
-    std::cout << std::endl;
+    lvr2::log::info_runtime("");
 }
 
 template<typename BaseVecT, typename BoxT>
@@ -590,24 +588,20 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &flatMesh, Ba
     // delta cannot be smaller than zero
     if(delta < 0)
     {
-        std::string comment = timestamp.getElapsedTime() + "[DMCReconstruction] Error: delta cannot be below zero."; 
-        std::cout << comment << std::endl;
+        lvr2::log::error("[DMCReconstruction] delta cannot be below zero.");
         return;
     }
     // if delta is equal to zero, just use the the simple getMesh function
     //TODO: fix it
     else if(delta == 0)
     {
-        string comment = timestamp.getElapsedTime() + "[DMCReconstruction] Warning: delta is equal to zero. Returning flat mesh only."; 
-        std::cout << comment << std::endl;
+        lvr2::log::warning("[DMCReconstruction] delta is equal to zero. Returning flat mesh only.");
         getMesh(flatMesh);
     }
     // else the delta must be greater than 0
     else
     {
-        std::string comment = timestamp.getElapsedTime() + "[DMCReconstruction] Creating two meshes with delta delta of " + std::to_string(delta) + "."; 
-        std::cout << comment << std::endl;
-
+        lvr2::log::info("[DMCReconstruction] Creating two meshes with delta of {}.", delta);
 
         // use this metric
         // lets see where we will put this later
@@ -616,26 +610,24 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &flatMesh, Ba
 
         /* *************** FLAT OCTREE ************************* */
 
-        comment = timestamp.getElapsedTime() + "[DMCReconstruction] Building flat octree..."; 
-        std::cout << comment << std::endl;
+        lvr2::log::info("[DMCReconstruction] Building flat octree...");
 
         // build flat tree without delta
         buildTree(*octree, m_maxLevel, m_dual, reconstructionMetric, 0);
 
         // printing progress
-        comment = timestamp.getElapsedTime() + "[DMCReconstruction] Cleaning up RAM...";
-        std::cout << comment << std::endl;
+        lvr2::log::info("[DMCReconstruction] Cleaning up RAM...");
         m_pointHandler->clear();
-        
+
         // creating mesh
-        comment = timestamp.getElapsedTime() + "[DMCReconstruction] Creating flat mesh ";
+        std::string comment = "[DMCReconstruction] Creating flat mesh ";
         m_progressBar = new ProgressBar(m_leaves, comment);
         traverseTree(flatMesh, *octree);
-        std::cout << std::endl;
-        
-        
+        lvr2::log::info_runtime("");
+
+
         /* *************** DEEP OCTREE ************************* */
-        
+
         // reloading pointcloud
         floatArr points_floatArr = this->m_surface->pointBuffer()->getPointArray();
         coord3fArr points = *((coord3fArr*) &points_floatArr);
@@ -647,9 +639,7 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &flatMesh, Ba
 
         m_pointHandler = std::unique_ptr<DMCPointHandle<BaseVecT>>(new DMCVecPointHandle<BaseVecT>(containedPoints));
 
-        comment = timestamp.getElapsedTime() + "[DMCReconstruction] Building deep octree..."; 
-        std::cout << comment << std::endl;
-    
+        lvr2::log::info("[DMCReconstruction] Building deep octree...");
 
         // we have to increase m_maxLevel and put it into buildTree as levels (2nd param.)
         m_maxLevel += delta;
@@ -660,17 +650,14 @@ void DMCReconstruction<BaseVecT, BoxT>::getMesh(BaseMesh<BaseVecT> &flatMesh, Ba
         buildTree(*deepOctree, m_maxLevel, m_dual, reconstructionMetric, delta);
 
 
-        comment = timestamp.getElapsedTime() + "[DMCReconstruction] Cleaning up RAM...";
-        std::cout << comment << std::endl;
+        lvr2::log::info("[DMCReconstruction] Cleaning up RAM...");
         m_pointHandler->clear();
 
-      
-        comment = timestamp.getElapsedTime() + "[DMCReconstruction] Creating deep mesh ";
+        comment = "[DMCReconstruction] Creating deep mesh ";
         m_progressBar = new ProgressBar(m_leaves, comment);
         traverseTree(deepMesh, *deepOctree);
-        std::cout << std::endl;
-        
-        
+        lvr2::log::info_runtime("");
+
         return;
     }
 
@@ -697,7 +684,7 @@ DualLeaf<BaseVecT, BoxT>* DMCReconstruction<BaseVecT, BoxT>::getDualLeaf(
 
     if(cellHandles.size() != 8)
     {
-        std::cout << "[DMCReconstruction] ERROR - CellHandles Size is " << cellHandles.size() << " but must be 8!"<< std::endl;
+        lvr2::log::error("[DMCReconstruction] CellHandles Size is {} but must be 8!", cellHandles.size());
     }
 
     // find vertex of each cell
@@ -747,7 +734,7 @@ void DMCReconstruction<BaseVecT, BoxT>::traverseTree(
             for(unsigned char c = 0; c < 8; c++)
             {
                 DualLeaf<BaseVecT, BoxT> *dualLeaf = getDualLeaf(ch, cells, octree, c);
-                
+
                 getSurface(mesh, dualLeaf, cells, (short)octree.level(ch));
 
                 // free memory

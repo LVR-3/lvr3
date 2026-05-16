@@ -35,6 +35,7 @@
 #include "lvr2/geometry/BaseMesh.hpp"
 #include "lvr2/util/Progress.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 #include "lvr2/reconstruction/FastReconstructionTables.hpp"
 #include "lvr2/reconstruction/HashGrid.hpp"
 
@@ -72,7 +73,7 @@ HashGrid<BaseVecT, BoxT>::HashGrid(float resolution, BoundingBox<BaseVecT> bound
 
     if (!m_boundingBox.isValid())
     {
-        lvr2::logout::get() << lvr2::warning << "[HashGrid] Malformed BoundingBox." << lvr2::endl;
+                lvr2::log::warning("{}", fmt::streamed("[HashGrid] Malformed BoundingBox."));
     }
 
     BoxT::m_voxelsize = m_voxelsize;
@@ -148,7 +149,7 @@ HashGrid<BaseVecT, BoxT>::HashGrid(const std::vector<PointBufferPtr>& chunks,
 
     if (chunks.size() > 1)
     {
-        lvr2::logout::get() << lvr2::info << "[HashGrid] Number of Chunks: "<< chunks.size() << lvr2::endl;
+                lvr2::log::info("{}{}", fmt::streamed("[HashGrid] Number of Chunks: "), fmt::streamed(chunks.size()));
         progress.reset(new lvr2::Monitor(lvr2::LogLevel::info, "[HashGrid] Loading grid", chunks.size()));
     }
 

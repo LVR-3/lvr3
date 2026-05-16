@@ -31,6 +31,7 @@
 #include "lvr2/geometry/Normal.hpp"
 #include "lvr2/util/Progress.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 
 #include <Eigen/Dense>
 
@@ -270,7 +271,6 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
 
 //    if(interpolate)
 //    {
-//        cout << timestamp << " Interpolating normals" << endl;
 //        for(size_t i = 0; i < mat.pixels.size(); i++)
 //        {
 //            for(size_t j = 0; j < mat.pixels[i].size(); j++)
@@ -317,7 +317,7 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
 //        cout << normals.size() << " " << pts.size() << endl;
 //    }
 
-    cout << timestamp << "Finished normal estimation" << endl;
+        lvr2::log::info("{}", fmt::streamed("Finished normal estimation"));
 
     if(in_buffer->hasColors())
     {

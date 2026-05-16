@@ -461,7 +461,7 @@ ModelPtr B3dmIO::read(std::string filename)
     magic[4] = '\0';
     if (strcmp(magic, "b3dm") != 0)
     {
-        std::cout << timestamp << "B3dmIO: Not a b3dm file" << std::endl;
+                lvr2::log::info("{}", fmt::streamed("B3dmIO: Not a b3dm file"));
         return nullptr;
     }
     uint32_t version, byte_length, feature_table_json_length, feature_table_byte_length, batch_table_json_length, batch_table_byte_length;

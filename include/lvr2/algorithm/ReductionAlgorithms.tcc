@@ -36,6 +36,7 @@
 #include "lvr2/geometry/Handles.hpp"
 #include "lvr2/util/Meap.hpp"
 #include "lvr2/util/Progress.hpp"
+#include <lvr2/util/Logging.hpp>
 
 using std::unordered_set;
 using std::vector;
@@ -90,7 +91,7 @@ size_t iterativeEdgeCollapse(
 )
 {
 
-    std::cout << timestamp << "Reduce mesh by collapsing " << count << " edges" << std::endl;
+    lvr2::log::info("Reduce mesh by collapsing {} edges", count);
 
     Meap<VertexHandle, float> queue(mesh.nextVertexIndex());
     DenseVertexMap<VertexHandle> bestEdge;
@@ -232,7 +233,7 @@ size_t iterativeEdgeCollapse(
     }
 
 
-    std::cout << std::endl << timestamp << "Collapsed " << collapsedEdgeCount << " edges..." << std::endl;
+    lvr2::log::info("Collapsed {} edges...", collapsedEdgeCount);
 
     return collapsedEdgeCount;
 }

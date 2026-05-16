@@ -28,7 +28,7 @@ int main(int argc, char** argv)
     }
 
     // Pointer to the scan project we are actually working on.
-    // Helpful, if only a partial project is used, i.e., for 
+    // Helpful, if only a partial project is used, i.e., for
     // normal estimation or plain eport
     ScanProjectPtr workProject = inputProject;
 
@@ -54,7 +54,7 @@ int main(int argc, char** argv)
     {
         if(options.getReduction() == "")
         {
-            lvr2::logout::get() << lvr2::info << "[Main] Exporting all points to '" << options.getReduction() << "'." << lvr2::endl;
+                        lvr2::log::info("{}{}{}", fmt::streamed("[Main] Exporting all points to '"), fmt::streamed(options.getReduction()), fmt::streamed("'."));
             exportScanProjectToPLY(workProject, options.getPLYFileName());
         }
         else
@@ -62,22 +62,18 @@ int main(int argc, char** argv)
             OctreeReductionAlgorithmPtr red = nullptr;
             if(options.getReduction() == "OCTREE_RANDOM")
             {
-                lvr2::logout::get() 
-                    << lvr2::info << "[Main] Exporting with octree random sampling to '" 
-                    << options.getPLYFileName() << "'." << lvr2::endl;
+                                lvr2::log::info("{}{}{}", fmt::streamed("[Main] Exporting with octree random sampling to '"), fmt::streamed(options.getPLYFileName()), fmt::streamed("'."));
 
                 red.reset(new OctreeReductionAlgorithm(
-                    options.getVoxelSize(), 
+                    options.getVoxelSize(),
                     options.getMinPointsInVoxel(), RANDOM_SAMPLE));
             }
             if(options.getReduction() == "OCTREE_NEAREST")
             {
-                lvr2::logout::get() 
-                    << lvr2::info << "[Main] Exporting with nearest center sampling to '" 
-                    << options.getPLYFileName() << "'." << lvr2::endl;
+                                lvr2::log::info("{}{}{}", fmt::streamed("[Main] Exporting with nearest center sampling to '"), fmt::streamed(options.getPLYFileName()), fmt::streamed("'."));
 
                 red.reset(new OctreeReductionAlgorithm(
-                    options.getVoxelSize(), 
+                    options.getVoxelSize(),
                     options.getMinPointsInVoxel(), NEAREST_CENTER));
             }
             exportScanProjectToPLY(workProject, options.getPLYFileName(), true, red);

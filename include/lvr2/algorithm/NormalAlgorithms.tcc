@@ -38,6 +38,7 @@
 using std::vector;
 
 #include "lvr2/geometry/Normal.hpp"
+#include <lvr2/util/Logging.hpp>
 
 namespace lvr2
 {
@@ -179,7 +180,7 @@ DenseVertexMap<Normal<typename BaseVecT::CoordType>> calcVertexNormals(
         }
         catch (...)
         {
-            std::cout << timestamp << "Warning: Loop detected. Using default normal" << std::endl;
+                        lvr2::log::warning("{}", fmt::streamed("Warning: Loop detected. Using default normal"));
             normalMap.insert(vH, Normal<typename BaseVecT::CoordType>(0, 0, 1));
         }
     }

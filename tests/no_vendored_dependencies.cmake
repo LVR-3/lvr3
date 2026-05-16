@@ -4,6 +4,7 @@ endif()
 
 set(_dependency_policy_vendored_dirs
   ext/CTPL
+  ext/fmt
   ext/HighFive
   ext/QVTKOpenGLWidget
   ext/kintinuous

@@ -3,6 +3,7 @@
 #include "lvr2/io/scan.hpp"
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/shared_array.hpp>
@@ -77,12 +78,12 @@ lvr2::io::storage::Status writePreviews(const std::string& outputFile,
         std::string nr_str(buffer);
         std::string previewGroupName = "/preview/" + nr_str;
 
-        std::cout << timestamp << "Generating preview for position " << nr_str << std::endl;
+                lvr2::log::info("{}{}", fmt::streamed("Generating preview for position "), fmt::streamed(nr_str));
 
         ScanPtr scanPtr = firstScan(scanProject->positions[i]);
         if (!scanPtr)
         {
-            std::cout << timestamp << "No scan payload for preview position " << nr_str << std::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("No scan payload for preview position "), fmt::streamed(nr_str));
             continue;
         }
         if (!scanPtr->points && scanPtr->loadable())
@@ -91,7 +92,7 @@ lvr2::io::storage::Status writePreviews(const std::string& outputFile,
         }
         if (!scanPtr->points)
         {
-            std::cout << timestamp << "No point data for preview position " << nr_str << std::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("No point data for preview position "), fmt::streamed(nr_str));
             continue;
         }
 
@@ -137,19 +138,17 @@ int main(int argc, char** argv)
     // check if input directory exists
     if (!boost::filesystem::exists(inputDir))
     {
-        std::cout << timestamp << "Error: Directory " << options.getInputDir() << " does not exist"
-                  << std::endl;
+                lvr2::log::error("{}{}{}", fmt::streamed("Error: Directory "), fmt::streamed(options.getInputDir()), fmt::streamed(" does not exist"));
         exit(-1);
     }
 
     // check if output directory exists
     if (!boost::filesystem::exists(outputDir))
     {
-        std::cout << timestamp << "Creating directory " << options.getOutputDir() << std::endl;
+                lvr2::log::info("{}{}", fmt::streamed("Creating directory "), fmt::streamed(options.getOutputDir()));
         if (!boost::filesystem::create_directory(outputDir))
         {
-            std::cout << timestamp << "Error: Unable to create " << options.getOutputDir()
-                      << std::endl;
+                        lvr2::log::error("{}{}", fmt::streamed("Error: Unable to create "), fmt::streamed(options.getOutputDir()));
             exit(-1);
         }
     }
@@ -160,7 +159,7 @@ int main(int argc, char** argv)
     // check if HDF5 already exists
     if (boost::filesystem::exists(outputPath))
     {
-        std::cout << timestamp << "File already exists. Expanding File..." << std::endl;
+                lvr2::log::info("{}", fmt::streamed("File already exists. Expanding File..."));
 
         // get existing scans
         auto loaded = lvr2::io::scan::load_project(
@@ -173,8 +172,7 @@ int main(int argc, char** argv)
         }
         else
         {
-            std::cout << timestamp << "Unable to load existing HDF5 scan project: "
-                      << loaded.error().message << std::endl;
+                        lvr2::log::error("{}{}", fmt::streamed("Unable to load existing HDF5 scan project: "), fmt::streamed(loaded.error().message));
             exitsts = false;
         }
     }
@@ -182,20 +180,19 @@ int main(int argc, char** argv)
     ScanProjectPtr scanProject;
 
     // reading scan project from given directory into ScanProject
-    std::cout << timestamp << "Reading ScanProject from directory" << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Reading ScanProject from directory"));
     auto loadedInput = lvr2::io::scan::load_project(
         inputDir.string(),
         lvr2::io::scan::LoadOptions::directory_raw_ply());
     if (!loadedInput)
     {
-        std::cout << timestamp << "Unable to load input scan project: "
-                  << loadedInput.error().message << std::endl;
+                lvr2::log::error("{}{}", fmt::streamed("Unable to load input scan project: "), fmt::streamed(loadedInput.error().message));
         return 1;
     }
     scanProject = loadedInput.value();
 
     // saving ScanProject into HDF5 file
-    std::cout << timestamp << "Writing ScanProject to HDF5" << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Writing ScanProject to HDF5"));
     if (exitsts)
     {
         for (ScanPositionPtr scanPosPtr : scanProject->positions)
@@ -208,7 +205,7 @@ int main(int argc, char** argv)
             lvr2::io::scan::SaveOptions::hdf5());
         if (!saved)
         {
-            std::cout << timestamp << "Unable to save HDF5 scan project: " << saved.error().message << std::endl;
+                        lvr2::log::error("{}{}", fmt::streamed("Unable to save HDF5 scan project: "), fmt::streamed(saved.error().message));
             return 1;
         }
     }
@@ -220,7 +217,7 @@ int main(int argc, char** argv)
             lvr2::io::scan::SaveOptions::hdf5());
         if (!saved)
         {
-            std::cout << timestamp << "Unable to save HDF5 scan project: " << saved.error().message << std::endl;
+                        lvr2::log::error("{}{}", fmt::streamed("Unable to save HDF5 scan project: "), fmt::streamed(saved.error().message));
             return 1;
         }
     }
@@ -230,12 +227,11 @@ int main(int argc, char** argv)
         auto previews = writePreviews(outputPath.string(), scanProject);
         if (!previews)
         {
-            std::cout << timestamp << "Unable to write preview arrays: "
-                      << previews.error().message << std::endl;
+                        lvr2::log::error("{}{}", fmt::streamed("Unable to write preview arrays: "), fmt::streamed(previews.error().message));
             return 1;
         }
     }
 
-    std::cout << timestamp << "Program finished" << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Program finished"));
     return 0;
 }

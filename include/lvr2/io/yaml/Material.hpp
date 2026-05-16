@@ -2,15 +2,16 @@
 
 #include <yaml-cpp/yaml.h>
 #include <lvr2/texture/Material.hpp>
+#include <lvr2/util/Logging.hpp>
 
 namespace YAML {
 
 template<>
-struct convert<lvr2::RGB8Color> 
+struct convert<lvr2::RGB8Color>
 {
-    static Node encode(const lvr2::RGB8Color& color) 
+    static Node encode(const lvr2::RGB8Color& color)
     {
-        
+
         Node node;
         node["r"] = (uint64_t) color[0];
         node["g"] = (uint64_t) color[1];
@@ -19,24 +20,21 @@ struct convert<lvr2::RGB8Color>
         return node;
     }
 
-    static bool decode(const Node& node, lvr2::RGB8Color& color) 
+    static bool decode(const Node& node, lvr2::RGB8Color& color)
     {
         if (!node["r"])
         {
-            std::cout << lvr2::timestamp << "[YAML::convert<Texture> - decode] " 
-                            << "Node has no tag 'r'." << std::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("[YAML::convert<Texture> - decode] "), fmt::streamed("Node has no tag 'r'."));
             return false;
         }
         if (!node["g"])
         {
-            std::cout << lvr2::timestamp << "[YAML::convert<Texture> - decode] " 
-                            << "Node has no tag 'g'." << std::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("[YAML::convert<Texture> - decode] "), fmt::streamed("Node has no tag 'g'."));
             return false;
         }
         if (!node["b"])
         {
-            std::cout << lvr2::timestamp << "[YAML::convert<Texture> - decode] " 
-                            << "Node has no tag 'b'." << std::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("[YAML::convert<Texture> - decode] "), fmt::streamed("Node has no tag 'b'."));
             return false;
         }
 
@@ -49,12 +47,12 @@ struct convert<lvr2::RGB8Color>
 };
 
 template<>
-struct convert<lvr2::Material> 
+struct convert<lvr2::Material>
 {
 
-    static Node encode(const lvr2::Material& material) 
+    static Node encode(const lvr2::Material& material)
     {
-        
+
         Node node;
         if (material.m_color)
         {
@@ -64,17 +62,16 @@ struct convert<lvr2::Material>
         {
             node["color"] = lvr2::RGB8Color({255, 255, 255});
         }
-        
+
 
         return node;
     }
 
-    static bool decode(const Node& node, lvr2::Material& material) 
+    static bool decode(const Node& node, lvr2::Material& material)
     {
         if (!node["color"])
         {
-            std::cout << lvr2::timestamp << "[YAML::convert<Texture> - decode] " 
-                            << "Node has no tag 'color'." << std::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("[YAML::convert<Texture> - decode] "), fmt::streamed("Node has no tag 'color'."));
             return false;
         }
 

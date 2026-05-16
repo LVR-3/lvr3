@@ -2,10 +2,11 @@
 #include <cmath>
 
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 
 // TODO reorder colors etc...
 
-namespace lvr2{ 
+namespace lvr2{
   template <typename BaseVecT>
     PointOctree<BaseVecT>::PointOctree(PointBufferPtr& points, int depth) : m_points(*(points->getFloatChannel("points")))
     {
@@ -37,12 +38,12 @@ namespace lvr2{
       }
 
       // make sure all points are inliers
-      minX -= 1.0; 
-      minY -= 1.0; 
-      minZ -= 1.0; 
-      maxX += 1.0; 
-      maxY += 1.0; 
-      maxZ += 1.0; 
+      minX -= 1.0;
+      minY -= 1.0;
+      minZ -= 1.0;
+      maxX += 1.0;
+      maxY += 1.0;
+      maxZ += 1.0;
 
       // make it square, there has to be a more elegant solution.
       float min = std::min(minX, std::min(minY, minZ));
@@ -68,14 +69,14 @@ namespace lvr2{
 //      std::vector<BaseVecT > pts = points->getPointBufferReference();
       std::cout << m_bbox << std::endl;
 
-      std::cout << lvr2::timestamp << "Start building octree with voxelsize " << m_voxelSize << std::endl;
+            lvr2::log::info("{}{}", fmt::streamed("Start building octree with voxelsize "), fmt::streamed(m_voxelSize));
       m_root = (BOct*)((unsigned char*) m_root + buildTree(m_root, 0, points->numPoints(), m_bbox));
 
-      std::cout << lvr2::timestamp << "generating genDisplayLists " << std::endl;
+            lvr2::log::info("{}", fmt::streamed("generating genDisplayLists "));
       genDisplayLists();
 
-      std::cout << lvr2::timestamp << "generating genDisplayLists done" << std::endl;
-      std::cout << lvr2::timestamp << "Octree rdy " << std::endl;
+            lvr2::log::info("{}", fmt::streamed("generating genDisplayLists done"));
+            lvr2::log::info("{}", fmt::streamed("Octree rdy "));
 
 //        m_points.clear();
 //        std::vector<BaseVecT >().swap(m_points);
@@ -130,7 +131,7 @@ namespace lvr2{
       }
     }
 
-  template <typename BaseVecT> 
+  template <typename BaseVecT>
     unsigned char PointOctree<BaseVecT>::getIndex(const BaseVecT& point, const BoundingBox<BaseVecT>& bbox)
     {
       BaseVecT centroid = bbox.getCentroid();
@@ -138,11 +139,11 @@ namespace lvr2{
 
 
       // TODO i think this is not consistent. Coordinate system
-      // 
+      //
       // y
       // |   x
       // |  /       ???
-      // | /       
+      // | /
       // |/_____ z
       if(point.x > centroid.x)
       {
@@ -211,18 +212,18 @@ namespace lvr2{
           continue;
         }
 
-        
+
         if(ptr[index] == &m_points[i])
         {
-          // is already in correct bucket 
+          // is already in correct bucket
           if(ptr[index] < &m_points[end - 1])
-            ptr[index]++; 
+            ptr[index]++;
 
           i++;
         }
         else
         {
-          // TODO 
+          // TODO
           // We somehow need 2 temporary variables. Otherwise it won't work with the proxy(Ptr)
 
           // advance bucket pointer if current element is correct.
@@ -276,7 +277,7 @@ namespace lvr2{
             numChildren++;
           }
         }
-        
+
 //        sortPC(&m_points[start], start, size, bbox, octSizes);
         sortPC<decltype(&(m_points[start]))>(start, size, bbox, octSizes);
      //   sortPC(start, size, bbox, octSizes);
@@ -395,11 +396,11 @@ namespace lvr2{
 //      {
 //        auto point = m_points[i];
 //
-//        std::cout << point.x << " " 
+//        std::cout << point.x << " "
 //          << point.y << " "
 //          << point.z << " "
 //          << (int)pow(2, index) << " "
-//          << (int)pow(2, index) << " " 
+//          << (int)pow(2, index) << " "
 //          << (int)pow(2, index) << " "
 //          << std::endl;
 //      }
@@ -489,7 +490,7 @@ namespace lvr2{
           if(oct->m_leaf & (1 << i))
           {
             indices.push_back(leaf[cnt].m_listIndex + m_lod);
-            
+
             //if(!m_lod)
             //{
             //  auto start = m_points.begin() + leaf[cnt].m_start;
@@ -577,9 +578,9 @@ namespace lvr2{
           if(2048 < leaf->m_size)
             mod = leaf->m_size / 2048;
         }
- 
- 
-        
+
+
+
         for(size_t j = leaf->m_start;
             j < (leaf->m_start + leaf->m_size);
             ++j)
@@ -661,7 +662,7 @@ namespace lvr2{
         }
 
         double distance;
-        // get distance pVertex. hessian 
+        // get distance pVertex. hessian
         distance = planes[i * 4 + 0] * pVertex.x +
                    planes[i * 4 + 1] * pVertex.y +
                    planes[i * 4 + 2] * pVertex.z +
@@ -708,7 +709,7 @@ namespace lvr2{
 
         double distance;
 
-        // get distance pVertex. hessian 
+        // get distance pVertex. hessian
         distance = planes[i * 4 + 0] * pVertex.x +
                    planes[i * 4 + 1] * pVertex.y +
                    planes[i * 4 + 2] * pVertex.z +

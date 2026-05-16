@@ -1,11 +1,12 @@
 #include "lvr2/io/kernels/HDF5Kernel.hpp"
 #include "lvr2/io/YAML.hpp"
 #include "lvr2/types/ScanTypes.hpp"
+#include <lvr2/util/Logging.hpp>
 
 namespace lvr2
 {
 
-HDF5Kernel::HDF5Kernel(const std::string& rootFile, HDF5KernelConfig config) 
+HDF5Kernel::HDF5Kernel(const std::string& rootFile, HDF5KernelConfig config)
 :FileKernel(rootFile)
 ,m_config(config)
 {
@@ -23,7 +24,7 @@ void HDF5Kernel::saveMeshBuffer(
     const std::string &container,
     const MeshBufferPtr &buffer) const
 {
-    std::cout << "[HDF5Kernel - saveMeshBuffer] not implemented!" << std::endl; 
+    lvr2::log::warning("[HDF5Kernel - saveMeshBuffer] not implemented");
 }
 
 void HDF5Kernel::savePointBuffer(
@@ -85,64 +86,64 @@ void HDF5Kernel::saveImage(
 
         std::unique_ptr<HighFive::DataSet> dataset;
 
-        if(SCTYPE == CV_8U) 
+        if(SCTYPE == CV_8U)
         {
             dataset = hdf5util::createDataset<unsigned char>(
                 group, datasetName, space, properties
             );
             const unsigned char* ptr = reinterpret_cast<unsigned char*>(img.data);
             dataset->write_raw(ptr);
-        } 
-        else if(SCTYPE == CV_8S) 
+        }
+        else if(SCTYPE == CV_8S)
         {
             dataset = hdf5util::createDataset<char>(
                 group, datasetName, space, properties
             );
             const char* ptr = reinterpret_cast<char*>(img.data);
             dataset->write_raw(ptr);
-        } 
-        else if(SCTYPE == CV_16U) 
+        }
+        else if(SCTYPE == CV_16U)
         {
             dataset = hdf5util::createDataset<unsigned short>(
                 group, datasetName, space, properties
             );
             const unsigned short* ptr = reinterpret_cast<unsigned short*>(img.data);
             dataset->write_raw(ptr);
-        } 
-        else if(SCTYPE == CV_16S) 
+        }
+        else if(SCTYPE == CV_16S)
         {
             dataset = hdf5util::createDataset<short>(
                 group, datasetName, space, properties
             );
             const short* ptr = reinterpret_cast<short*>(img.data);
             dataset->write_raw(ptr);
-        } 
-        else if(SCTYPE == CV_32S) 
+        }
+        else if(SCTYPE == CV_32S)
         {
             dataset = hdf5util::createDataset<int>(
                 group, datasetName, space, properties
             );
             const int* ptr = reinterpret_cast<int*>(img.data);
             dataset->write_raw(ptr);
-        } 
-        else if(SCTYPE == CV_32F) 
+        }
+        else if(SCTYPE == CV_32F)
         {
             dataset = hdf5util::createDataset<float>(
                 group, datasetName, space, properties
             );
             const float* ptr = reinterpret_cast<float*>(img.data);
             dataset->write_raw(ptr);
-        } 
-        else if(SCTYPE == CV_64F) 
+        }
+        else if(SCTYPE == CV_64F)
         {
             dataset = hdf5util::createDataset<double>(
                 group, datasetName, space, properties
             );
             const double* ptr = reinterpret_cast<double*>(img.data);
             dataset->write_raw(ptr);
-        } else 
+        } else
         {
-            std::cout << timestamp << "HDF5Kernel:SaveImage: Warning: unknown opencv type " << img.type() << std::endl;
+                        lvr2::log::warning("{}{}", fmt::streamed("HDF5Kernel:SaveImage: Warning: unknown opencv type "), fmt::streamed(img.type()));
         }
 
         if(dataset)
@@ -157,19 +158,19 @@ void HDF5Kernel::saveImage(
                 hdf5util::setAttribute<std::string>(*dataset, "IMAGE_VERSION", "1.2");
                 hdf5util::setAttribute<std::string>(*dataset, "IMAGE_SUBCLASS", "IMAGE_INDEXED");
             }
-            else if(img.type() == CV_8UC3) 
+            else if(img.type() == CV_8UC3)
             {
 
                 hdf5util::setAttribute<std::string>(*dataset, "CLASS", "IMAGE");
                 hdf5util::setAttribute<std::string>(*dataset, "IMAGE_VERSION", "1.2");
                 hdf5util::setAttribute<std::string>(*dataset, "IMAGE_SUBCLASS", "IMAGE_TRUECOLOR");
                 hdf5util::setAttribute<std::string>(*dataset, "INTERLACE_MODE", "INTERLACE_PIXEL");
-            } 
+            }
         }
-        
+
         m_hdf5File->flush();
-    } 
-    else 
+    }
+    else
     {
         throw std::runtime_error("[Hdf5IO - ChannelIO]: Hdf5 file not open.");
     }
@@ -186,7 +187,7 @@ void HDF5Kernel::saveMetaYAML(
 
     // std::cout << "[HDF5Kernel - saveMetaYAML] checking " << group << ", " << container << std::endl;
     HighFive::Group hg = hdf5util::getGroup(m_hdf5File, group);
-    
+
     if(hg.isValid())
     {
         // std::cout << "[HDF5Kernel - saveMetaYAML] Save META to " << group << ", " << container << std::endl;
@@ -200,17 +201,17 @@ void HDF5Kernel::saveMetaYAML(
                 HighFive::Group attgroup = hg.getGroup(container);
                 hdf5util::setAttributeMeta(attgroup, node);
             }
-            else if(h5type == HighFive::ObjectType::Dataset) 
+            else if(h5type == HighFive::ObjectType::Dataset)
             {
                 // std::cout << "DS - setAttributeMeta" << std::endl;
                 HighFive::DataSet attds = hg.getDataSet(container);
                 hdf5util::setAttributeMeta(attds, node);
-                
+
             }
             // std::cout << "." << std::endl;
 
         } else {
-            // Group or Dataset does not exist yet. 
+            // Group or Dataset does not exist yet.
             // Assuming it will be a group.
             // Create new group
             HighFive::Group attgroup = hdf5util::getGroup(hg, container);
@@ -218,7 +219,7 @@ void HDF5Kernel::saveMetaYAML(
         }
     } else {
         // Group not valid
-        std::cout << "[HDF5Kernel - saveMetaYAML] ERROR - Group " << group << " not valid" << std::endl; 
+        lvr2::log::error("[HDF5Kernel - saveMetaYAML] Group {} not valid", group);
     }
 }
 
@@ -243,7 +244,7 @@ PointBufferPtr HDF5Kernel::loadPointBuffer(
 
     boost::shared_array<float> pointData;
     std::vector<size_t> pointDim;
-    pointData = loadFloatArray(group, container, pointDim);    
+    pointData = loadFloatArray(group, container, pointDim);
     PointBufferPtr pb = PointBufferPtr(new PointBuffer(pointData, pointDim[0]));
     ret = pb;
     return ret;
@@ -286,16 +287,16 @@ boost::optional<cv::Mat> HDF5Kernel::loadImage(
                 ret = createMat<double>(dims);
                 dataset.read(reinterpret_cast<double*>(ret->data));
             } else {
-                std::cout << timestamp << "HDF5Kernel::loadImage(): Warning: Could'nt load blob. Datatype unkown." << std::endl;
+                                lvr2::log::warning("{}", fmt::streamed("HDF5Kernel::loadImage(): Warning: Could'nt load blob. Datatype unkown."));
             }
         }
 
-    } 
-    else 
+    }
+    else
     {
         throw std::runtime_error("[Hdf5 - ImageIO]: Hdf5 file not open.");
     }
-    
+
     return ret;
 }
 
@@ -313,12 +314,12 @@ bool HDF5Kernel::loadMetaYAML(
         if(hg.exist(container))
         {
             HighFive::ObjectType h5type = hg.getObjectType(container);
-            
+
             if(h5type == HighFive::ObjectType::Dataset)
             {
                 HighFive::DataSet d = hg.getDataSet(container);
                 node = hdf5util::getAttributeMeta(d);
-            } 
+            }
             else if(h5type == HighFive::ObjectType::Group)
             {
                 HighFive::Group g = hg.getGroup(container);
@@ -562,13 +563,13 @@ bool HDF5Kernel::exists(const std::string &group, const std::string &container) 
     for( std::string substring : ret)
     {
         if(g.exist(substring))
-        {   
+        {
             g = g.getGroup(substring);
         }else
         {
             return false;
         }
-    } 
+    }
     //HighFive::Group g = m_hdf5File->getGroup(group);
     return hdf5util::exist(g, container);
 }
@@ -644,12 +645,12 @@ std::unordered_map<std::string, YAML::Node> HDF5Kernel::metas(
     std::unordered_map<std::string, YAML::Node> ret;
 
     throw std::runtime_error("HDF5Kernel - meats(group) not implemented");
-    
+
     return ret;
 }
 
 std::unordered_map<std::string, YAML::Node> HDF5Kernel::metas(
-    const std::string& group, 
+    const std::string& group,
     const std::string& entity) const
 {
     std::unordered_map<std::string, YAML::Node> ret;

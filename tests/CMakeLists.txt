@@ -69,6 +69,31 @@ set_tests_properties(lvr2_storage_io_header_compile
     LABELS "cpp;io;scan;storage;header"
 )
 
+if(NOT LVR2_FMT_TARGET)
+  find_package(fmt CONFIG QUIET)
+  if(TARGET fmt::fmt)
+    set(LVR2_FMT_TARGET fmt::fmt)
+  elseif(TARGET fmt::fmt-header-only)
+    set(LVR2_FMT_TARGET fmt::fmt-header-only)
+  endif()
+endif()
+
+if(LVR2_FMT_TARGET)
+  add_executable(lvr2_logging_facade_header_compile
+    test_logging_facade_header_compile.cpp
+  )
+  target_include_directories(lvr2_logging_facade_header_compile PRIVATE ${PROJECT_SOURCE_DIR}/include)
+  target_compile_features(lvr2_logging_facade_header_compile PRIVATE cxx_std_17)
+  target_link_libraries(lvr2_logging_facade_header_compile PRIVATE ${LVR2_FMT_TARGET})
+  add_test(NAME lvr2_logging_facade_header_compile COMMAND lvr2_logging_facade_header_compile)
+  set_tests_properties(lvr2_logging_facade_header_compile
+    PROPERTIES
+      LABELS "cpp;logging;header"
+  )
+else()
+  message(STATUS "fmt not found; skipping logging facade header compile test.")
+endif()
+
 add_test(
   NAME lvr2_removed_public_mesh_io_headers
   COMMAND ${CMAKE_COMMAND}
@@ -155,6 +180,17 @@ add_test(
 set_tests_properties(lvr2_diagnostic_hooks_policy
   PROPERTIES
     LABELS "cmake;diagnostics;sanitizer;fuzz;performance"
+)
+
+add_test(
+  NAME lvr2_format_logging_policy
+  COMMAND ${CMAKE_COMMAND}
+    -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+    -P ${CMAKE_CURRENT_LIST_DIR}/format_logging_policy.cmake
+)
+set_tests_properties(lvr2_format_logging_policy
+  PROPERTIES
+    LABELS "cmake;logging;policy"
 )
 
 add_test(

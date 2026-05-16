@@ -35,6 +35,7 @@
 #include "lvr2/io/Tiles3dIO.hpp"
 
 #include <Cesium3DTilesWriter/TilesetWriter.h>
+#include <lvr2/util/Logging.hpp>
 
 extern const char* VIEWER_HTML;
 
@@ -118,14 +119,14 @@ void writeTileset(Cesium3DTiles::Tileset& tileset, const std::string& outputDir,
     }
 
     std::string tileset_file = outputDir + "tileset.json";
-    lvr2::Logger::get() << lvr2::info << "Writing " << tileset_file << lvr2::endl;
+        lvr2::log::info("{}{}", fmt::streamed("Writing "), fmt::streamed(tileset_file));
 
     std::ofstream tileset_out(tileset_file, std::ios::binary);
     tileset_out.write((char*)result.tilesetBytes.data(), result.tilesetBytes.size());
     tileset_out.close();
 
     std::string viewer_file = outputDir + "index.html";
-    lvr2::Logger::get() << lvr2::info << "Writing " << viewer_file << lvr2::endl;
+        lvr2::log::info("{}{}", fmt::streamed("Writing "), fmt::streamed(viewer_file));
 
     std::ofstream viewer_out(viewer_file);
     viewer_out << VIEWER_HTML;

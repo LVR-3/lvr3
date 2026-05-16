@@ -214,7 +214,7 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                 );
 
                 if (!first_opt) first_opt = texH;
-                // Add layer create handle from global textureCount 
+                // Add layer create handle from global textureCount
                 // (The combined list will be created at the end)
                 layers.insert(
                     std::pair(
@@ -238,7 +238,7 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                 }
                 textureCount++;
             }
-            
+
             // Create material with default color and insert into face map
             Material material;
             material.m_texture = layers.begin()->second;
@@ -246,7 +246,7 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
 
             std::array<unsigned char, 3> arr = {255, 255, 255};
 
-            material.m_color = std::move(arr);            
+            material.m_color = std::move(arr);
             clusterMaterials.insert(clusterH, material);
 
             // Calculate tex coords
@@ -285,7 +285,7 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                     vertexTexCoords.insert(vertexH, mapping);
                 }
             }
-        }   
+        }
     }
 
     // Write result
@@ -293,16 +293,11 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
     if (m_texturizers)
     {
 
-        lvr2::logout::get() << lvr2::info << "Skipped " << (numClustersTooSmall+numClustersTooLarge)
-            << " clusters while generating textures" << lvr2::endl;
+                lvr2::log::info("{}{}{}", fmt::streamed("Skipped "), fmt::streamed((numClustersTooSmall+numClustersTooLarge)), fmt::streamed(" clusters while generating textures"));
 
-        lvr2::logout::get() << lvr2::info 
-            << "(" << numClustersTooSmall << " below threshold, "
-            << numClustersTooLarge << " above limit, " 
-            << m_cluster.numCluster() << " total)" << lvr2::endl;
+                lvr2::log::info("{}{}{}{}{}{}{}", fmt::streamed("("), fmt::streamed(numClustersTooSmall), fmt::streamed(" below threshold, "), fmt::streamed(numClustersTooLarge), fmt::streamed(" above limit, "), fmt::streamed(m_cluster.numCluster()), fmt::streamed(" total)"));
 
-        lvr2::logout::get() << lvr2::info << 
-            "Generated " << textureCount << " textures" << lvr2::endl;
+                lvr2::log::info("{}{}{}", fmt::streamed("Generated "), fmt::streamed(textureCount), fmt::streamed(" textures"));
 
         // Holds all textures in the order determined by Texture::m_index
         StableVector<TextureHandle, Texture> combined_textures;

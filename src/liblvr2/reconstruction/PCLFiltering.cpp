@@ -36,6 +36,7 @@
 
 #include "lvr2/reconstruction/PCLFiltering.hpp"
 #include <pcl/pcl_config.h>
+#include <lvr2/util/Logging.hpp>
 
 namespace lvr2
 {
@@ -68,8 +69,8 @@ PCLFiltering::PCLFiltering( PointBufferPtr loader )
 
 
     // Parse to PCL point cloud
-    std::cout << timestamp << "Creating PCL point cloud for filtering" << std::endl;
-    std::cout << timestamp << "Point cloud has " << numPoints << " points" << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Creating PCL point cloud for filtering"));
+        lvr2::log::info("{}{}{}", fmt::streamed("Point cloud has "), fmt::streamed(numPoints), fmt::streamed(" points"));
     m_pointCloud->resize(numPoints);
     float x, y, z;
     for(size_t i = 0; i < numPoints; i++)
@@ -117,13 +118,13 @@ void PCLFiltering::applyMLSProjection(float searchRadius)
     mls.setSearchMethod(m_kdTree);
     mls.setSearchRadius(searchRadius);
 
-    std::cout << timestamp << "Applying MSL projection" << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Applying MSL projection"));
 
     // Reconstruct
     mls.process(mls_points);
 
-    std::cout << timestamp << "Filtered cloud has " << mls_points.size() << " points" << std::endl;
-    std::cout << timestamp << "Saving result" << std::endl;
+        lvr2::log::info("{}{}{}", fmt::streamed("Filtered cloud has "), fmt::streamed(mls_points.size()), fmt::streamed(" points"));
+        lvr2::log::info("{}", fmt::streamed("Saving result"));
 
     // Save filtered points
     m_pointCloud->resize(mls_points.size());
@@ -144,7 +145,7 @@ void PCLFiltering::applyOutlierRemoval(int meank, float thresh)
 {
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZRGB>);
 
-    std::cout << timestamp << "Applying outlier removal" << std::endl;
+        lvr2::log::info("{}", fmt::streamed("Applying outlier removal"));
 
     // Create the filtering object
     pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
@@ -153,8 +154,8 @@ void PCLFiltering::applyOutlierRemoval(int meank, float thresh)
     sor.setStddevMulThresh (thresh);
     sor.filter (*cloud_filtered);
 
-    std::cout << timestamp << "Filtered cloud has " << cloud_filtered->size() << " points" << std::endl;
-    std::cout << timestamp << "Saving result" << std::endl;
+        lvr2::log::info("{}{}{}", fmt::streamed("Filtered cloud has "), fmt::streamed(cloud_filtered->size()), fmt::streamed(" points"));
+        lvr2::log::info("{}", fmt::streamed("Saving result"));
 
     m_pointCloud->width = cloud_filtered->width;
     m_pointCloud->height = cloud_filtered->height;

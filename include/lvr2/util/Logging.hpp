@@ -1,24 +1,26 @@
-#ifndef LOGGING
-#define LOGGING
+#ifndef LVR2_UTIL_LOGGING_HPP
+#define LVR2_UTIL_LOGGING_HPP
 
+#include <cstddef>
 #include <cstdint>
-#include <sstream>
-#include <iostream>
 #include <memory>
 #include <string>
+#include <string_view>
+#include <utility>
 
-/* Forward declaration for logging backend */
-namespace spdlog
-{
-    struct logger;
-}
+#include <fmt/format.h>
+#include <fmt/ostream.h>
 
 namespace lvr2
 {
 
 struct MonitorState;
 
-enum class LogLevel: uint8_t {
+namespace log
+{
+
+enum class Level : std::uint8_t
+{
     trace,
     debug,
     info,
@@ -26,209 +28,136 @@ enum class LogLevel: uint8_t {
     error
 };
 
+void set_level(Level level);
+void flush();
+void write(Level level, std::string_view message);
 
-/**
- * @brief A simple wrapper class using spdlog to provide log output
- *        streams. Implemented as a singleton to produce consistent 
- *        log output
- * 
- */
-class Logger
+inline void write_runtime(Level level, std::string_view message)
 {
-private:
+    write(level, message);
+}
 
-    /**
-     * @brief Construct a new Logger object
-     */
-    Logger();
+template<typename... Args>
+void write(Level level, fmt::format_string<Args...> format, Args&&... args)
+{
+    write(level, fmt::format(format, std::forward<Args>(args)...));
+}
 
-public:
+template<typename... Args>
+void trace(fmt::format_string<Args...> format, Args&&... args)
+{
+    write(Level::trace, format, std::forward<Args>(args)...);
+}
 
-    /**
-     * @brief Returns the logger instance
-     */
-    static Logger& get()
-    {
-        static Logger inst;
-        return inst;
-    }
+template<typename... Args>
+void debug(fmt::format_string<Args...> format, Args&&... args)
+{
+    write(Level::debug, format, std::forward<Args>(args)...);
+}
 
-    /// Delete for singleton pattern
-    Logger(Logger const&) = delete;
+template<typename... Args>
+void info(fmt::format_string<Args...> format, Args&&... args)
+{
+    write(Level::info, format, std::forward<Args>(args)...);
+}
 
-    /// Delete for singleton pattern
-    void operator=(Logger const&) = delete;
+template<typename... Args>
+void warning(fmt::format_string<Args...> format, Args&&... args)
+{
+    write(Level::warning, format, std::forward<Args>(args)...);
+}
 
-    /// Prints buffer
-    void print();
+template<typename... Args>
+void warn(fmt::format_string<Args...> format, Args&&... args)
+{
+    warning(format, std::forward<Args>(args)...);
+}
 
-    /// Flushes the internal buffer
-    void flush();
+template<typename... Args>
+void error(fmt::format_string<Args...> format, Args&&... args)
+{
+    write(Level::error, format, std::forward<Args>(args)...);
+}
 
-    /**
-     * @brief Appends the serialized (textual) object to 
-     *        the internal buffer. Works for all types that
-     *        support ostream serialization (i.e., an <<-Operator)
-     * 
-     * @param token Token to add to the internal buffer
-     */
-    template<typename T>
-    void append(const T& token)
-    {
-        m_buffer << token;
-    }
+inline void trace_runtime(std::string_view message)
+{
+    write_runtime(Level::trace, message);
+}
 
-    /**
-     * @brief Sets the current log level. All messages until the 
-     *        next call or inserted format token will be logged 
-     *        at the set log level
-     * 
-     * @param level The new log level
-     */
-    void setLogLevel(const LogLevel& level)
-    {
-        m_level = level;
-    }
+inline void debug_runtime(std::string_view message)
+{
+    write_runtime(Level::debug, message);
+}
 
-private:
-    /// spdlog logger instance
-    std::shared_ptr<spdlog::logger> m_logger;
+inline void info_runtime(std::string_view message)
+{
+    write_runtime(Level::info, message);
+}
 
-    /// Current log level
-    LogLevel                        m_level;
+inline void warning_runtime(std::string_view message)
+{
+    write_runtime(Level::warning, message);
+}
 
-    /// Stringstream buffer 
-    std::stringstream               m_buffer;
-};
+inline void warn_runtime(std::string_view message)
+{
+    warning_runtime(message);
+}
+
+inline void error_runtime(std::string_view message)
+{
+    write_runtime(Level::error, message);
+}
+
+} // namespace log
+
+using LogLevel = log::Level;
+
+static_assert(sizeof(log::Level) == sizeof(std::uint8_t),
+              "logging level remains a compact public enum");
+static_assert(static_cast<std::uint8_t>(log::Level::error) == 4,
+              "logging level ordering is part of the sink mapping contract");
 
 /**
- * @brief A class to monitor progress 
+ * @brief A class to monitor progress.
  */
 class Monitor
 {
 public:
-
     /**
-     * @brief Constructs a new Monitor object
-     * 
-     * @param level     Loglevel to display the progress
-     * @param text      Prefix text for progress bar
-     * @param max       Number of exspected iterations
-     * @param width     Width of the progress bar. Currently buggy, 
-     *                  leave it at default!
+     * @brief Constructs a new Monitor object.
+     *
+     * @param level     Log level associated with the progress output.
+     * @param text      Prefix text for progress bar.
+     * @param max       Number of expected iterations.
+     * @param width     Width of the progress bar. Currently buggy,
+     *                  leave it at default.
      */
     Monitor(const LogLevel& level, const std::string& text, const size_t& max, size_t width = 0);
 
-    /// Increment progress by one
+    /// Increment progress by one.
     void operator++();
 
-    /// Destructor
+    /// Destructor.
     ~Monitor()
     {
         this->terminate();
     }
 
     /**
-     * @brief   Removes to progress bar from the terminal. Call this 
-     *          function once if the monitor object is still alive and you
-     *          want to generate log output in a function.
+     * @brief Removes the progress bar from the terminal. Call this function once
+     *        if the monitor object is still alive and log output should follow.
      */
     void terminate();
 
 private:
-    /// @brief Package-free monitor state
+    /// @brief Package-free monitor state.
     std::shared_ptr<MonitorState> m_monitor;
 
-    /// @brief Prefix text
+    /// @brief Prefix text.
     std::string m_prefixText;
 };
 
-// Marker structs for log levels
-struct LoggerEndline{};
-struct LoggerError{};
-struct LoggerWarning{};
-struct LoggerTrace{};
-struct LoggerInfo{};
-struct LoggerDebug{};
-
-/// @brief Endline and flush for logger objects
-inline constexpr LoggerEndline endl;
-
-/// @brief Marks error log level for streamed output
-inline constexpr LoggerError error;
-
-/// @brief Marks warning log level for streamed output
-inline constexpr LoggerWarning warning;
-
-/// @brief Marks trace log level for streamed output
-inline constexpr LoggerTrace trace;
-
-/// @brief Marks info log level for streamed output
-inline constexpr LoggerInfo info;
-
-/// @brief Marks debug log level for streamed output
-inline constexpr LoggerDebug debug;
-
-// Alias for logger singleton
-using logout = Logger;
-
-/// @brief  Generic output for object the support ostreams
-/// @param The logger instance
-/// @param s A object to put into the log stream
-/// @return The modified logger object
-template<typename T>
-inline Logger& operator<<(Logger& log, const T& s)
-{
-    log.append(s);
-    return log;
-}
-
-/// @brief Spezialization for endl marker
-template<>
-inline Logger& operator<<(Logger& log, const LoggerEndline& /* endl */)
-{
-    log.print();
-    return log;
-}
-
-/// @brief Spezialization for error log level marker
-inline Logger& operator<<(Logger& log, const LoggerError& /* err */)
-{
-    log.setLogLevel(LogLevel::error);
-    return log;
-}
-
-/// @brief Spezialization for warning log level marker
-inline Logger& operator<<(Logger& log, const LoggerWarning& /* warn */)
-{
-    log.setLogLevel(LogLevel::warning);
-    return log;
-}
-
-/// @brief Spezialization for trace log level marker
-inline Logger& operator<<(Logger& log, const LoggerTrace& /* trace */)
-{
-    log.setLogLevel(LogLevel::trace);
-    return log;
-}
-
-/// @brief Spezialization for debug log level marker
-inline Logger& operator<<(Logger& log, const LoggerDebug& /* trace */)
-{
-    log.setLogLevel(LogLevel::debug);
-    return log;
-}
-
-/// @brief Spezialization for info log level marker
-inline Logger& operator<<(Logger& log, const LoggerInfo& /* info */)
-{
-    log.setLogLevel(LogLevel::info);
-    return log;
-}
-
-
 } // namespace lvr2
 
-
-
-#endif // LOGGING
+#endif // LVR2_UTIL_LOGGING_HPP

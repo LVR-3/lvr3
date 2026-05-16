@@ -37,6 +37,7 @@
 #include "lvr2/types/PointBuffer.hpp"
 #include "lvr2/util/Progress.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 #include "lvr2/geometry/BaseVector.hpp"
 
 #include <opencv2/core.hpp>
@@ -92,7 +93,7 @@ ModelToImage::~ModelToImage()
 
 void ModelToImage::computeDepthListMatrix(DepthListMatrix& mat)
 {
-    std::cout << timestamp << "Initializting DepthListMatrix with dimensions " << m_width << " x " << m_height << std::endl;
+        lvr2::log::info("{}{}{}{}", fmt::streamed("Initializting DepthListMatrix with dimensions "), fmt::streamed(m_width), fmt::streamed(" x "), fmt::streamed(m_height));
     // Set correct image width and height
     for(int i = 0; i < m_height; i++)
     {
@@ -114,7 +115,7 @@ void ModelToImage::computeDepthListMatrix(DepthListMatrix& mat)
     float range;
     int img_x, img_y;
     for(int i = 0; i < n_points; i++)
-    {        
+    {
         Vec ppt(points[3 * i], points[3 * i + 1], points[3 * i + 2]);
 
         m_projection->project(
@@ -144,7 +145,7 @@ void ModelToImage::computeDepthListMatrix(DepthListMatrix& mat)
 
 void ModelToImage::computeDepthImage(ModelToImage::DepthImage& img, ModelToImage::ProjectionPolicy policy)
 {
-    std::cout << timestamp << "Computing depth image. Image dimensions: " << m_width << " x " << m_height << std::endl;
+        lvr2::log::info("{}{}{}{}", fmt::streamed("Computing depth image. Image dimensions: "), fmt::streamed(m_width), fmt::streamed(" x "), fmt::streamed(m_height));
 
     // Set correct image width and height
     for(int i = 0; i < m_height; i++)
@@ -188,7 +189,7 @@ void ModelToImage::computeDepthImage(ModelToImage::DepthImage& img, ModelToImage
         ++progress;
     }
     cout << endl;
-    cout << timestamp << "Min / Max range: " << img.minRange << " / " << img.maxRange << endl;
+        lvr2::log::info("{}{}{}{}", fmt::streamed("Min / Max range: "), fmt::streamed(img.minRange), fmt::streamed(" / "), fmt::streamed(img.maxRange));
 }
 
 void ModelToImage::writePGM(std::string filename, float cutoff)

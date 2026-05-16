@@ -38,6 +38,7 @@ using std::endl;
 
 #include "lvr2/io/modelio/LasIO.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 
 #include <lasreader.hpp>
 #include <laswriter.hpp>
@@ -98,7 +99,7 @@ ModelPtr LasIO::read(string filename )
     }
     else
     {
-        cout << timestamp << "LasIO::read(): Unable to open file " << filename << endl;
+                lvr2::log::error("{}{}", fmt::streamed("LasIO::read(): Unable to open file "), fmt::streamed(filename));
         return ModelPtr();
     }
 }

@@ -6,6 +6,7 @@
 #include "lvr2/io/YAML.hpp"
 #include "lvr2/types/CameraModels.hpp"
 #include "lvr2/util/YAMLUtil.hpp"
+#include <lvr2/util/Logging.hpp>
 
 using lvr2::timestamp;
 
@@ -20,13 +21,13 @@ struct convert<lvr2::PinholeModel>
         node["entity"] = lvr2::PinholeModel::entity;
         node["type"] = lvr2::PinholeModel::type;
 
-        
+
 
         // Old
         // node["c"] = Load("[]");
         // node["c"].push_back(model.cx);
         // node["c"].push_back(model.cy);
-        
+
         // node["f"] = Load("[]");
         // node["f"].push_back(model.fx);
         // node["f"].push_back(model.fy);
@@ -61,9 +62,9 @@ struct convert<lvr2::PinholeModel>
     {
         // TODO: Deprecation check for camera_model Tag
         // Check if 'entity' and 'type' Tags are valid
-        if (!YAML_UTIL::ValidateEntityAndType(node, 
-            "pinhole", 
-            lvr2::PinholeModel::entity, 
+        if (!YAML_UTIL::ValidateEntityAndType(node,
+            "pinhole",
+            lvr2::PinholeModel::entity,
             lvr2::PinholeModel::type))
         {
             return false;
@@ -78,34 +79,31 @@ struct convert<lvr2::PinholeModel>
         // New
         if(node["intrinsic"])
         {
-            try 
+            try
             {
                 Eigen::Matrix3d M = node["intrinsic"].as<Eigen::Matrix3d>();
                 model.fx = M(0,0);
                 model.fy = M(1,1);
                 model.cx = M(0,2);
                 model.cy = M(1,2);
-            } 
-            catch(const YAML::TypedBadConversion<Eigen::Matrix3d>& ex) 
+            }
+            catch(const YAML::TypedBadConversion<Eigen::Matrix3d>& ex)
             {
-                std::cout <<  timestamp <<  "[YAML - PinholeModel - decode] ERROR: Could not decode 'intrinsic': "
-                          
-                          << node["intrinsic"] << " as Eigen::Matrix3d" << std::endl; 
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - PinholeModel - decode] ERROR: Could not decode 'intrinsic': "), fmt::streamed(node["intrinsic"]), fmt::streamed(" as Eigen::Matrix3d"));
                 return false;
             }
         }
-        
+
         if(node["resolution"])
         {
-            try 
+            try
             {
                 model.width = node["resolution"][0].as<unsigned int>();
                 model.height = node["resolution"][1].as<unsigned int>();
-            } 
-            catch(const YAML::TypedBadConversion<unsigned int>& ex) 
+            }
+            catch(const YAML::TypedBadConversion<unsigned int>& ex)
             {
-                std::cout <<  timestamp <<  "[YAML - PinholeModel - decode] ERROR: Could not decode 'resolution': "
-                          << node["resolution"] << " as 2 unsigned ints" << std::endl; 
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - PinholeModel - decode] ERROR: Could not decode 'resolution': "), fmt::streamed(node["resolution"]), fmt::streamed(" as 2 unsigned ints"));
                 return false;
             }
         }
@@ -113,14 +111,13 @@ struct convert<lvr2::PinholeModel>
         if(node["distortion_model"] && node["distortion_coefficients"])
         {
             std::string model_name;
-            try 
+            try
             {
                 model_name = node["distortion_model"].as<std::string>();
-            } 
-            catch(const YAML::TypedBadConversion<std::string>& ex) 
+            }
+            catch(const YAML::TypedBadConversion<std::string>& ex)
             {
-                std::cout <<  timestamp << "[YAML - PinholeModel - decode] ERROR: Could not decode 'distortion_model': "
-                    << node["distortion_model"] << " as string" << std::endl; 
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - PinholeModel - decode] ERROR: Could not decode 'distortion_model': "), fmt::streamed(node["distortion_model"]), fmt::streamed(" as string"));
                 return false;
             }
 
@@ -128,20 +125,19 @@ struct convert<lvr2::PinholeModel>
 
             Node distortionNode = node["distortion_coefficients"];
             coeffs.clear();
-    
+
             YAML::const_iterator it = distortionNode.begin();
             YAML::const_iterator it_end = distortionNode.end();
 
             for(; it != it_end; it++)
             {
-                try 
+                try
                 {
                     coeffs.push_back(it->as<double>());
-                } 
-                catch(const YAML::TypedBadConversion<double>& ex) 
+                }
+                catch(const YAML::TypedBadConversion<double>& ex)
                 {
-                    std::cout <<  timestamp <<  "[YAML - PinholeModel - decode] ERROR: Could not decode 'distortion_coefficients' entry: "
-                        << *it << " as double" << std::endl;
+                                        lvr2::log::error("{}{}{}", fmt::streamed("[YAML - PinholeModel - decode] ERROR: Could not decode 'distortion_coefficients' entry: "), fmt::streamed(*it), fmt::streamed(" as double"));
                     return false;
                 }
             }
@@ -152,7 +148,7 @@ struct convert<lvr2::PinholeModel>
             }
             catch(const std::invalid_argument& ex)
             {
-                lvr2::logout::get() << lvr2::error << "[YAML - PinholeModel - decode] Could not create DistortionModel '" << model_name << "'" << lvr2::endl;
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - PinholeModel - decode] Could not create DistortionModel '"), fmt::streamed(model_name), fmt::streamed("'"));
                 return false;
             }
         }
@@ -196,9 +192,9 @@ struct convert<lvr2::CylindricalModel>
     static bool decode(const Node& node, lvr2::CylindricalModel& model)
     {
         // Check if 'entity' and 'type' Tags are valid
-        if (!YAML_UTIL::ValidateEntityAndType(node, 
-            "cylindrical", 
-            lvr2::CylindricalModel::entity, 
+        if (!YAML_UTIL::ValidateEntityAndType(node,
+            "cylindrical",
+            lvr2::CylindricalModel::entity,
             lvr2::CylindricalModel::type))
         {
             return false;
@@ -209,75 +205,71 @@ struct convert<lvr2::CylindricalModel>
             try {
                 model.principal[0] = node["principal_point"][0].as<double>();
                 model.principal[1] = node["principal_point"][1].as<double>();
-            } 
-            catch(const YAML::TypedBadConversion<double>& ex) 
+            }
+            catch(const YAML::TypedBadConversion<double>& ex)
             {
-                std::cout << timestamp << "[YAML - CylindricalModel - decode] ERROR: Could not decode 'principal_point': "
-                    << node["principal_point"] << " as 2 doubles" << std::endl; 
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - CylindricalModel - decode] ERROR: Could not decode 'principal_point': "), fmt::streamed(node["principal_point"]), fmt::streamed(" as 2 doubles"));
                 return false;
             }
-        } 
-        else 
-        {
-            std::cout << timestamp << "[YAML - CylindricalModel - decode] WARNING: Field 'principal_point' not found." << std::endl; 
         }
-        
+        else
+        {
+                        lvr2::log::warning("{}", fmt::streamed("[YAML - CylindricalModel - decode] WARNING: Field 'principal_point' not found."));
+        }
+
         if(node["focal_lengths"])
         {
-            try 
+            try
             {
                 model.focalLength[0] = node["focal_lengths"][0].as<double>();
                 model.focalLength[1] = node["focal_lengths"][1].as<double>();
-            } 
-            catch(const YAML::TypedBadConversion<double>& ex) 
+            }
+            catch(const YAML::TypedBadConversion<double>& ex)
             {
-                std::cout << timestamp << "[YAML - CylindricalModel - decode] ERROR: Could not decode 'focal_lengths': "
-                    << node["focal_lengths"] << " as 2 doubles" << std::endl; 
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - CylindricalModel - decode] ERROR: Could not decode 'focal_lengths': "), fmt::streamed(node["focal_lengths"]), fmt::streamed(" as 2 doubles"));
                 return false;
             }
-        } 
-        else 
-        {
-            std::cout << timestamp << "[YAML - CylindricalModel - decode] WARNING: Field 'focal_lengths' not found." << std::endl; 
         }
-        
+        else
+        {
+                        lvr2::log::warning("{}", fmt::streamed("[YAML - CylindricalModel - decode] WARNING: Field 'focal_lengths' not found."));
+        }
+
 
         if(node["camera_fov"])
         {
-            try 
+            try
             {
                 model.fov[0] = node["camera_fov"][0].as<double>();
                 model.fov[1] = node["camera_fov"][1].as<double>();
-            } 
-            catch(const YAML::TypedBadConversion<double>& ex) 
+            }
+            catch(const YAML::TypedBadConversion<double>& ex)
             {
-                std::cout << timestamp << "[YAML - CylindricalModel - decode] ERROR: Could not decode 'camera_fov': "
-                    << node["camera_fov"] << " as 2 doubles" << std::endl; 
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - CylindricalModel - decode] ERROR: Could not decode 'camera_fov': "), fmt::streamed(node["camera_fov"]), fmt::streamed(" as 2 doubles"));
                 return false;
             }
-        } else 
+        } else
         {
-            std::cout << timestamp << "[YAML - CylindricalModel - decode] WARNING: Field 'camera_fov' not found." << std::endl;
+                        lvr2::log::warning("{}", fmt::streamed("[YAML - CylindricalModel - decode] WARNING: Field 'camera_fov' not found."));
         }
-        
+
         if(node["distortion_model"])
         {
-            try 
+            try
             {
                 model.distortionModel = node["distortion_model"].as<std::string>();
-            } 
-            catch(const YAML::TypedBadConversion<std::string>& ex) 
+            }
+            catch(const YAML::TypedBadConversion<std::string>& ex)
             {
-                std::cout << timestamp << "[YAML - CylindricalModel - decode] ERROR: Could not decode 'distortion_model': "
-                    << node["distortion_model"] << " as string" << std::endl; 
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - CylindricalModel - decode] ERROR: Could not decode 'distortion_model': "), fmt::streamed(node["distortion_model"]), fmt::streamed(" as string"));
                 return false;
             }
-        } 
-        else 
-        {
-            std::cout << timestamp << "[YAML - CylindricalModel - decode] WARNING: Field 'distortion_model' not found." << std::endl;
         }
-        
+        else
+        {
+                        lvr2::log::warning("{}", fmt::streamed("[YAML - CylindricalModel - decode] WARNING: Field 'distortion_model' not found."));
+        }
+
 
         model.distortionCoefficients.resize(0);
         Node distortionNode = node["distortion_coefficients"];
@@ -289,21 +281,20 @@ struct convert<lvr2::CylindricalModel>
 
             for(; it != it_end; it++)
             {
-                try 
+                try
                 {
                     model.distortionCoefficients.push_back(it->as<double>());
-                } 
-                catch(const YAML::TypedBadConversion<double>& ex) 
+                }
+                catch(const YAML::TypedBadConversion<double>& ex)
                 {
-                    std::cout << timestamp << "[YAML - CylindricalModel - decode] ERROR: Could not decode 'distortion_coefficients' entry: "
-                        << *it << " as double" << std::endl; 
+                                        lvr2::log::error("{}{}{}", fmt::streamed("[YAML - CylindricalModel - decode] ERROR: Could not decode 'distortion_coefficients' entry: "), fmt::streamed(*it), fmt::streamed(" as double"));
                     return false;
                 }
             }
-        } 
-        else 
+        }
+        else
         {
-            std::cout << timestamp << "[YAML - CylindricalModel - decode] WARNING: Field 'distortion_coefficients' not found." << std::endl;
+                        lvr2::log::warning("{}", fmt::streamed("[YAML - CylindricalModel - decode] WARNING: Field 'distortion_coefficients' not found."));
         }
 
 
@@ -355,43 +346,41 @@ struct convert<lvr2::SphericalModel>
     static bool decode(const Node& node, lvr2::SphericalModel& model)
     {
         // Check if 'entity' and 'type' Tags are valid
-        if (!YAML_UTIL::ValidateEntityAndType(node, 
-            "spherical", 
-            lvr2::SphericalModel::entity, 
+        if (!YAML_UTIL::ValidateEntityAndType(node,
+            "spherical",
+            lvr2::SphericalModel::entity,
             lvr2::SphericalModel::type))
         {
             return false;
         }
 
-        
+
         if(node["phi"])
         {
-            try 
+            try
             {
                 model.phi[0] = node["phi"][0].as<double>();
                 model.phi[1] = node["phi"][1].as<double>();
                 model.phi[2] = node["phi"][2].as<double>();
-            } 
-            catch(const YAML::TypedBadConversion<double>& ex) 
+            }
+            catch(const YAML::TypedBadConversion<double>& ex)
             {
-                std::cout << timestamp << "[YAML - SphericalModel - decode] ERROR: Could not decode 'phi': "
-                    << node["phi"] << " as 3 doubles" << std::endl; 
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - SphericalModel - decode] ERROR: Could not decode 'phi': "), fmt::streamed(node["phi"]), fmt::streamed(" as 3 doubles"));
                 return false;
             }
         }
 
         if(node["theta"])
         {
-            try 
+            try
             {
                 model.theta[0] = node["theta"][0].as<double>();
                 model.theta[1] = node["theta"][1].as<double>();
                 model.theta[2] = node["theta"][2].as<double>();
-            } 
-            catch(const YAML::TypedBadConversion<double>& ex) 
+            }
+            catch(const YAML::TypedBadConversion<double>& ex)
             {
-                std::cout << timestamp << "[YAML - SphericalModel - decode] ERROR: Could not decode 'theta': "
-                    << node["theta"] << " as 3 doubles" << std::endl; 
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - SphericalModel - decode] ERROR: Could not decode 'theta': "), fmt::streamed(node["theta"]), fmt::streamed(" as 3 doubles"));
                 return false;
             }
         }
@@ -402,41 +391,38 @@ struct convert<lvr2::SphericalModel>
                 model.range[0] = node["range"][0].as<double>();
                 model.range[1] = node["range"][1].as<double>();
                 model.range[2] = node["range"][2].as<double>();
-            } 
-            catch(const YAML::TypedBadConversion<double>& ex) 
+            }
+            catch(const YAML::TypedBadConversion<double>& ex)
             {
-                std::cout << timestamp << "[YAML - SphericalModel - decode] ERROR: Could not decode 'range': "
-                    << node["range"] << " as 3 doubles" << std::endl; 
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - SphericalModel - decode] ERROR: Could not decode 'range': "), fmt::streamed(node["range"]), fmt::streamed(" as 3 doubles"));
                 return false;
             }
         }
 
         if(node["principal_point"])
         {
-            try 
+            try
             {
                 model.principal(0) = node["principal_point"][0].as<double>();
                 model.principal(1) = node["principal_point"][1].as<double>();
                 model.principal(2) = node["principal_point"][2].as<double>();
-            } 
-            catch(const YAML::TypedBadConversion<double>& ex) 
+            }
+            catch(const YAML::TypedBadConversion<double>& ex)
             {
-                std::cout << timestamp << "[YAML - SphericalModel - decode] ERROR: Could not decode 'principal_point': "
-                    << node["principal_point"] << " as 3 doubles" << std::endl; 
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - SphericalModel - decode] ERROR: Could not decode 'principal_point': "), fmt::streamed(node["principal_point"]), fmt::streamed(" as 3 doubles"));
                 return false;
             }
         }
-        
+
         if(node["distortion_model"])
         {
-            try 
+            try
             {
                 model.distortionModel = node["distortion_model"].as<std::string>();
-            } 
-            catch(const YAML::TypedBadConversion<std::string>& ex) 
+            }
+            catch(const YAML::TypedBadConversion<std::string>& ex)
             {
-                std::cout << timestamp << "[YAML - SphericalModel - decode] ERROR: Could not decode 'distortion_model': "
-                    << node["distortion_model"] << " as string" << std::endl; 
+                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - SphericalModel - decode] ERROR: Could not decode 'distortion_model': "), fmt::streamed(node["distortion_model"]), fmt::streamed(" as string"));
                 return false;
             }
         }
@@ -453,11 +439,10 @@ struct convert<lvr2::SphericalModel>
             {
                 try {
                     model.distortionCoefficients.push_back(it->as<double>());
-                } 
-                catch(const YAML::TypedBadConversion<double>& ex) 
+                }
+                catch(const YAML::TypedBadConversion<double>& ex)
                 {
-                    std::cout << timestamp << "[YAML - SphericalModel - decode] ERROR: Could not decode 'distortion_coefficients' entry: "
-                        << *it << " as double" << std::endl; 
+                                        lvr2::log::error("{}{}{}", fmt::streamed("[YAML - SphericalModel - decode] ERROR: Could not decode 'distortion_coefficients' entry: "), fmt::streamed(*it), fmt::streamed(" as double"));
                     return false;
                 }
             }

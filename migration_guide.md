@@ -82,7 +82,30 @@ cmake --preset system-optout-release
 cmake -S . -B build-system -DLVR2_WITH_VCPKG=OFF
 ```
 
-Common package escape hatches follow the `LVR2_USE_SYSTEM_<PKG>` pattern, including `LVR2_USE_SYSTEM_TL_EXPECTED`, `LVR2_USE_SYSTEM_TBB`, `LVR2_USE_SYSTEM_SPDLOG`, `LVR2_USE_SYSTEM_HIGHFIVE`, `LVR2_USE_SYSTEM_RPLY`, `LVR2_USE_SYSTEM_LASLIB`, `LVR2_USE_SYSTEM_OPENCV`, `LVR2_USE_SYSTEM_HDF5`, and `LVR2_USE_SYSTEM_EIGEN3`. `CMakeSettings.json` is still kept for compatibility. Assimp is required privately for mesh I/O and is intentionally not exposed as a package-specific LVR option.
+Common package escape hatches follow the `LVR2_USE_SYSTEM_<PKG>` pattern, including `LVR2_USE_SYSTEM_TL_EXPECTED`, `LVR2_USE_SYSTEM_TBB`, `LVR2_USE_SYSTEM_FMT`, `LVR2_USE_SYSTEM_SPDLOG`, `LVR2_USE_SYSTEM_HIGHFIVE`, `LVR2_USE_SYSTEM_RPLY`, `LVR2_USE_SYSTEM_LASLIB`, `LVR2_USE_SYSTEM_OPENCV`, `LVR2_USE_SYSTEM_HDF5`, and `LVR2_USE_SYSTEM_EIGEN3`. `CMakeSettings.json` is still kept for compatibility. Assimp is required privately for mesh I/O and is intentionally not exposed as a package-specific LVR option.
+
+## Format-style logging facade
+
+The stream-style logging API has been removed. Code such as this no longer compiles:
+
+```cpp
+// Removed
+lvr2::logout::get() << lvr2::info << "Loaded " << count << " points" << lvr2::endl;
+```
+
+Use the C++17 `{fmt}`-backed facade instead:
+
+```cpp
+#include <lvr2/util/Logging.hpp>
+
+lvr2::log::info("Loaded {} points", count);
+lvr2::log::warning("Skipping scan {}", scan_index);
+lvr2::log::error("Failed to open '{}': {}", path, reason);
+```
+
+Runtime/user-provided message text should use the explicit runtime APIs, for example `lvr2::log::info_runtime(message)`. Types that only support `operator<<` can be logged through `{fmt}` with `fmt::streamed(value)`.
+
+The public logging header now depends on the `fmt` package. Installed `lvr2`/`lvr3` CMake configs declare this dependency, and distributors using the system-package path need `libfmt-dev` (or an equivalent package). `spdlog` remains an implementation-only sink: shared-only installed configs do not require it, while exported static targets may still need the private `spdlog` link dependency for static link closure.
 
 ## CMake file layout and module audit
 

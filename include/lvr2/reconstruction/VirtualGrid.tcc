@@ -26,6 +26,7 @@
  */
 
 #include "lvr2/util/Timestamp.hpp"
+#include <lvr2/util/Logging.hpp>
 #include "lvr2/reconstruction/VirtualGrid.hpp"
 
 namespace lvr2
@@ -38,7 +39,7 @@ VirtualGrid<BaseVecT>::VirtualGrid(BoundingBox<BaseVecT>& bb, float gridCellSize
     if (fmod(gridCellSize, voxelSize) != 0)
     {
         m_gridCellSize = ceil(gridCellSize / voxelSize) * voxelSize;
-        std::cout << timestamp << "[VirtualGrid] Warning: Adjusted grid cell size to " << m_gridCellSize << std::endl;
+                lvr2::log::warning("{}{}", fmt::streamed("[VirtualGrid] Warning: Adjusted grid cell size to "), fmt::streamed(m_gridCellSize));
     }
     else
     {

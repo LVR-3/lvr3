@@ -29,9 +29,9 @@
  * @file MatrixTypes.hpp
  * @author Thomas Wiemann (twiemann@uos.de)
  * @date 2019-08-14
- * 
+ *
  * @copyright Copyright (c) 2019
- * 
+ *
  */
 
 #ifndef LVR2_TYPES_MATRIXTYPES_HPP
@@ -39,12 +39,10 @@
 
 #include <Eigen/Dense>
 
-#include "lvr2/util/Logging.hpp"
-
 namespace lvr2
 {
-/// General alias for row major 4x4 matrices 
-template<typename T> 
+/// General alias for row major 4x4 matrices
+template<typename T>
 using Matrix4RM = Eigen::Matrix<T, 4, 4, Eigen::RowMajor>;
 
 /// 4x4 row major matrix with float scalars
@@ -53,8 +51,8 @@ using Matrix4fRM = Matrix4RM<float>;
 /// 4x4 row major matrix with double scalars
 using Matrix4dRM = Matrix4RM<double>;
 
-/// General alias for row major 3x3 matrices 
-template<typename T> 
+/// General alias for row major 3x3 matrices
+template<typename T>
 using Matrix3RM = Eigen::Matrix<T, 3, 3, Eigen::RowMajor>;
 
 /// 3x3 row major matrix with float scalars
@@ -71,16 +69,6 @@ using Transformf = Transform<float>;
 
 /// 4x4 double precision transformation matrix
 using Transformd = Transform<double>;
-
-template<typename T>
-inline lvr2::Logger& operator<<(lvr2::Logger& log, const Transform<T>& t)
-{
-    log << "[" << t.coeff(0,0) << " " << t.coeff(0,1) << " " << t.coeff(0,2) << " " << t.coeff(0,3) << "]" <<lvr2::endl;
-    log << "[" << t.coeff(1,0) << " " << t.coeff(1,1) << " " << t.coeff(1,2) << " " << t.coeff(1,3) << "]" <<lvr2::endl;
-    log << "[" << t.coeff(2,0) << " " << t.coeff(2,1) << " " << t.coeff(2,2) << " " << t.coeff(2,3) << "]" <<lvr2::endl;
-    log << "[" << t.coeff(3,0) << " " << t.coeff(3,1) << " " << t.coeff(3,2) << " " << t.coeff(3,3) << "]" <<lvr2::endl;
-    return log;
-}
 
 /// General 3x3 rotation matrix
 template<typename T>
@@ -208,7 +196,7 @@ static_assert(Distortionf::RowsAtCompileTime == 6 && Distortionf::ColsAtCompileT
 static_assert(Distortiond::RowsAtCompileTime == 6 && Distortiond::ColsAtCompileTime == 1,
               "Distortiond must remain a six-parameter column vector");
 
-template<typename T> 
+template<typename T>
 Vector3<T> multiply(const Transform<T>& transform, const Vector3<T>& p)
 {
     Vector4<T> ret(p.coeff(0), p.coeff(1), p.coeff(2), 1.0);

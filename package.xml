@@ -36,6 +36,7 @@ point clouds.
 
   <depend>assimp</depend>
   <depend>libexpected-dev</depend>
+  <depend>libfmt-dev</depend>
   <depend>spdlog</depend>
   <depend>tbb</depend>
   <depend>libtiff-dev</depend>

@@ -46,6 +46,7 @@ typedef lvr2::CudaSurface GpuSurface;
 
 #define GPU_FOUND
 #include "lvr2/reconstruction/opencl/ClSurface.hpp"
+#include <lvr2/util/Logging.hpp>
 typedef lvr2::ClSurface GpuSurface;
 
 #endif
@@ -189,7 +190,7 @@ struct LSROptions
 #define CHECK_OPTION(option, condition, message) \
                 if (condition) \
                 { \
-                    std::cout << timestamp << "Warning: " << message << " Reverting to default value." << std::endl; \
+                                        lvr2::log::warning("{}{}{}", fmt::streamed("Warning: "), fmt::streamed(message), fmt::streamed(" Reverting to default value.")); \
                     option = defaultOptions.option; \
                 }
 
@@ -197,18 +198,18 @@ struct LSROptions
         {
             if (hasOutput(LSROutput::ChunksPly))
             {
-                std::cout << timestamp << "Warning: Output ChunksPly requires partMethod == 1." << std::endl;
+                                lvr2::log::warning("{}", fmt::streamed("Warning: Output ChunksPly requires partMethod == 1."));
                 output.erase(LSROutput::ChunksPly);
             }
             if (hasOutput(LSROutput::ChunksHdf5))
             {
-                std::cout << timestamp << "Warning: Output ChunksHdf5 requires partMethod == 1." << std::endl;
+                                lvr2::log::warning("{}", fmt::streamed("Warning: Output ChunksHdf5 requires partMethod == 1."));
                 output.erase(LSROutput::ChunksHdf5);
             }
 #ifdef LVR2_USE_3DTILES
             if (hasOutput(LSROutput::Tiles3d))
             {
-                std::cout << timestamp << "Warning: Output Tiles3d requires partMethod == 1." << std::endl;
+                                lvr2::log::warning("{}", fmt::streamed("Warning: Output Tiles3d requires partMethod == 1."));
                 output.erase(LSROutput::Tiles3d);
             }
 #endif
@@ -222,7 +223,7 @@ struct LSROptions
             time_t now = time(0);
             ss << "./" << std::put_time(std::localtime(&now), "%Y-%m-%d_%H-%M-%S") << "/";
             outputDir = ss.str();
-            std::cout << timestamp << "LargeScaleReconstruction: Output directory set to " << outputDir << std::endl;
+                        lvr2::log::info("{}{}", fmt::streamed("LargeScaleReconstruction: Output directory set to "), fmt::streamed(outputDir));
         }
         fs::create_directories(outputDir);
         if (tempDir.empty())
@@ -234,7 +235,7 @@ struct LSROptions
 #ifndef GPU_FOUND
         if (useGPU || useGPUDistances)
         {
-            std::cout << timestamp << "Warning: No GPU found. Falling back to CPU." << std::endl;
+                        lvr2::log::warning("{}", fmt::streamed("Warning: No GPU found. Falling back to CPU."));
             useGPU = useGPUDistances = false;
         }
 #endif
@@ -250,7 +251,7 @@ struct LSROptions
         auto correctedVoxelSize = std::ceil(bgVoxelSize / voxelSizes[0]) * voxelSizes[0];
         if (correctedVoxelSize != bgVoxelSize)
         {
-            std::cout << timestamp << "Warning: bgVoxelSize is not a multiple of voxelSizes[0]. Correcting to " << correctedVoxelSize << std::endl;
+                        lvr2::log::warning("{}{}", fmt::streamed("Warning: bgVoxelSize is not a multiple of voxelSizes[0]. Correcting to "), fmt::streamed(correctedVoxelSize));
             bgVoxelSize = correctedVoxelSize;
         }
         auto it = voxelSizes.begin() + 1;
@@ -258,12 +259,12 @@ struct LSROptions
         {
             if (*it <= 0)
             {
-                std::cout << timestamp << "Warning: voxelSizes cannot be negative. Ignoring " << *it << std::endl;
+                                lvr2::log::warning("{}{}", fmt::streamed("Warning: voxelSizes cannot be negative. Ignoring "), fmt::streamed(*it));
                 it = voxelSizes.erase(it);
             }
             else if (std::abs(bgVoxelSize - std::ceil(bgVoxelSize / *it) * *it) > std::numeric_limits<float>::epsilon())
             {
-                std::cout << timestamp << "Warning: all voxelSizes have to divide bgVoxelSize. Ignoring " << *it << std::endl;
+                                lvr2::log::warning("{}{}", fmt::streamed("Warning: all voxelSizes have to divide bgVoxelSize. Ignoring "), fmt::streamed(*it));
                 it = voxelSizes.erase(it);
             }
             else
@@ -288,13 +289,13 @@ struct LSROptions
 #ifdef LVR2_USE_3DTILES
         if (tiles3dCompress && !hasOutput(LSROutput::Tiles3d))
         {
-            std::cout << timestamp << "Warning: tiles3dCompress is only supported for LSROutput::Tiles3d." << std::endl;
+                        lvr2::log::warning("{}", fmt::streamed("Warning: tiles3dCompress is only supported for LSROutput::Tiles3d."));
             tiles3dCompress = false;
         }
 #else
         if (tiles3dCompress)
         {
-            std::cout << timestamp << "Warning: tiles3dCompress is only supported when compiling with 3D Tiles support." << std::endl;
+                        lvr2::log::warning("{}", fmt::streamed("Warning: tiles3dCompress is only supported when compiling with 3D Tiles support."));
             tiles3dCompress = false;
         }
 #endif
