@@ -3,6 +3,7 @@ if(NOT DEFINED LVR2_SOURCE_DIR)
 endif()
 
 set(_removed_public_headers
+  "include/lvr2/mesh/io.hpp"
   "include/lvr2/io/ModelFactory.hpp"
   "include/lvr2/io/modelio/ObjIO.hpp"
   "include/lvr2/io/modelio/PLYIO.hpp"
@@ -22,6 +23,7 @@ file(GLOB_RECURSE _public_headers
 )
 
 set(_forbidden_includes
+  "lvr2/mesh/io.hpp"
   "lvr2/io/ModelFactory.hpp"
   "lvr2/io/modelio/ObjIO.hpp"
   "lvr2/io/modelio/PLYIO.hpp"

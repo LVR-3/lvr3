@@ -5,6 +5,11 @@ with the unified `lvr2::io` storage services. It is intentionally a transition
 artifact: the final migration must delete the old public surface instead of
 wrapping it indefinitely.
 
+The modern mesh facade now lives at `<lvr2/io/mesh.hpp>` and `lvr2::io::mesh`.
+The remaining `baseio`, `scanio`, `meshio`, and `modelio` CRTP/storage families
+are not being renamed into `lvr2::io`; they remain deletion targets for the
+storage service slices.
+
 Refreshed from implementation commit `631fa7a049e4b01324a2d58b4ae8f651200452b1`.
 Regenerate the counts from the repository root with:
 

@@ -1,4 +1,4 @@
-#include "lvr2/mesh/io.hpp"
+#include "lvr2/io/mesh.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "support/MeshIoTestHelpers.hpp"
 
@@ -13,14 +13,14 @@ namespace
 
 struct FormatCase
 {
-    lvr2::mesh::Format format;
+    lvr2::io::mesh::Format format;
     const char* suffix;
     bool binary;
 };
 
-void expectLoadsAsTriangleLikeMesh(const std::filesystem::path& path, lvr2::mesh::Format format)
+void expectLoadsAsTriangleLikeMesh(const std::filesystem::path& path, lvr2::io::mesh::Format format)
 {
-    const auto loaded = lvr2::mesh::load(path, {format});
+    const auto loaded = lvr2::io::mesh::load(path, {format});
     ASSERT_TRUE(loaded) << loaded.error().message;
     ASSERT_TRUE(*loaded);
     EXPECT_GE((*loaded)->numVertices(), 3u);
@@ -32,18 +32,18 @@ void expectLoadsAsTriangleLikeMesh(const std::filesystem::path& path, lvr2::mesh
 TEST(MeshIoAssimp, SavesAndLoadsEnabledFormatsThroughFacade)
 {
     const FormatCase cases[] = {
-        {lvr2::mesh::Format::Obj, ".obj", true},
-        {lvr2::mesh::Format::Ply, ".ply", true},
-        {lvr2::mesh::Format::Stl, ".stl", true},
-        {lvr2::mesh::Format::Dae, ".dae", true},
-        {lvr2::mesh::Format::Gltf, ".gltf", true},
-        {lvr2::mesh::Format::Glb, ".glb", true},
+        {lvr2::io::mesh::Format::Obj, ".obj", true},
+        {lvr2::io::mesh::Format::Ply, ".ply", true},
+        {lvr2::io::mesh::Format::Stl, ".stl", true},
+        {lvr2::io::mesh::Format::Dae, ".dae", true},
+        {lvr2::io::mesh::Format::Gltf, ".gltf", true},
+        {lvr2::io::mesh::Format::Glb, ".glb", true},
     };
 
     for(const auto& current : cases)
     {
         const auto path = lvr2::testing::uniqueMeshIoPath("lvr2-assimp-roundtrip", current.suffix);
-        const auto saved = lvr2::mesh::save(lvr2::testing::makeTriangleMesh(),
+        const auto saved = lvr2::io::mesh::save(lvr2::testing::makeTriangleMesh(),
                                             path,
                                             {current.format, current.binary});
         ASSERT_TRUE(saved) << "format suffix " << current.suffix << ": " << saved.error().message;
@@ -58,7 +58,7 @@ TEST(MeshIoAssimp, LoadsAsciiStlTriangleFixture)
     const auto path = lvr2::testing::uniqueMeshIoPath("lvr2-assimp-ascii-stl", ".stl");
     ASSERT_TRUE(lvr2::testing::writeAsciiStlTriangleFixture(path));
 
-    expectLoadsAsTriangleLikeMesh(path, lvr2::mesh::Format::Stl);
+    expectLoadsAsTriangleLikeMesh(path, lvr2::io::mesh::Format::Stl);
     lvr2::testing::removeMeshIoSidecars(path);
 }
 
@@ -71,22 +71,22 @@ TEST(MeshIoAssimp, MalformedInputReturnsStructuredLvrError)
         out << "this is not a valid mesh file\n";
     }
 
-    const auto loaded = lvr2::mesh::load(path, {lvr2::mesh::Format::Stl});
+    const auto loaded = lvr2::io::mesh::load(path, {lvr2::io::mesh::Format::Stl});
     lvr2::testing::removeMeshIoSidecars(path);
 
     ASSERT_FALSE(loaded);
-    EXPECT_TRUE(loaded.error().code == lvr2::mesh::ErrorCode::ReadFailed ||
-                loaded.error().code == lvr2::mesh::ErrorCode::MissingMesh);
-    EXPECT_EQ(loaded.error().format, lvr2::mesh::Format::Stl);
+    EXPECT_TRUE(loaded.error().code == lvr2::io::mesh::ErrorCode::ReadFailed ||
+                loaded.error().code == lvr2::io::mesh::ErrorCode::MissingMesh);
+    EXPECT_EQ(loaded.error().format, lvr2::io::mesh::Format::Stl);
 }
 
 TEST(MeshIoAssimp, BinaryPlyUsesPrivateBackendThroughFacade)
 {
     const auto path = lvr2::testing::uniqueMeshIoPath("lvr2-assimp-ply", ".ply");
-    const auto saved = lvr2::mesh::save(lvr2::testing::makeTriangleMesh(), path, {lvr2::mesh::Format::Ply, true});
+    const auto saved = lvr2::io::mesh::save(lvr2::testing::makeTriangleMesh(), path, {lvr2::io::mesh::Format::Ply, true});
     ASSERT_TRUE(saved) << saved.error().message;
 
-    const auto loaded = lvr2::mesh::load(path, {lvr2::mesh::Format::Ply});
+    const auto loaded = lvr2::io::mesh::load(path, {lvr2::io::mesh::Format::Ply});
     lvr2::testing::removeMeshIoSidecars(path);
 
     ASSERT_TRUE(loaded) << loaded.error().message;

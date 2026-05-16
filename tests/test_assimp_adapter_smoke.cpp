@@ -12,7 +12,7 @@ namespace
 
 struct FormatCase
 {
-    lvr2::mesh::Format format;
+    lvr2::io::mesh::Format format;
     const char* suffix;
     bool binary;
 };
@@ -47,7 +47,7 @@ void removeSidecars(const std::filesystem::path& path)
     std::filesystem::remove(path.parent_path() / (path.filename().string() + ".bin"), ec);
 }
 
-bool expectTriangleLike(const lvr2::mesh::Result<lvr2::MeshBufferPtr>& loaded, const char* label)
+bool expectTriangleLike(const lvr2::io::mesh::Result<lvr2::MeshBufferPtr>& loaded, const char* label)
 {
     if(!loaded)
     {
@@ -68,19 +68,19 @@ int main()
 {
     const auto mesh = makeTriangleMesh();
     const FormatCase cases[] = {
-        {lvr2::mesh::Format::Obj, ".obj", true},
-        {lvr2::mesh::Format::Ply, ".ply", true},
-        {lvr2::mesh::Format::Stl, ".stl", true},
-        {lvr2::mesh::Format::Dae, ".dae", true},
-        {lvr2::mesh::Format::Gltf, ".gltf", true},
-        {lvr2::mesh::Format::Glb, ".glb", true},
+        {lvr2::io::mesh::Format::Obj, ".obj", true},
+        {lvr2::io::mesh::Format::Ply, ".ply", true},
+        {lvr2::io::mesh::Format::Stl, ".stl", true},
+        {lvr2::io::mesh::Format::Dae, ".dae", true},
+        {lvr2::io::mesh::Format::Gltf, ".gltf", true},
+        {lvr2::io::mesh::Format::Glb, ".glb", true},
     };
 
     bool ok = true;
     for(const auto& current : cases)
     {
         const auto path = smokePath("lvr2-assimp-adapter-smoke", current.suffix);
-        const auto saved = lvr2::mesh::detail::saveWithPrivateMeshBackend(
+        const auto saved = lvr2::io::mesh::detail::saveWithPrivateMeshBackend(
             mesh, path, {current.format, current.binary});
         if(!saved)
         {
@@ -90,7 +90,7 @@ int main()
         }
 
         ok = expectTriangleLike(
-                 lvr2::mesh::detail::loadWithPrivateMeshBackend(path, current.format),
+                 lvr2::io::mesh::detail::loadWithPrivateMeshBackend(path, current.format),
                  current.suffix) && ok;
         removeSidecars(path);
     }
@@ -100,16 +100,16 @@ int main()
         std::ofstream out(malformed);
         out << "this is not a valid mesh file\n";
     }
-    const auto loadedMalformed = lvr2::mesh::detail::loadWithPrivateMeshBackend(
-        malformed, lvr2::mesh::Format::Stl);
+    const auto loadedMalformed = lvr2::io::mesh::detail::loadWithPrivateMeshBackend(
+        malformed, lvr2::io::mesh::Format::Stl);
     removeSidecars(malformed);
     if(loadedMalformed)
     {
         std::cerr << "malformed STL unexpectedly loaded\n";
         ok = false;
     }
-    else if(loadedMalformed.error().code != lvr2::mesh::ErrorCode::ReadFailed &&
-            loadedMalformed.error().code != lvr2::mesh::ErrorCode::MissingMesh)
+    else if(loadedMalformed.error().code != lvr2::io::mesh::ErrorCode::ReadFailed &&
+            loadedMalformed.error().code != lvr2::io::mesh::ErrorCode::MissingMesh)
     {
         std::cerr << "malformed STL returned unexpected error code\n";
         ok = false;

@@ -1,4 +1,4 @@
-#include "lvr2/mesh/io.hpp"
+#include "lvr2/io/mesh.hpp"
 #include "lvr2/types/MeshBuffer.hpp"
 #include "support/PointFixtures.hpp"
 
@@ -49,19 +49,19 @@ void removeIfExists(const std::filesystem::path& path)
 
 TEST(MeshIoFacade, LoadReportsEmptyPath)
 {
-    const auto result = lvr2::mesh::load({});
+    const auto result = lvr2::io::mesh::load({});
     ASSERT_FALSE(result);
-    EXPECT_EQ(result.error().code, lvr2::mesh::ErrorCode::EmptyPath);
-    EXPECT_EQ(result.error().format, lvr2::mesh::Format::Auto);
+    EXPECT_EQ(result.error().code, lvr2::io::mesh::ErrorCode::EmptyPath);
+    EXPECT_EQ(result.error().format, lvr2::io::mesh::Format::Auto);
 }
 
 TEST(MeshIoFacade, LoadReportsMissingFileAfterFormatResolution)
 {
     const auto path = uniquePath(".obj");
-    const auto result = lvr2::mesh::load(path);
+    const auto result = lvr2::io::mesh::load(path);
     ASSERT_FALSE(result);
-    EXPECT_EQ(result.error().code, lvr2::mesh::ErrorCode::FileNotFound);
-    EXPECT_EQ(result.error().format, lvr2::mesh::Format::Obj);
+    EXPECT_EQ(result.error().code, lvr2::io::mesh::ErrorCode::FileNotFound);
+    EXPECT_EQ(result.error().format, lvr2::io::mesh::Format::Obj);
 }
 
 TEST(MeshIoFacade, LoadReportsUnsupportedExplicitFormat)
@@ -73,12 +73,12 @@ TEST(MeshIoFacade, LoadReportsUnsupportedExplicitFormat)
         out << "# placeholder\n";
     }
 
-    const auto result = lvr2::mesh::load(path, {lvr2::mesh::Format::Gltf});
+    const auto result = lvr2::io::mesh::load(path, {lvr2::io::mesh::Format::Gltf});
     removeIfExists(path);
 
     ASSERT_FALSE(result);
-    EXPECT_EQ(result.error().code, lvr2::mesh::ErrorCode::UnsupportedFormat);
-    EXPECT_EQ(result.error().format, lvr2::mesh::Format::Gltf);
+    EXPECT_EQ(result.error().code, lvr2::io::mesh::ErrorCode::UnsupportedFormat);
+    EXPECT_EQ(result.error().format, lvr2::io::mesh::Format::Gltf);
 }
 
 TEST(MeshIoFacade, ObjTriangleFixtureLoadsMesh)
@@ -86,7 +86,7 @@ TEST(MeshIoFacade, ObjTriangleFixtureLoadsMesh)
     const auto path = uniquePath(".obj");
     ASSERT_TRUE(lvr2::testing::writeObjTriangleFixture(path));
 
-    const auto result = lvr2::mesh::load(path);
+    const auto result = lvr2::io::mesh::load(path);
     removeIfExists(path);
 
     ASSERT_TRUE(result) << result.error().message;
@@ -98,16 +98,16 @@ TEST(MeshIoFacade, ObjTriangleFixtureLoadsMesh)
 TEST(MeshIoFacade, SaveRejectsNullMesh)
 {
     const auto path = uniquePath(".ply");
-    const auto status = lvr2::mesh::save(nullptr, path);
+    const auto status = lvr2::io::mesh::save(nullptr, path);
     ASSERT_FALSE(status);
-    EXPECT_EQ(status.error().code, lvr2::mesh::ErrorCode::MissingMesh);
-    EXPECT_EQ(status.error().format, lvr2::mesh::Format::Ply);
+    EXPECT_EQ(status.error().code, lvr2::io::mesh::ErrorCode::MissingMesh);
+    EXPECT_EQ(status.error().format, lvr2::io::mesh::Format::Ply);
 }
 
 TEST(MeshIoFacade, SaveSupportsTextPlyThroughPrivateBackend)
 {
     const auto path = uniquePath(".ply");
-    const auto status = lvr2::mesh::save(makeTriangleMesh(), path, {lvr2::mesh::Format::Ply, false});
+    const auto status = lvr2::io::mesh::save(makeTriangleMesh(), path, {lvr2::io::mesh::Format::Ply, false});
     removeIfExists(path);
 
     ASSERT_TRUE(status) << status.error().message;
@@ -116,7 +116,7 @@ TEST(MeshIoFacade, SaveSupportsTextPlyThroughPrivateBackend)
 TEST(MeshIoFacade, SaveObjUsesPrivateBackend)
 {
     const auto path = uniquePath(".obj");
-    const auto status = lvr2::mesh::save(makeTriangleMesh(), path);
+    const auto status = lvr2::io::mesh::save(makeTriangleMesh(), path);
     removeIfExists(path);
 
     ASSERT_TRUE(status) << status.error().message;
@@ -125,7 +125,7 @@ TEST(MeshIoFacade, SaveObjUsesPrivateBackend)
 TEST(MeshIoFacade, SaveStlUsesPrivateBackend)
 {
     const auto path = uniquePath(".stl");
-    const auto status = lvr2::mesh::save(makeTriangleMesh(), path);
+    const auto status = lvr2::io::mesh::save(makeTriangleMesh(), path);
     removeIfExists(path);
 
     ASSERT_TRUE(status) << status.error().message;
@@ -134,10 +134,10 @@ TEST(MeshIoFacade, SaveStlUsesPrivateBackend)
 TEST(MeshIoFacade, PlyRoundTripPreservesTriangleCounts)
 {
     const auto path = uniquePath(".ply");
-    const auto saveStatus = lvr2::mesh::save(makeTriangleMesh(), path);
+    const auto saveStatus = lvr2::io::mesh::save(makeTriangleMesh(), path);
     ASSERT_TRUE(saveStatus) << saveStatus.error().message;
 
-    const auto loaded = lvr2::mesh::load(path);
+    const auto loaded = lvr2::io::mesh::load(path);
     removeIfExists(path);
 
     ASSERT_TRUE(loaded) << loaded.error().message;

@@ -1,4 +1,4 @@
-#include <lvr2/mesh/io.hpp>
+#include <lvr2/io/mesh.hpp>
 
 #include <algorithm>
 #include <atomic>
@@ -58,9 +58,9 @@ void runOneInput(const std::uint8_t* data, std::size_t size)
     }
 
     const auto path = writeInputFile(data, size);
-    lvr2::mesh::LoadOptions options;
-    options.format = lvr2::mesh::Format::Auto;
-    (void)lvr2::mesh::load(path.string(), options);
+    lvr2::io::mesh::LoadOptions options;
+    options.format = lvr2::io::mesh::Format::Auto;
+    (void)lvr2::io::mesh::load(path.string(), options);
 
     std::error_code ec;
     std::filesystem::remove(path, ec);

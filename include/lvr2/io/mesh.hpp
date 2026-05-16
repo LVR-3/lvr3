@@ -1,10 +1,10 @@
 /**
- * @file io.hpp
+ * @file mesh.hpp
  * @brief Public mesh I/O facade for LVR-owned load/save APIs.
  */
 
-#ifndef LVR2_MESH_IO_HPP
-#define LVR2_MESH_IO_HPP
+#ifndef LVR2_IO_MESH_HPP
+#define LVR2_IO_MESH_HPP
 
 #include <tl/expected.hpp>
 
@@ -20,7 +20,9 @@ namespace lvr2
 class MeshBuffer;
 using MeshBufferPtr = std::shared_ptr<MeshBuffer>;
 
-namespace mesh
+} // namespace lvr2
+
+namespace lvr2::io::mesh
 {
 
 enum class Format
@@ -72,17 +74,17 @@ using Result = tl::expected<T, Error>;
 using Status = tl::expected<void, Error>;
 
 static_assert(std::is_enum<Format>::value,
-              "mesh::Format must remain a closed enum vocabulary");
+              "io::mesh::Format must remain a closed enum vocabulary");
 static_assert(!std::is_convertible<Format, int>::value,
-              "mesh::Format must not implicitly convert to integer values");
+              "io::mesh::Format must not implicitly convert to integer values");
 static_assert(std::is_enum<ErrorCode>::value,
-              "mesh::ErrorCode must remain a closed enum vocabulary");
+              "io::mesh::ErrorCode must remain a closed enum vocabulary");
 static_assert(!std::is_convertible<ErrorCode, int>::value,
-              "mesh::ErrorCode must not implicitly convert to integer values");
+              "io::mesh::ErrorCode must not implicitly convert to integer values");
 static_assert(std::is_same<Result<MeshBufferPtr>, tl::expected<MeshBufferPtr, Error>>::value,
-              "mesh::Result<T> must stay backed by tl::expected<T, Error>");
+              "io::mesh::Result<T> must stay backed by tl::expected<T, Error>");
 static_assert(std::is_same<Status, tl::expected<void, Error>>::value,
-              "mesh::Status must stay backed by tl::expected<void, Error>");
+              "io::mesh::Status must stay backed by tl::expected<void, Error>");
 static_assert(std::is_default_constructible<LoadOptions>::value,
               "mesh load options must remain default constructible");
 static_assert(std::is_copy_constructible<LoadOptions>::value,
@@ -108,7 +110,6 @@ Status save(const lvr2::MeshBufferPtr& mesh,
             const std::filesystem::path& path,
             const SaveOptions& options = {});
 
-} // namespace mesh
-} // namespace lvr2
+} // namespace lvr2::io::mesh
 
-#endif // LVR2_MESH_IO_HPP
+#endif // LVR2_IO_MESH_HPP

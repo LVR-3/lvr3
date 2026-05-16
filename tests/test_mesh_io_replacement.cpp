@@ -1,4 +1,4 @@
-#include "lvr2/mesh/io.hpp"
+#include "lvr2/io/mesh.hpp"
 #include "lvr2/types/MeshBuffer.hpp"
 #include "support/PointFixtures.hpp"
 
@@ -52,7 +52,7 @@ TEST(MeshIoReplacement, ObjFixtureLoadsThroughFacadeOnly)
     const auto path = uniquePath(".obj");
     ASSERT_TRUE(lvr2::testing::writeObjTriangleFixture(path));
 
-    const auto result = lvr2::mesh::load(path);
+    const auto result = lvr2::io::mesh::load(path);
     removeIfExists(path);
 
     ASSERT_TRUE(result) << result.error().message;
@@ -64,10 +64,10 @@ TEST(MeshIoReplacement, ObjFixtureLoadsThroughFacadeOnly)
 TEST(MeshIoReplacement, PlyRoundTripUsesFacadeOnly)
 {
     const auto path = uniquePath(".ply");
-    const auto saved = lvr2::mesh::save(makeTriangleMesh(), path);
+    const auto saved = lvr2::io::mesh::save(makeTriangleMesh(), path);
     ASSERT_TRUE(saved) << saved.error().message;
 
-    const auto loaded = lvr2::mesh::load(path);
+    const auto loaded = lvr2::io::mesh::load(path);
     removeIfExists(path);
 
     ASSERT_TRUE(loaded) << loaded.error().message;
@@ -81,12 +81,12 @@ TEST(MeshIoReplacement, FormerLegacyWriterFormatsUsePrivateBackend)
     const auto mesh = makeTriangleMesh();
 
     const auto objPath = uniquePath(".obj");
-    const auto objSaved = lvr2::mesh::save(mesh, objPath);
+    const auto objSaved = lvr2::io::mesh::save(mesh, objPath);
     removeIfExists(objPath);
     ASSERT_TRUE(objSaved) << objSaved.error().message;
 
     const auto stlPath = uniquePath(".stl");
-    const auto stlSaved = lvr2::mesh::save(mesh, stlPath);
+    const auto stlSaved = lvr2::io::mesh::save(mesh, stlPath);
     removeIfExists(stlPath);
     ASSERT_TRUE(stlSaved) << stlSaved.error().message;
 }

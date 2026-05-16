@@ -44,7 +44,7 @@
 // #include "lvr2/io/HDF5IO.hpp"
 // #include "lvr2/io/WaveformIO.hpp"
 #include "lvr2/io/ModelFactory.hpp"
-#include "lvr2/mesh/io.hpp"
+#include "lvr2/io/mesh.hpp"
 #include "lvr2/types/Model.hpp"
 #include "lvr2/util/Timestamp.hpp"
 #include "lvr2/util/Progress.hpp"
@@ -92,13 +92,13 @@ ModelPtr ModelFactory::readModel( std::string filename )
     ModelIOBase* io = 0;
     if(extension == ".ply")
     {
-        auto meshResult = mesh::load(filename, {mesh::Format::Ply});
+        auto meshResult = lvr2::io::mesh::load(filename, {lvr2::io::mesh::Format::Ply});
         if(meshResult)
         {
             m = ModelPtr(new Model(*meshResult));
         }
-        else if(meshResult.error().code == mesh::ErrorCode::MissingMesh ||
-                meshResult.error().code == mesh::ErrorCode::ReadFailed)
+        else if(meshResult.error().code == lvr2::io::mesh::ErrorCode::MissingMesh ||
+                meshResult.error().code == lvr2::io::mesh::ErrorCode::ReadFailed)
         {
             io = new PLYIO;
         }
@@ -115,7 +115,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
 
     else if (extension == ".obj")
     {
-        auto meshResult = mesh::load(filename, {mesh::Format::Obj});
+        auto meshResult = lvr2::io::mesh::load(filename, {lvr2::io::mesh::Format::Obj});
         if(meshResult)
         {
             m = ModelPtr(new Model(*meshResult));
@@ -267,7 +267,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
         if(hasMeshGeometry(m))
         {
             handledByMeshFacade = true;
-            const auto status = mesh::save(m->m_mesh, filename, {mesh::Format::Ply});
+            const auto status = lvr2::io::mesh::save(m->m_mesh, filename, {lvr2::io::mesh::Format::Ply});
             if(!status)
             {
                 cout << timestamp << "Mesh facade failed to save " << filename << ": "
@@ -288,7 +288,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
         handledByMeshFacade = true;
         if(hasMeshGeometry(m))
         {
-            const auto status = mesh::save(m->m_mesh, filename, {mesh::Format::Obj});
+            const auto status = lvr2::io::mesh::save(m->m_mesh, filename, {lvr2::io::mesh::Format::Obj});
             if(!status)
             {
                 cout << timestamp << "Mesh facade failed to save " << filename << ": "
@@ -301,7 +301,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
         handledByMeshFacade = true;
         if(hasMeshGeometry(m))
         {
-            const auto status = mesh::save(m->m_mesh, filename, {mesh::Format::Stl});
+            const auto status = lvr2::io::mesh::save(m->m_mesh, filename, {lvr2::io::mesh::Format::Stl});
             if(!status)
             {
                 cout << timestamp << "Mesh facade failed to save " << filename << ": "

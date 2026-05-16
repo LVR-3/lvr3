@@ -91,6 +91,17 @@ set_tests_properties(lvr2_no_legacy_mesh_facade_usage
 )
 
 add_test(
+  NAME lvr2_unified_io_namespace_guard
+  COMMAND ${CMAKE_COMMAND}
+    -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+    -P ${CMAKE_CURRENT_LIST_DIR}/unified_io_namespace_guard.cmake
+)
+set_tests_properties(lvr2_unified_io_namespace_guard
+  PROPERTIES
+    LABELS "cpp;io;namespace;storage;contracts"
+)
+
+add_test(
   NAME lvr2_required_private_assimp_policy
   COMMAND ${CMAKE_COMMAND}
     -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}

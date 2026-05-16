@@ -150,28 +150,30 @@ for datasets that rely on `--scanPoseFile` or normal interpolation (`--ki`).
 
 ## Mesh I/O facade
 
-A narrow public mesh I/O facade is available in the existing `lvr2` C++ namespace:
+A narrow public mesh I/O facade is available under the unified `lvr2::io` C++ namespace:
 
 ```cpp
-#include <lvr2/mesh/io.hpp>
+#include <lvr2/io/mesh.hpp>
 
-lvr2::mesh::LoadOptions loadOptions;
-loadOptions.format = lvr2::mesh::Format::Auto; // infer from file suffix
+lvr2::io::mesh::LoadOptions loadOptions;
+loadOptions.format = lvr2::io::mesh::Format::Auto; // infer from file suffix
 
-lvr2::mesh::Result<lvr2::MeshBufferPtr> mesh =
-    lvr2::mesh::load("input.obj", loadOptions);
+lvr2::io::mesh::Result<lvr2::MeshBufferPtr> mesh =
+    lvr2::io::mesh::load("input.obj", loadOptions);
 if (!mesh) {
-    const lvr2::mesh::Error& error = mesh.error();
+    const lvr2::io::mesh::Error& error = mesh.error();
     // inspect error.code, error.message, error.path, and error.format
 }
 
-lvr2::mesh::SaveOptions saveOptions;
-saveOptions.format = lvr2::mesh::Format::Ply;
+lvr2::io::mesh::SaveOptions saveOptions;
+saveOptions.format = lvr2::io::mesh::Format::Ply;
 saveOptions.binary = true;
-lvr2::mesh::Status saved = lvr2::mesh::save(*mesh, "output.ply", saveOptions);
+lvr2::io::mesh::Status saved = lvr2::io::mesh::save(*mesh, "output.ply", saveOptions);
 ```
 
 The facade exposes LVR-owned `Format`, options, `ErrorCode`, `Error`, `Result<T>`, and `Status` vocabulary. `Result<T>` and `Status` are backed by `tl::expected`, so downstream CMake consumers need the `tl-expected` package available through system packages or the guarded vcpkg path. Installed `lvr2` and `lvr3` CMake configs now declare this public dependency.
+
+The earlier `<lvr2/mesh/io.hpp>` / `lvr2::mesh` facade path has been removed by the unified I/O namespace migration. Include `<lvr2/io/mesh.hpp>` and use `lvr2::io::mesh` instead.
 
 Current mesh-asset facade support is provided by the required private Assimp backend:
 
@@ -193,19 +195,19 @@ The mesh-asset-specific legacy reader/writer headers are no longer installed as 
 Use the mesh facade instead:
 
 ```cpp
-#include <lvr2/mesh/io.hpp>
+#include <lvr2/io/mesh.hpp>
 
-lvr2::mesh::LoadOptions loadOptions;
-loadOptions.format = lvr2::mesh::Format::Auto;
-auto mesh = lvr2::mesh::load("input.obj", loadOptions);
+lvr2::io::mesh::LoadOptions loadOptions;
+loadOptions.format = lvr2::io::mesh::Format::Auto;
+auto mesh = lvr2::io::mesh::load("input.obj", loadOptions);
 if (!mesh) {
     // Handle mesh.error().code, message, path, and format.
 }
 
-lvr2::mesh::SaveOptions saveOptions;
-saveOptions.format = lvr2::mesh::Format::Ply;
+lvr2::io::mesh::SaveOptions saveOptions;
+saveOptions.format = lvr2::io::mesh::Format::Ply;
 saveOptions.binary = true;
-auto saved = lvr2::mesh::save(*mesh, "output.ply", saveOptions);
+auto saved = lvr2::io::mesh::save(*mesh, "output.ply", saveOptions);
 ```
 
 Internal LVR tools still keep a private implementation bridge so CLI names, options, and current tool dispatch behavior are unchanged. That private bridge is not installed and must not be included by downstream code.
