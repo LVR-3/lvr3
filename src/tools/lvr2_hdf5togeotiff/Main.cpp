@@ -11,7 +11,8 @@
 
 #include <sys/stat.h>
 
-#include "lvr2/io/baseio/GeoTIFFIO.hpp"
+#include "lvr2/io/kernels/HDF5Kernel.hpp"
+#include "lvr2/io/modelio/GeoTIFFIO.hpp"
 #include "Options.hpp"
 
 
@@ -30,13 +31,13 @@ int processConversion(std::string input_filename,
         std::string position_code, std::string output_filename, size_t min_channel, size_t max_channel)
 {
     /*------------------- HDF5 INPUT ------------------------*/
-    HDF5IO hdf5(input_filename, false);
+    HDF5Kernel hdf5(input_filename);
     std::vector<size_t> dim;
 
     // extract radiometric data
     std::string groupname = "raw/spectral/position_" + position_code;
     std::string datasetname = "spectral";
-    boost::shared_array<uint16_t> spectrals = hdf5.getArray<uint16_t>(groupname, datasetname, dim);
+    boost::shared_array<uint16_t> spectrals = hdf5.loadUInt16Array(groupname, datasetname, dim);
 
     // extract array dimension information
     size_t num_channels = dim[0];

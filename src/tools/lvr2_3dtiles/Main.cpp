@@ -36,7 +36,8 @@
 #include "lvr2/algorithm/HLODTree.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/Tiles3dIO.hpp"
-#include "lvr2/io/meshio/HDF5IO.hpp"
+#include "lvr2/io/MeshStores.hpp"
+#include "lvr2/io/schema/MeshSchemaHDF5.hpp"
 #include "lvr2/config/lvropenmp.hpp"
 
 #include <boost/filesystem.hpp>
@@ -160,7 +161,7 @@ int main(int argc, char** argv)
                 << lvr2::endl
                 << "<inputFile> is the file where the input mesh is stored" << lvr2::endl
                 << "    Possible inputs:" << lvr2::endl
-                << "        - most Mesh formats (see meshio for a full list)" << lvr2::endl
+                << "        - most mesh asset formats supported by the LVR mesh facade" << lvr2::endl
                 << "        - a HDF5 file with a single mesh" << lvr2::endl
                 << "        - a HDF5 file with chunks in /chunks/x_y_z" << lvr2::endl
                 << "        - a directory containing chunks named x_y_z.*" << lvr2::endl
@@ -275,7 +276,7 @@ int main(int argc, char** argv)
         }
         else
         {
-            lvr2::logout::get() << " using meshio::HDF5IO" << lvr2::endl;
+            lvr2::logout::get() << " using HDF5 mesh store" << lvr2::endl;
 
             if (!has_chunk_size)
             {
@@ -288,10 +289,10 @@ int main(int argc, char** argv)
             auto mesh_name = mesh_names.front();
 
             auto schema = std::make_shared<MeshSchemaHDF5>();
-            meshio::HDF5IO io(kernel, schema);
+            lvr2::io::mesh::KernelMeshStore store(kernel, schema);
             MeshBufferPtr buffer;
 
-            buffer = io.loadMesh(mesh_name);
+            buffer = store.load_mesh(mesh_name);
 
             lvr2::logout::get() << lvr2::info << "Converting to PMPMesh" << lvr2::endl;
             mesh = Mesh(buffer);

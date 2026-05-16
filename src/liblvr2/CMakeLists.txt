@@ -40,7 +40,9 @@ set(LVR2_SOURCES
     geometry/pmp/SurfaceMeshIO.cpp
     geometry/SoilAssistField.cpp
     geometry/SoilAssistSubField.cpp
-    io/baseio/yaml/Matrix.cpp
+    io/yaml/Matrix.cpp
+    io/MeshStores.cpp
+    io/ChunkStore.cpp
     io/modelio/AsciiIO.cpp
     io/modelio/ModelIOBase.cpp
     io/modelio/DatIO.cpp
@@ -55,7 +57,6 @@ set(LVR2_SOURCES
     io/kernels/DirectoryKernel.cpp
     io/kernels/HDF5Kernel.cpp
     io/LineReader.cpp
-    # io/HDF5IO.cpp
     io/GridIO.cpp
     io/ModelFactory.cpp
     io/MeshIOFacade.cpp
@@ -74,10 +75,8 @@ set(LVR2_SOURCES
     # io/schema/ScanProjectSchemaSLAM.cpp
     # io/schema/ScanProjectSchemaHyperlib.cpp
     io/schema/ScanProjectSchemaHDF5.cpp
-    # io/scanio/LabelScanProjectSchemaHDF5V2.cpp
-    io/scanio/DirectoryDataIO.cpp
-    io/scanio/MetaFormatFactory.cpp
-    # io/scanio/HDF5MetaDescriptionV2.cpp
+    io/detail/DirectoryDataIO.cpp
+    io/detail/MetaFormatFactory.cpp
     reconstruction/Projection.cpp
     reconstruction/PanoramaNormals.cpp
     reconstruction/ModelToImage.cpp
@@ -165,7 +164,7 @@ endif()
 
 if(RiVLib_FOUND)
     list(APPEND LVR2_SOURCES
-        io/baseio/RxpIO.cpp)
+        io/modelio/RxpIO.cpp)
 endif()
 
 #####################################################################################

@@ -26,7 +26,7 @@
  */
 
  /**
- * @file       BaseIO.hpp
+ * @file       ModelIOBase.hpp
  * @brief      Base interface for all I/O related classes.
  * @details    This file introduces a pure virtual class specifying some basic
  *             methods which must be implemented by all I/O classes in the lvr
@@ -38,8 +38,8 @@
  * @date       Last modified: 2011-09-29 20:40:14
  */
 
-#ifndef BASEIO_HPP_
-#define BASEIO_HPP_
+#ifndef LVR2_IO_MODELIO_MODELIOBASE_HPP_
+#define LVR2_IO_MODELIO_MODELIOBASE_HPP_
 
 #include <string>
 #include <map>
@@ -108,4 +108,4 @@ class ModelIOBase
 } // namespace lvr2
 
 
-#endif /* BASEIO_HPP_ */
+#endif /* LVR2_IO_MODELIO_MODELIOBASE_HPP_ */

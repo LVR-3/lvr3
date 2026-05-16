@@ -75,8 +75,11 @@
 #include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/PlutoMapIO.hpp"
-#include "lvr2/io/meshio/HDF5IO.hpp"
-#include "lvr2/io/meshio/DirectoryIO.hpp"
+#include "lvr2/io/MeshStores.hpp"
+#include "lvr2/io/kernels/DirectoryKernel.hpp"
+#include "lvr2/io/kernels/HDF5Kernel.hpp"
+#include "lvr2/io/schema/MeshSchemaDirectory.hpp"
+#include "lvr2/io/schema/MeshSchemaHDF5.hpp"
 #include "lvr2/util/Factories.hpp"
 #include "lvr2/algorithm/GeometryAlgorithms.hpp"
 #include "lvr2/algorithm/UtilAlgorithms.hpp"
@@ -698,11 +701,10 @@ struct cmpBaseVecT
 template <typename BaseMeshT, typename BaseVecT>
 auto loadExistingMesh(reconstruct::Options options)
 {
-    meshio::HDF5IO io(
+    lvr2::io::mesh::KernelMeshStore io(
         std::make_shared<HDF5Kernel>(options.getInputMeshFile()),
-        std::make_shared<MeshSchemaHDF5>()
-    );
-    MeshBufferPtr mesh_buffer = io.loadMesh(options.getInputMeshName());
+        std::make_shared<MeshSchemaHDF5>());
+    MeshBufferPtr mesh_buffer = io.load_mesh(options.getInputMeshName());
 
 
     // Handle Maps needed during mesh construction
@@ -966,28 +968,22 @@ int main(int argc, char** argv)
         if (extension == ".h5")
         {
 
-            HDF5KernelPtr kernel = HDF5KernelPtr(new HDF5Kernel(outputFile.string()));
-            MeshSchemaHDF5Ptr schema = MeshSchemaHDF5Ptr(new MeshSchemaHDF5());
-            auto mesh_io = meshio::HDF5IO(kernel, schema);
+            auto kernel = std::make_shared<HDF5Kernel>(outputFile.string());
+            auto schema = std::make_shared<MeshSchemaHDF5>();
+            lvr2::io::mesh::KernelMeshStore mesh_io(kernel, schema);
 
-            mesh_io.saveMesh(
-                options.getMeshName(),
-                buffer
-                );
+            mesh_io.save_mesh(options.getMeshName(), buffer);
 
             continue;
         }
 
         if (extension == "")
         {
-            DirectoryKernelPtr kernel = DirectoryKernelPtr(new DirectoryKernel(outputFile.string()));
-            MeshSchemaDirectoryPtr schema = MeshSchemaDirectoryPtr(new MeshSchemaDirectory());
-            auto mesh_io = meshio::DirectoryIO(kernel, schema);
+            auto kernel = std::make_shared<DirectoryKernel>(outputFile.string());
+            auto schema = std::make_shared<MeshSchemaDirectory>();
+            lvr2::io::mesh::KernelMeshStore mesh_io(kernel, schema);
 
-            mesh_io.saveMesh(
-                options.getMeshName(),
-                buffer
-                );
+            mesh_io.save_mesh(options.getMeshName(), buffer);
 
             continue;
         }

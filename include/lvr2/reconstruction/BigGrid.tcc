@@ -36,7 +36,7 @@
 #pragma once
 
 #include "lvr2/io/LineReader.hpp"
-#include "lvr2/io/scanio/HDF5IO.hpp"
+#include "lvr2/io/scan.hpp"
 #include "lvr2/util/Progress.hpp"
 #include "lvr2/util/Timestamp.hpp"
 
@@ -242,9 +242,23 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
         LIDARPtr lidar = pos->lidars[0];
         if (lidar->scans.empty() || !lidar->scans[0])
         {
-            lvr2::logout::get() << lvr2::info << "[BigGrid] Loading points with scanio" << lvr2::endl;
-            auto hdf5io = scanio::HDF5IOBase(project->kernel, project->schema);
-            ScanPtr scan = hdf5io.ScanIO::load(i, 0, 0);
+            lvr2::logout::get() << lvr2::info << "[BigGrid] Loading points with ProjectStore" << lvr2::endl;
+            ScanPtr scan;
+            if (project->kernel)
+            {
+                auto store = lvr2::io::scan::open_hdf5(
+                    project->kernel->fileResource(),
+                    lvr2::io::scan::Schema::hdf5(),
+                    lvr2::io::storage::LoadMode::Lazy);
+                if (store)
+                {
+                    auto loaded = store->load_scan(i, 0, 0);
+                    if (loaded)
+                    {
+                        scan = loaded.value();
+                    }
+                }
+            }
             if (!scan)
             {
                 lvr2::logout::get() << lvr2::info << "[BigGrid] Unable to get data for scan position " << i << lvr2::endl;

@@ -59,8 +59,6 @@ int main(int argc, char** argv)
     int end = -1;
     string format = "uos";
     string pose_format = "pose";
-    bool isHDF = false;
-
     bool write_scans = false;
     string output_format;
     bool write_pose = false;
@@ -132,7 +130,7 @@ int main(int argc, char** argv)
          "Show more detailed output. Useful for fine-tuning Parameters or debugging.")
 
         ("hdf,H", bool_switch(&options.useHDF),
-         "Opens the given hdf5 file. Then registrates all scans in '/raw/scans/'\nthat are named after the scheme: 'position_00001' where '1' is the scans number.\nAfter registration the calculated poses are written to the finalPose dataset in the hdf5 file.\n")
+         "HDF5 registration input is currently unsupported by the modern storage API.\nUse directory scan inputs or convert the project before registration.\n")
 
         ("help,h", bool_switch(&help),
          "Print this help. Seriously how are you reading this if you don't know the --help Option?")
@@ -266,7 +264,9 @@ int main(int argc, char** argv)
 
     if(options.useHDF)
     {
-        /// TODO: Should be resolved when using scan project io
+        std::cerr << "HDF registration input is not supported by the modern storage API yet. "
+                  << "Use directory scans or convert the project before running registration." << std::endl;
+        return EXIT_FAILURE;
     }
 
     // =============== search scans ===============
@@ -435,20 +435,6 @@ int main(int argc, char** argv)
     }
 
     path file;
-
-    if (options.useHDF)
-    {
-        // write poses to hdf
-        for(int i = 0; i < scans.size(); i++)
-        {
-            Transformd pose = scans[i]->pose();
-            cout << "Main:Pose Scan Nummer " << i << endl << pose << endl;
-            // Preserve the legacy HDF finalPose layout: final poses are stored
-            // transposed while initial poses are stored without transposition.
-            pose.transposeInPlace();
-            h5_ptr->MatrixIO::save("raw/scans/" + numOfScansInHDF[i], "finalPose", pose);
-        }
-    }
 
     for (int i = 0; i < count; i++)
     {

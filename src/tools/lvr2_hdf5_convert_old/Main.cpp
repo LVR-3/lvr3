@@ -53,7 +53,7 @@ int main(int argc, char** argv)
             return 1;
         }
     } else {
-        std::cout << "please specify Hdf5 file that can be load with the old feature based Hdf5IO" << std::endl;
+        std::cout << "please specify an old-layout HDF5 scan-project file" << std::endl;
     }
 
     return 0;

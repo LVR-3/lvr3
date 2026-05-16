@@ -46,8 +46,7 @@
 #include <cstring>
 #include <memory>
 
-#include "lvr2/io/deprecated/hdf5/HDF5FeatureBase.hpp"
-#include "lvr2/io/deprecated/hdf5/MeshIO.hpp"
+#include "lvr2/io/MeshStores.hpp"
 
 using namespace lvr2;
 
@@ -56,24 +55,24 @@ int main( int argc, char ** argv )
   hdf5meshtool::Options options(argc, argv);
   std::cout << timestamp << "Load HDF5 file structure..." << std::endl;
 
-  using HDF5MeshToolIO = lvr2::Hdf5Build<lvr2::hdf5features::MeshIO>;
+  using MeshToolStore = lvr2::io::mesh::Hdf5MeshStore;
 
   // Get extension
   boost::filesystem::path selectedFile(options.getInputFile());
   std::string extension = selectedFile.extension().string();
   MeshBufferPtr meshBuffer;
-  HDF5MeshToolIO hdf5In;
+  MeshToolStore hdf5In;
   bool readFromHdf5 = false;
 
   // check extension
-  if (extension == ".h5") // use new Hdf5IO
+  if (extension == ".h5")
   {
     hdf5In.open(options.getInputFile());
-    if (hdf5In.m_hdf5_file->isValid()) // TODO: update hdf5io to return bool on open()
+    if (hdf5In.is_open())
     {
         readFromHdf5 = true;
     }
-    meshBuffer = hdf5In.loadMesh(options.getMeshName());
+    meshBuffer = hdf5In.load_mesh(options.getMeshName());
   }
   else // use model reader
   {
@@ -120,18 +119,18 @@ int main( int argc, char ** argv )
       std::cout << timestamp << "Invalid faces found during HalfEdgeMesh construction: " << invalid_face_cnt << std::endl;
     }
 
-    HDF5MeshToolIO hdf5;
+    MeshToolStore hdf5;
     bool writeToHdf5Input = false;
     if (readFromHdf5 && options.getInputFile() == options.getOutputFile())
     {
-      hdf5 = hdf5In;
+      hdf5.open(options.getInputFile());
       writeToHdf5Input = true;
     }
     else
     {
       hdf5.open(options.getOutputFile());
     }
-    hdf5.setMeshName(options.getMeshName());
+    hdf5.set_mesh_name(options.getMeshName());
 
     // face normals
     DenseFaceMap<Normal<float>> faceNormals;

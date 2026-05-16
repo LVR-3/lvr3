@@ -216,7 +216,7 @@ auto saved = lvr2::io::mesh::save(*mesh, "output.ply", saveOptions);
 
 Internal LVR tools still keep a private implementation bridge so CLI names, options, and current tool dispatch behavior are unchanged. That private bridge is not installed and must not be included by downstream code.
 
-Current mesh facade coverage routes OBJ, PLY, STL, DAE/Collada, glTF, and glb mesh assets through the required private Assimp backend. Legacy private `ObjIO` and `STLIO` mesh-asset paths have been removed. The private in-tree `ModelFactory` bridge delegates OBJ/STL and mesh PLY cases to the facade; `PLYIO`, `ModelIOBase`, BaseIO, and non-mesh/point-cloud/scan `modelio` classes remain only as a bounded exception for scan-project and point-cloud storage until a later streaming/storage slice replaces them.
+Current mesh facade coverage routes OBJ, PLY, STL, DAE/Collada, glTF, and glb mesh assets through the required private Assimp backend. Legacy private `ObjIO` and `STLIO` mesh-asset paths have been removed. The private in-tree `ModelFactory` bridge delegates OBJ/STL and mesh PLY cases to the facade; `PLYIO`, `ModelIOBase`, and non-mesh point-cloud `modelio` classes remain only as a bounded exception until a later point-cloud streaming/storage slice replaces them.
 
 Replacement coverage is guarded by `lvr2_removed_public_mesh_io_headers`, `lvr2_no_legacy_mesh_facade_usage`, `lvr2_required_private_assimp_policy`, and the mesh facade GoogleTest coverage (`lvr2_mesh_io_facade_gtest`, including replacement tests).
 
@@ -241,19 +241,20 @@ PLY mesh facade load/save no longer uses legacy `PLYIO`; the private `ModelFacto
 
 Private Assimp adapter coverage is guarded by `lvr2_no_public_assimp_leakage`, `lvr2_no_legacy_mesh_facade_usage`, package-identity interface checks, and Assimp-enabled mesh facade tests.
 
-## Planned BaseIO scan-project/storage removal
+## Removed BaseIO scan-project/storage feature API
 
-The remaining `BaseIO`, `FeatureBuild`, `FeatureConstruct`, feature-template,
-`scanio`, `meshio`, and deprecated HDF5 storage paths are deletion targets. The
-replacement public API will live under `lvr2::io`:
+The `BaseIO`/feature-template storage stack, public `scanio` and `meshio` storage wrappers, and deprecated HDF5 feature wrappers have been removed. The replacement public API lives under `lvr2::io`:
 
 ```cpp
-auto store = lvr2::io::scan::open_directory(
+auto opened = lvr2::io::scan::open_directory(
     path,
     lvr2::io::scan::Schema::raw_ply(),
     lvr2::io::storage::LoadMode::Lazy);
-store.save(*project);
-auto loaded = store.load();
+if (!opened) {
+    // Handle opened.error().message.
+}
+auto saved = opened->save(*project);
+auto loaded = opened->load();
 ```
 
 One-shot helpers are the intended simple path for tools and examples:
@@ -268,29 +269,11 @@ auto saved = lvr2::io::scan::save_project(
     lvr2::io::scan::SaveOptions::hdf5());
 ```
 
-Bundled scan-project examples and scan-project utility callers now use these
-`ProjectStore`/one-shot helpers instead of manual `DirectoryKernel`/`HDF5Kernel`
-construction and base-qualified `ScanProjectIO::load()` calls. `ProjectStore`
-also exposes narrow non-template `load_position`, `load_lidar`, `load_scan`,
-`save_position`, `save_lidar`, and `save_scan` methods for tool code that used
-lower-level scan-project CRTP features.
+Bundled scan-project examples and utility callers use these `ProjectStore`/one-shot helpers instead of manual `DirectoryKernel`/`HDF5Kernel` construction and base-qualified feature calls. `ProjectStore` also exposes narrow non-template `load_position`, `load_lidar`, `load_scan`, `save_position`, `save_lidar`, and `save_scan` methods for tool code that previously needed lower-level scan-project storage operations.
 
-The first service path supports point-buffer round trips through the raw-PLY
-directory layout and HDF5 scan-project layout. Raw channel-directory point
-storage, arbitrary user-subclassed directory schemas, camera/image/hyperspectral
-payload services, and remaining mesh/generic HDF5 wrappers are still
-deletion/rewrite work for the final BaseIO removal slice. The migrated
-scan-project utility bridge fails explicitly for unsupported directory/HDF5
-schemas or unsupported camera/hyperspectral payload saves instead of silently
-reinterpreting or truncating data. The HDF5 builder preview array path now writes
-through the same `StorageBackend`/`StorageRegistry` open path used by
-ProjectStore.
+The service path supports point-buffer round trips through the raw-PLY directory layout and HDF5 scan-project layout. Unsupported raw channel-directory schemas and camera/hyperspectral payload saves fail explicitly instead of silently reinterpreting or truncating data. Mesh HDF5/directory compatibility still needed by bundled tools is implemented by private non-template stores, not public feature wrappers. The legacy `lvr2_registration --hdf` path depended on removed feature wrappers and now fails explicitly; use directory scan inputs or convert the project before registration until a `ProjectStore`-backed HDF registration path is added.
 
-The new storage implementation must use one `StorageBackend`/`StorageRegistry`
-path for Directory, HDF5, fake/test, plugin, and future custom/IP backends. It
-must not add CRTP compatibility aliases, a built-in-only backend selector, or a
-second extension path. See `docs/io/baseio-removal-inventory.md` for the current
-inventory, migration map, smoke commands, and performance baseline commands.
+The storage implementation uses one `StorageBackend`/`StorageRegistry` path for Directory, HDF5, fake/test, plugin, and future custom/IP backends. It does not provide CRTP compatibility aliases, a built-in-only backend selector, or a second extension path. See `docs/io/baseio-removal-inventory.md` for final guard and validation commands.
 
 ## 25.1.0 -> 25.2.0
 
