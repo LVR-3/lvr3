@@ -4,8 +4,8 @@ endif()
 
 set(_PUBLIC_PATHS
   "${LVR2_SOURCE_DIR}/include/lvr2"
-  "${LVR2_SOURCE_DIR}/CMakeModules/lvr2-config.cmake.in"
-  "${LVR2_SOURCE_DIR}/CMakeModules/lvr3-config.cmake.in"
+  "${LVR2_SOURCE_DIR}/cmake/lvr2-config.cmake.in"
+  "${LVR2_SOURCE_DIR}/cmake/lvr3-config.cmake.in"
 )
 
 set(_FORBIDDEN_PATTERNS

@@ -25,7 +25,7 @@ endif()
 # create imported target rdbc
 if(TARGET rdbc)
 elseif(RDB_FOUND)
-    add_library(rdbc SHARED IMPORTED GLOBAL) 
+    add_library(rdbc SHARED IMPORTED GLOBAL)
 
     set_property(TARGET rdbc PROPERTY IMPORTED_LOCATION "${RDB_LIBRARY_IMPORT}")
     set_property(TARGET rdbc PROPERTY IMPORTED_IMPLIB   "${RDB_LIBRARY_IMPORT}")

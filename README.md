@@ -42,7 +42,7 @@ For distro/ROS packaging, vcpkg can be disabled with `cmake --preset system-opto
 
 ### Optional for NVIDIA graphics cards users
 
-If you want to compile with CUDA support install the latest version of the CUDA toolkit, which you can find on NVIDIAs CUDA download site. To enable CUDA support, you need to compile the software with a compatible GCC version. All compatibilities are listed in `CMakeModules/max_cuda_gcc_version.cmake`.
+If you want to compile with CUDA support install the latest version of the CUDA toolkit, which you can find on NVIDIAs CUDA download site. To enable CUDA support, you need to compile the software with a compatible GCC version. All compatibilities are listed in `cmake/Lvr3CudaGccVersion.cmake`.
 
 ### Step 2: Configure and build from sources:
 

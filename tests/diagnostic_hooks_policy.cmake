@@ -2,7 +2,19 @@ if(NOT DEFINED LVR2_SOURCE_DIR)
   message(FATAL_ERROR "LVR2_SOURCE_DIR is required")
 endif()
 
-file(READ "${LVR2_SOURCE_DIR}/CMakeLists.txt" _lvr2_root_cmake)
+set(_lvr2_cmake_policy_files
+  "${LVR2_SOURCE_DIR}/CMakeLists.txt"
+)
+file(GLOB _lvr2_cmake_included_policy_files
+  LIST_DIRECTORIES false
+  "${LVR2_SOURCE_DIR}/cmake/*.cmake"
+)
+list(APPEND _lvr2_cmake_policy_files ${_lvr2_cmake_included_policy_files})
+set(_lvr2_root_cmake "")
+foreach(_lvr2_cmake_policy_file IN LISTS _lvr2_cmake_policy_files)
+  file(READ "${_lvr2_cmake_policy_file}" _lvr2_cmake_policy_text)
+  string(APPEND _lvr2_root_cmake "\n# ${_lvr2_cmake_policy_file}\n${_lvr2_cmake_policy_text}")
+endforeach()
 foreach(_lvr2_option IN ITEMS
     LVR2_ENABLE_SANITIZERS
     LVR2_ENABLE_FUZZING
