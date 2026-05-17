@@ -154,7 +154,6 @@ lvr2_find_package(Eigen3 REQUIRED)
 #set(Boost_USE_STATIC_LIBS       ON)
 set(Boost_USE_MULTITHREADED     ON)
 set(Boost_COMPONENTS
-  program_options
   filesystem
   thread
   serialization
@@ -572,7 +571,6 @@ endif()
 if(MSVC)
 set(LVR2_LIB_DEPENDENCIES
     ${Boost_LIBARIES}
-    ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
     ${Boost_FILESYSTEM_LIBRARY}
@@ -591,7 +589,6 @@ set(LVR2_LIB_DEPENDENCIES
     )
 else()
 set(LVR2_LIB_DEPENDENCIES
-    ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
     ${Boost_FILESYSTEM_LIBRARY}

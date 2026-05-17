@@ -41,7 +41,7 @@
 #include "lvr2/config/lvropenmp.hpp"
 
 #include <boost/filesystem.hpp>
-#include <boost/program_options.hpp>
+#include "lvr2/config/CommandLine.hpp"
 #include <lvr2/util/Logging.hpp>
 
 using namespace lvr2;
@@ -83,8 +83,8 @@ int main(int argc, char** argv)
 
     try
     {
-        using namespace boost::program_options;
-        namespace po = boost::program_options;
+        using namespace lvr2::cli;
+        namespace po = lvr2::cli;
 
         bool help = false;
 
@@ -185,7 +185,7 @@ int main(int argc, char** argv)
 
         has_chunk_size = variables.count("chunkSize") > 0;
     }
-    catch (const boost::program_options::error& ex)
+    catch (const lvr2::cli::error& ex)
     {
         std::cerr << ex.what() << std::endl;
         std::cerr << std::endl;

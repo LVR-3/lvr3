@@ -37,7 +37,7 @@
 
 #include "lvr2/config/BaseOption.hpp"
 
-#include <boost/program_options.hpp>
+#include "lvr2/config/CommandLine.hpp"
 #include <float.h>
 #include <iostream>
 #include <string>

@@ -38,7 +38,7 @@
 #include "lvr2/config/BaseOption.hpp"
 #include "lvr2/reconstruction/LargeScaleReconstruction.hpp"
 
-#include <boost/program_options.hpp>
+#include "lvr2/config/CommandLine.hpp"
 #include <boost/filesystem.hpp>
 #include <iostream>
 #include <string>

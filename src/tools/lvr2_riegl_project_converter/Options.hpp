@@ -27,9 +27,9 @@
 
 #include <string>
 
-#include <boost/program_options.hpp>
+#include "lvr2/config/CommandLine.hpp"
 
-namespace po = boost::program_options;
+namespace po = lvr2::cli;
 
 class Options {
 

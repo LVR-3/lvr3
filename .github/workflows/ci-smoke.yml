@@ -84,11 +84,12 @@ jobs:
           --target lvr2_mesh_io_facade_header_compile
           lvr2_static_assert_contracts_compile
           lvr2_cxx20_view_span_contracts
+          lvr2_cli_parser_contracts
 
       - name: Run basic CTest smoke
         run: >-
           ctest --test-dir build-vcpkg-release --output-on-failure
-          -R "lvr2_(mesh_io_facade_header_compile|static_assert_contracts_compile|cxx20_view_span_contracts|cxx20_view_span_policy|removed_public_mesh_io_headers|no_public_assimp_leakage|required_private_assimp_policy|no_vendored_dependencies|system_optout_semantics|diagnostic_hooks_policy|packaging_policy|no_bundled_viewer|cmake_module_audit|source_include_root_guard|lvr3_package_identity_smoke|lyrical_cxx20_baseline|pytest_smoke)"
+          -R "lvr2_(mesh_io_facade_header_compile|static_assert_contracts_compile|cxx20_view_span_contracts|cxx20_view_span_policy|cli_parser_contracts|removed_public_mesh_io_headers|no_public_assimp_leakage|required_private_assimp_policy|no_vendored_dependencies|no_boost_cli_parser_dependency|system_optout_semantics|diagnostic_hooks_policy|packaging_policy|no_bundled_viewer|cmake_module_audit|source_include_root_guard|lvr3_package_identity_smoke|lyrical_cxx20_baseline|pytest_smoke)"
 
       - name: Install/export package smoke
         run: |

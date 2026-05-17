@@ -35,7 +35,7 @@
 #ifndef INCLUDE_LIBLVR2_CONFIG_BASEOPTION_HPP_
 #define INCLUDE_LIBLVR2_CONFIG_BASEOPTION_HPP_
 
-#include <boost/program_options.hpp>
+#include "lvr2/config/CommandLine.hpp"
 #include <iostream>
 
 #include "lvr2/util/CoordinateTransform.hpp"
@@ -43,7 +43,7 @@
 namespace lvr2
 {
 
-using namespace boost::program_options;
+using namespace lvr2::cli;
 
 class BaseOption
 {

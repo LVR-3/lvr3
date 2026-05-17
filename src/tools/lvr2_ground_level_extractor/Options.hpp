@@ -11,7 +11,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <boost/program_options.hpp>
+#include "lvr2/config/CommandLine.hpp"
 #include <float.h>
 
 #include "lvr2/config/BaseOption.hpp"

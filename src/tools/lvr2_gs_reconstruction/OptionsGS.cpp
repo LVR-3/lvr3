@@ -8,7 +8,7 @@
 #include "OptionsGS.hpp"
 
 
-using namespace boost::program_options;
+using namespace lvr2::cli;
 namespace gs_reconstruction{
     Options::Options(int argc, char **argv) : BaseOption(argc, argv) {
         m_descr.add_options()

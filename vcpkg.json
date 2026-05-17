@@ -7,7 +7,6 @@
     "boost-filesystem",
     "boost-iostreams",
     "boost-mpi",
-    "boost-program-options",
     "boost-serialization",
     "boost-thread",
     "boost-timer",

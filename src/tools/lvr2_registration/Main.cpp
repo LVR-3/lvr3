@@ -37,7 +37,7 @@
 #include "lvr2/registration/SLAMAlign.hpp"
 #include "lvr2/registration/RegistrationPipeline.hpp"
 
-#include <boost/program_options.hpp>
+#include "lvr2/config/CommandLine.hpp"
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <iostream>
@@ -70,7 +70,7 @@ int main(int argc, char** argv)
 
     try
     {
-        using namespace boost::program_options;
+        using namespace lvr2::cli;
 
         options_description general_options("General Options");
         options_description icp_options("ICP Options");
@@ -254,7 +254,7 @@ int main(int argc, char** argv)
 
         options.createFrames = !no_frames;
     }
-    catch (const boost::program_options::error& ex)
+    catch (const lvr2::cli::error& ex)
     {
         std::cerr << ex.what() << endl;
         std::cerr << endl;

@@ -81,6 +81,17 @@ set_tests_properties(lvr2_cxx20_view_span_contracts
     LABELS "cpp;cxx20;views;spans;types"
 )
 
+add_executable(lvr2_cli_parser_contracts
+  test_cli_parser.cpp
+)
+target_include_directories(lvr2_cli_parser_contracts PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_compile_features(lvr2_cli_parser_contracts PRIVATE cxx_std_20)
+add_test(NAME lvr2_cli_parser_contracts COMMAND lvr2_cli_parser_contracts)
+set_tests_properties(lvr2_cli_parser_contracts
+  PROPERTIES
+    LABELS "cpp;cxx20;cli;dependencies"
+)
+
 if(NOT LVR2_SPDLOG_TARGET)
   find_package(spdlog CONFIG QUIET)
   if(TARGET spdlog::spdlog_header_only)
@@ -180,6 +191,17 @@ add_test(
 set_tests_properties(lvr2_boost_retirement_inventory
   PROPERTIES
     LABELS "cmake;dependencies"
+)
+
+add_test(
+  NAME lvr2_no_boost_cli_parser_dependency
+  COMMAND ${CMAKE_COMMAND}
+    -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+    -P ${CMAKE_CURRENT_LIST_DIR}/no_boost_cli_parser_dependency.cmake
+)
+set_tests_properties(lvr2_no_boost_cli_parser_dependency
+  PROPERTIES
+    LABELS "cmake;dependencies;cli"
 )
 
 add_test(
