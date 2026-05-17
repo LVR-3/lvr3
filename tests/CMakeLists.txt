@@ -160,6 +160,17 @@ set_tests_properties(lvr2_no_vendored_dependencies
 )
 
 add_test(
+  NAME lvr2_boost_retirement_inventory
+  COMMAND ${CMAKE_COMMAND}
+    -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+    -P ${CMAKE_CURRENT_LIST_DIR}/boost_retirement_inventory.cmake
+)
+set_tests_properties(lvr2_boost_retirement_inventory
+  PROPERTIES
+    LABELS "cmake;dependencies"
+)
+
+add_test(
   NAME lvr2_system_optout_semantics
   COMMAND ${CMAKE_COMMAND}
     -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
