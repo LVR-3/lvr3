@@ -3,11 +3,11 @@
 #include "lvr2/io/scan.hpp"
 
 #include "lvr2/util/Hdf5Util.hpp"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "lvr2/util/Synthetic.hpp"
 
-#include <boost/type_index.hpp>
+#include <typeindex>
 
 #include <unordered_map>
 #include <unordered_set>

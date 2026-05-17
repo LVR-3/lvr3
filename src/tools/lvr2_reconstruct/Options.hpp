@@ -363,7 +363,7 @@ public:
 
     bool useGPU() const;
 
-    boost::optional<vector<float>> getFlippoint() const;
+    std::optional<vector<float>> getFlippoint() const;
 
     bool texturesFromImages() const;
 

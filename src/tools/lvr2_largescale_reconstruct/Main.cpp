@@ -30,7 +30,7 @@
 #include <algorithm>
 #include <iostream>
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "lvr2/reconstruction/SearchTreeFlann.hpp"
 #include "lvr2/reconstruction/LargeScaleReconstruction.hpp"
@@ -101,7 +101,7 @@ int main(int argc, char** argv)
     else
     {
         //reconstruction from ScanProject Folder
-        if(boost::filesystem::is_directory(selectedFile))
+        if(std::filesystem::is_directory(selectedFile))
         {
             auto loaded = lvr2::io::scan::load_project(
                 input,
@@ -118,7 +118,7 @@ int main(int argc, char** argv)
 
                 // Setup basic scan project structure
                 project->project.reset(new ScanProject);
-                for (auto file : boost::filesystem::directory_iterator(selectedFile))
+                for (auto file : std::filesystem::directory_iterator(selectedFile))
                 {
                     auto path = file.path();
                     if(path.extension() != ".ply")

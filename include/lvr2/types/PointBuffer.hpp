@@ -34,7 +34,7 @@
 #include <map>
 #include <string>
 
-#include <boost/shared_array.hpp>
+#include <memory>
 #include <iostream>
 
 namespace lvr2
@@ -132,7 +132,7 @@ public:
         PointBuffer cm;
         for(auto vchannel: *this)
         {
-            cm.insert({vchannel.first, boost::apply_visitor(visitor, vchannel.second)});
+            cm.insert({vchannel.first, std::visit(visitor, vchannel.second)});
         }
         return cm;
     }

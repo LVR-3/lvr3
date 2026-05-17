@@ -3,7 +3,7 @@
 #include <tuple>
 #include <stdlib.h>
 
-#include <boost/optional.hpp>
+#include <optional>
 
 // lvr2 includes
 #include "lvr2/registration/TransformUtils.hpp"

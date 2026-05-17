@@ -48,7 +48,7 @@
 #include <sstream>
 #include <fstream>
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <opencv2/opencv.hpp>
 
 namespace lvr2
@@ -776,10 +776,10 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
 
         string channelDirName = string("panorama_channels_") + scanNr;
 
-        boost::filesystem::path dir(filename);
+        std::filesystem::path dir(filename);
         dir = dir.parent_path() / "panoramas_fixed" / channelDirName;
 
-        if (!boost::filesystem::exists(dir / "channel0.png"))
+        if (!std::filesystem::exists(dir / "channel0.png"))
         {
                         lvr2::log::error("{}", "Annotated Data given, but " + dir.string() + " does not contain channel files");
         }

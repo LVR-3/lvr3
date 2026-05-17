@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "lvr2/reconstruction/opencl/ClStatisticalOutlierFilter.hpp"
 #include "lvr2/io/ModelFactory.hpp"

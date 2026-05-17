@@ -119,7 +119,7 @@ OptionalClusterHandle ClusterBiMap<HandleT>::getClusterOf(HandleT handle) const
     auto maybe = m_clusterMap.get(handle);
     if (maybe)
     {
-        return *maybe;
+        return maybe->get();
     }
     return OptionalClusterHandle();
 }

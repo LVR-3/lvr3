@@ -35,7 +35,7 @@
 #include "lvr2/util/CoordinateTransform.hpp"
 #include "lvr2/util/Timestamp.hpp"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include <Eigen/Dense>
 
@@ -53,7 +53,7 @@ namespace lvr2
  * @param angles        Will contain the rotation angles in degrees
  * @param file          The pose file
  */
-void getPoseFromFile(BaseVector<float>& position, BaseVector<float>& angles, const boost::filesystem::path file);
+void getPoseFromFile(BaseVector<float>& position, BaseVector<float>& angles, const std::filesystem::path file);
 
 /**
  * @brief   Transforms the given point buffer according to the transformation
@@ -67,7 +67,7 @@ void getPoseFromFile(BaseVector<float>& position, BaseVector<float>& angles, con
  * @param   nrm             The transformed normals are added to this vector
  */
 void transformPointCloudAndAppend(PointBufferPtr& buffer,
-        boost::filesystem::path& transfromFile,
+        std::filesystem::path& transfromFile,
         std::vector<float>& pts,
         std::vector<float>& nrm);
 
@@ -77,28 +77,28 @@ void transformPointCloudAndAppend(PointBufferPtr& buffer,
  *          represented in the given file.
  */
 template<typename T>
-Transform<T> getTransformationFromFile(const boost::filesystem::path& file);
+Transform<T> getTransformationFromFile(const std::filesystem::path& file);
 
 /**
  * @brief   Returns a Eigen 4x4 maxtrix representation of the transformation
  *          represented in the given frame file.
  */
 template<typename T>
-Transform<T> getTransformationFromFrames(const boost::filesystem::path& frames);
+Transform<T> getTransformationFromFrames(const std::filesystem::path& frames);
 
 /**
  * @brief   Returns a Eigen 4x4 maxtrix representation of the transformation
  *          represented in the given pose file.
  */
 template<typename T>
-Transform<T> getTransformationFromPose(const boost::filesystem::path& pose);
+Transform<T> getTransformationFromPose(const std::filesystem::path& pose);
 
 /**
  * @brief   Returns a Eigen 4x4 maxtrix representation of the transformation
  *          represented in the given dat file.
  */
 template<typename T>
-Transform<T> getTransformationFromDat(const boost::filesystem::path& frames);
+Transform<T> getTransformationFromDat(const std::filesystem::path& frames);
 
 /**
  * @brief               Reads an Eigen 4x4 matrix from the given file (16 coefficients, row major)
@@ -107,7 +107,7 @@ Transform<T> getTransformationFromDat(const boost::filesystem::path& frames);
  * @param file          A file with serialized matrix data
  */
 template<typename T>
-Transform<T> loadFromFile(const boost::filesystem::path& file);
+Transform<T> loadFromFile(const std::filesystem::path& file);
 
 
 /**
@@ -117,7 +117,7 @@ Transform<T> loadFromFile(const boost::filesystem::path& file);
  * @param inFile        An ASCII file containing point cloud data (one point per line)
  * @return size_t       Number of points in file
  */
-size_t countPointsInFile(const boost::filesystem::path& inFile);
+size_t countPointsInFile(const std::filesystem::path& inFile);
 
 /**
  * @brief   Writes a Eigen transformation into a .frames file
@@ -126,7 +126,7 @@ size_t countPointsInFile(const boost::filesystem::path& inFile);
  * @param   framesOut   The target file.
  */
 template<typename T>
-void writeFrame(const Transform<T>& transform, const boost::filesystem::path& framesOut);
+void writeFrame(const Transform<T>& transform, const std::filesystem::path& framesOut);
 
 /**
  * @brief               Writes pose information in Euler representation to the given file
@@ -135,17 +135,17 @@ void writeFrame(const Transform<T>& transform, const boost::filesystem::path& fr
  * @param angles        Rotation angles in degrees
  */
 template<typename T>
-void writePose(const BaseVector<T>& position, const BaseVector<T>& angles, const boost::filesystem::path& out);
+void writePose(const BaseVector<T>& position, const BaseVector<T>& angles, const std::filesystem::path& out);
 
 template<typename T>
-void writePose(const Vector3<T>& position, const Vector3<T>& angles, const boost::filesystem::path& out);
+void writePose(const Vector3<T>& position, const Vector3<T>& angles, const std::filesystem::path& out);
 
 /**
  * @brief Write pose information in Euler representation
  * 
  */
 template<typename T>
-void writePose(const Transform<T>& transform, const boost::filesystem::path& poseOut);
+void writePose(const Transform<T>& transform, const std::filesystem::path& poseOut);
 
 /**
  * @brief   Writes the given model to the given file
@@ -154,7 +154,7 @@ void writePose(const Transform<T>& transform, const boost::filesystem::path& pos
  * @param   outfile     The target file.
  * @return  The number of points writen to the target file.
  */
-size_t writeModel( ModelPtr model, const  boost::filesystem::path& outfile);
+size_t writeModel( ModelPtr model, const  std::filesystem::path& outfile);
 
 
 
@@ -183,7 +183,7 @@ size_t getReductionFactor(ModelPtr model, size_t targetSize);
  *          have to write only every nth point to have approximately \ref
  *          targetSize points in the reduced point cloud.
  */
-size_t getReductionFactor(boost::filesystem::path& inFile, size_t targetSize);
+size_t getReductionFactor(std::filesystem::path& inFile, size_t targetSize);
 
 /**
  * @brief   Writes the points and normals (float triples) stored in \ref p and \ref n

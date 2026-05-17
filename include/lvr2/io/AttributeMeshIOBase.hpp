@@ -28,8 +28,8 @@
 #ifndef LAS_VEGAS_MESHIOINTERFACE_H
 #define LAS_VEGAS_MESHIOINTERFACE_H
 
-#include <boost/shared_ptr.hpp>
-#include <boost/shared_array.hpp>
+#include <memory>
+#include <memory>
 #include "lvr2/geometry/Handles.hpp"
 #include "lvr2/attrmaps/AttrMaps.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
@@ -59,7 +59,7 @@ class AttributeMeshIOBase : public MeshGeometryIO, public GroupedChannelIO
    * @brief Reads a HalfEdgeMesh from the persistence layer
    * @return Returns an optional to a HalfEdgeMesh which is valid if the mesh has been read successfully
    */
-  boost::optional<HalfEdgeMesh<BaseVec>> getMesh();
+  std::optional<HalfEdgeMesh<BaseVec>> getMesh();
 
   /**
    * @brief addDenseAttributeMap    Stores a dense attribute map to the persistence layer where the attribute group
@@ -94,7 +94,7 @@ class AttributeMeshIOBase : public MeshGeometryIO, public GroupedChannelIO
    *                                otherwise
    */
   template <typename MapT>
-  boost::optional<MapT> getDenseAttributeMap(const std::string& name);
+  std::optional<MapT> getDenseAttributeMap(const std::string& name);
 
   /**
    * @brief addAttributeMap         Stores a general attribute map to the persistence layer where the attribute group
@@ -120,7 +120,7 @@ class AttributeMeshIOBase : public MeshGeometryIO, public GroupedChannelIO
    *                                otherwise
    */
   template<typename MapT>
-  boost::optional<MapT> getAttributeMap(const std::string& name);
+  std::optional<MapT> getAttributeMap(const std::string& name);
 
 };
 

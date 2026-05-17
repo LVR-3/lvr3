@@ -81,7 +81,7 @@ MeshBufferPtr SimpleFinalizer<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
         if (m_normalData)
         {
             // add normal data to buffer if given
-            auto normal = (*m_normalData)[vH];
+            auto normal = m_normalData.value().get()[vH];
             normals.push_back(normal.getX());
             normals.push_back(normal.getY());
             normals.push_back(normal.getZ());
@@ -90,9 +90,10 @@ MeshBufferPtr SimpleFinalizer<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
         if (m_colorData)
         {
             // add color data to buffer if given
-            colors.push_back(static_cast<unsigned char>((*m_colorData)[vH][0]));
-            colors.push_back(static_cast<unsigned char>((*m_colorData)[vH][1]));
-            colors.push_back(static_cast<unsigned char>((*m_colorData)[vH][2]));
+            const auto& colorData = m_colorData.value().get();
+            colors.push_back(static_cast<unsigned char>(colorData[vH][0]));
+            colors.push_back(static_cast<unsigned char>(colorData[vH][1]));
+            colors.push_back(static_cast<unsigned char>(colorData[vH][2]));
         }
 
         // Save index of vertex for face mapping
@@ -135,13 +136,13 @@ MeshBufferPtr SimpleFinalizer<BaseVecT>::apply(const BaseMesh <BaseVecT>& mesh)
 template<typename BaseVecT>
 void SimpleFinalizer<BaseVecT>::setColorData(const VertexMap<RGB8Color>& colorData)
 {
-    m_colorData = colorData;
+    m_colorData = std::cref(colorData);
 }
 
 template<typename BaseVecT>
 void SimpleFinalizer<BaseVecT>::setNormalData(const VertexMap<Normal<typename BaseVecT::CoordType>>& normalData)
 {
-    m_normalData = normalData;
+    m_normalData = std::cref(normalData);
 }
 
 template<typename BaseVecT>
@@ -154,25 +155,25 @@ TextureFinalizer<BaseVecT>::TextureFinalizer(
 template<typename BaseVecT>
 void TextureFinalizer<BaseVecT>::setVertexNormals(const VertexMap<Normal<typename BaseVecT::CoordType>>& normals)
 {
-    m_vertexNormals = normals;
+    m_vertexNormals = std::cref(normals);
 }
 
 template<typename BaseVecT>
 void TextureFinalizer<BaseVecT>::setClusterColors(const ClusterMap<RGB8Color>& colors)
 {
-    m_clusterColors = colors;
+    m_clusterColors = std::cref(colors);
 }
 
 template<typename BaseVecT>
 void TextureFinalizer<BaseVecT>::setVertexColors(const VertexMap<RGB8Color>& vertexColors)
 {
-    m_vertexColors = vertexColors;
+    m_vertexColors = std::cref(vertexColors);
 }
 
 template<typename BaseVecT>
 void TextureFinalizer<BaseVecT>::setMaterializerResult(const MaterializerResult<BaseVecT>& matResult)
 {
-    m_materializerResult = matResult;
+    m_materializerResult = std::cref(matResult);
 }
 
 
@@ -197,7 +198,7 @@ MeshBufferPtr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
 
     // Create buffer and variables for texturizing
     bool useTextures = false;
-    if (m_materializerResult && m_materializerResult.get().m_textures)
+    if (m_materializerResult && m_materializerResult.value().get().m_textures)
     {
         useTextures = true;
     }
@@ -265,7 +266,7 @@ MeshBufferPtr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
 
                     if (m_vertexNormals)
                     {
-                        auto normal = (*m_vertexNormals)[vertexH];
+                        auto normal = m_vertexNormals.value().get()[vertexH];
                         normals.push_back(normal.getX());
                         normals.push_back(normal.getY());
                         normals.push_back(normal.getZ());
@@ -274,16 +275,18 @@ MeshBufferPtr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
                     // If individual vertex colors are present: use these
                     if (m_vertexColors)
                     {
-                        colors.push_back(static_cast<unsigned char>((*m_vertexColors)[vertexH][0]));
-                        colors.push_back(static_cast<unsigned char>((*m_vertexColors)[vertexH][1]));
-                        colors.push_back(static_cast<unsigned char>((*m_vertexColors)[vertexH][2]));
+                        const auto& vertexColors = m_vertexColors.value().get();
+                        colors.push_back(static_cast<unsigned char>(vertexColors[vertexH][0]));
+                        colors.push_back(static_cast<unsigned char>(vertexColors[vertexH][1]));
+                        colors.push_back(static_cast<unsigned char>(vertexColors[vertexH][2]));
                     }
                     else if (m_clusterColors)
                     {
                         // else: use cluster colors if present
-                        colors.push_back(static_cast<unsigned char>((*m_clusterColors)[clusterH][0]));
-                        colors.push_back(static_cast<unsigned char>((*m_clusterColors)[clusterH][1]));
-                        colors.push_back(static_cast<unsigned char>((*m_clusterColors)[clusterH][2]));
+                        const auto& clusterColors = m_clusterColors.value().get();
+                        colors.push_back(static_cast<unsigned char>(clusterColors[clusterH][0]));
+                        colors.push_back(static_cast<unsigned char>(clusterColors[clusterH][1]));
+                        colors.push_back(static_cast<unsigned char>(clusterColors[clusterH][2]));
                     } // else: no colors
 
                     // Save index of vertex for face mapping
@@ -309,7 +312,8 @@ MeshBufferPtr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
             SparseVertexMap<size_t> vertexVisitedMap;
             size_t vertexVisitCount = 0;
 
-            Material m = m_materializerResult.get().m_clusterMaterials.get(clusterH).get();
+            const auto& materializerResult = m_materializerResult.value().get();
+            Material m = materializerResult.m_clusterMaterials.get(clusterH).value().get();
             bool clusterHasTextures = static_cast<bool>(m.m_texture); // optional
             bool clusterHasColor = static_cast<bool>(m.m_color); // optional
 
@@ -319,11 +323,11 @@ MeshBufferPtr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
             if (useTextures && clusterHasTextures)
             {
                 // Yes: read texture info
-                TextureHandle texHandle = m.m_texture.get();
-                auto texOptional = m_materializerResult.get()
-                    .m_textures.get()
+                TextureHandle texHandle = m.m_texture.value();
+                auto texOptional = materializerResult
+                    .m_textures.value()
                     .get(texHandle);
-                Texture texture = texOptional.get();
+                Texture texture = texOptional.value().get();
                 int textureIndex = texture.m_index;
 
                 // Material for this texture already created?
@@ -345,7 +349,7 @@ MeshBufferPtr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
             else if (clusterHasColor)
             {
                 // Else: does this face have a color?
-                RGB8Color c = m.m_color.get();
+                RGB8Color c = m.m_color.value();
                 if (colorMaterialMap.count(c))
                 {
                     materialIndex = colorMaterialMap[c];
@@ -379,17 +383,17 @@ MeshBufferPtr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
                 {
                     if (!vertexVisitedMap.containsKey(vertexH))
                     {
-                        auto& vertexTexCoords = m_materializerResult.get().m_vertexTexCoords;
-                        bool vertexHasTexCoords = vertexTexCoords.is_initialized()
-                                                  ? static_cast<bool>(vertexTexCoords.get().get(vertexH))
+                        const auto& vertexTexCoords = materializerResult.m_vertexTexCoords;
+                        bool vertexHasTexCoords = vertexTexCoords.has_value()
+                                                  ? static_cast<bool>(vertexTexCoords.value().get(vertexH))
                                                   : false;
 
                         if (useTextures && vertexHasTexCoords)
                         {
                             // Use tex coord vertex map to find texture coords
-                            const TexCoords coords = m_materializerResult.get()
-                                .m_vertexTexCoords.get()
-                                .get(vertexH).get()
+                            const TexCoords coords = materializerResult
+                                .m_vertexTexCoords.value()
+                                .get(vertexH).value().get()
                                 .getTexCoords(clusterH);
 
                             texCoords.push_back(coords.u);
@@ -428,11 +432,12 @@ MeshBufferPtr TextureFinalizer<BaseVecT>::apply(const BaseMesh<BaseVecT>& mesh)
     if (m_materializerResult)
     {
         // Copy all the textures if they exist
-        if (m_materializerResult->m_textures)
+        const auto& materializerResult = m_materializerResult.value().get();
+        if (materializerResult.m_textures)
         {
-            for (auto texH: m_materializerResult->m_textures.get())
+            for (auto texH: materializerResult.m_textures.value())
             {
-                textures.push_back(m_materializerResult->m_textures.get()[texH]);
+                textures.push_back(materializerResult.m_textures.value()[texH]);
             }
         }
 

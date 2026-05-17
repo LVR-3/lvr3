@@ -32,7 +32,6 @@
  *      Author: Isaak Mitschke
  */
 
-#include <boost/algorithm/string.hpp>
 #include <cerrno>
 #include <exception>
 #include <fstream>
@@ -40,8 +39,19 @@
 #include <memory>
 #include <sstream>
 #include <stdio.h>
+#include <string_view>
 
 #include "lvr2/io/LineReader.hpp"
+
+namespace
+{
+
+bool contains(std::string_view text, std::string_view needle)
+{
+    return text.find(needle) != std::string_view::npos;
+}
+
+} // namespace
 
 namespace lvr2
 {
@@ -83,7 +93,7 @@ void LineReader::open(std::vector<std::string> filePaths)
         bool gotnormal = false;
         bool readHeader = false;
 
-        if (boost::algorithm::contains(filePath, ".ply"))
+        if (contains(filePath, ".ply"))
         {
             // Todo: Check if all files are same type;
             currentAttr.m_ply = true;
@@ -101,8 +111,8 @@ void LineReader::open(std::vector<std::string> filePaths)
             while (!readHeader)
             {
                 std::getline(ifs, line);
-                if (boost::algorithm::contains(line, "element vertex") ||
-                    boost::algorithm::contains(line, "element point"))
+                if (contains(line, "element vertex") ||
+                    contains(line, "element point"))
                 {
                     std::stringstream ss(line);
                     string tmp;
@@ -110,44 +120,44 @@ void LineReader::open(std::vector<std::string> filePaths)
                     ss >> tmp;
                     ss >> currentAttr.m_elementAmount;
                 }
-                else if (boost::algorithm::contains(line, "property float x") ||
-                         boost::algorithm::contains(line, "property float y") ||
-                         boost::algorithm::contains(line, "property float z") ||
-                         boost::algorithm::contains(line, "property float32 x") ||
-                         boost::algorithm::contains(line, "property float32 y") ||
-                         boost::algorithm::contains(line, "property float32 z"))
+                else if (contains(line, "property float x") ||
+                         contains(line, "property float y") ||
+                         contains(line, "property float z") ||
+                         contains(line, "property float32 x") ||
+                         contains(line, "property float32 y") ||
+                         contains(line, "property float32 z"))
                 {
                     gotxyz = true;
                 }
-                else if (boost::algorithm::contains(line, "property uchar red") ||
-                         boost::algorithm::contains(line, "property uchar green") ||
-                         boost::algorithm::contains(line, "property uchar blue"))
+                else if (contains(line, "property uchar red") ||
+                         contains(line, "property uchar green") ||
+                         contains(line, "property uchar blue"))
                 {
                     gotcolor = true;
                 }
-                else if (boost::algorithm::contains(line, "property float nx") ||
-                         boost::algorithm::contains(line, "property float ny") ||
-                         boost::algorithm::contains(line, "property float nz"))
+                else if (contains(line, "property float nx") ||
+                         contains(line, "property float ny") ||
+                         contains(line, "property float nz"))
                 {
                     gotnormal = true;
                 }
-                else if (boost::algorithm::contains(line, "end_header"))
+                else if (contains(line, "end_header"))
                 {
                     readHeader = true;
                 }
-                else if (boost::algorithm::contains(line, "binary"))
+                else if (contains(line, "binary"))
                 {
                     currentAttr.m_binary = true;
                 }
-                else if (boost::algorithm::contains(line, "ascii"))
+                else if (contains(line, "ascii"))
                 {
                     currentAttr.m_binary = false;
                 }
-                else if (boost::algorithm::contains(line, "property list"))
+                else if (contains(line, "property list"))
                 {
                     // Todo...
                 }
-                else if (boost::algorithm::contains(line, "property"))
+                else if (contains(line, "property"))
                 {
                     throw readException((line + " is currently not supported \n supported "
                                                 "properties: x y z [red green blue] [nx ny nz]")
@@ -176,7 +186,7 @@ void LineReader::open(std::vector<std::string> filePaths)
                     gotxyz = true;
                 if (number_of_line_elements == 6)
                 {
-                    if (boost::algorithm::contains(tmp, "."))
+                    if (contains(tmp, "."))
                     {
                         gotnormal = true;
                     }
@@ -255,7 +265,7 @@ fileType LineReader::getFileType() { return getFileType(m_currentReadFile); }
 
 bool LineReader::ok() { return m_currentReadFile < m_fileAttributes.size(); }
 
-boost::shared_ptr<void> LineReader::getNextPoints(size_t& return_amount, size_t amount)
+std::shared_ptr<void> LineReader::getNextPoints(size_t& return_amount, size_t amount)
 {
 
     return_amount = 0;
@@ -266,7 +276,7 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t& return_amount, size_t 
 
         if (m_currentReadFile >= m_fileAttributes.size())
         {
-            boost::shared_ptr<void> tmp;
+            std::shared_ptr<void> tmp;
             return tmp;
         }
     }
@@ -294,7 +304,7 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t& return_amount, size_t 
                 readSize = data_left;
             }
             fseek(pFile, m_fileAttributes[m_currentReadFile].m_filePos, SEEK_SET);
-            boost::shared_ptr<void> pArray(
+            std::shared_ptr<void> pArray(
                 new char[readSize * m_fileAttributes[m_currentReadFile].m_PointBlockSize],
                 std::default_delete<char[]>());
             bla = fread(pArray.get(),
@@ -320,7 +330,7 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t& return_amount, size_t 
 
                 std::vector<float> input;
                 input.reserve(amount * 3);
-                boost::shared_ptr<void> pArray(
+                std::shared_ptr<void> pArray(
                     new char[amount * m_fileAttributes[m_currentReadFile].m_PointBlockSize],
                     std::default_delete<char[]>());
                 float ax, ay, az;
@@ -348,7 +358,7 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t& return_amount, size_t 
             {
                 std::vector<float> input;
                 input.reserve(amount * 3);
-                boost::shared_ptr<void> pArray(
+                std::shared_ptr<void> pArray(
                     new char[amount * m_fileAttributes[m_currentReadFile].m_PointBlockSize],
                     std::default_delete<char[]>());
                 float ax, ay, az;
@@ -380,7 +390,7 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t& return_amount, size_t 
             {
                 std::vector<float> input;
                 input.reserve(amount * 6);
-                boost::shared_ptr<void> pArray(
+                std::shared_ptr<void> pArray(
                     new char[amount * m_fileAttributes[m_currentReadFile].m_PointBlockSize],
                     std::default_delete<char[]>());
                 float ax, ay, az, nx, ny, nz;
@@ -406,7 +416,7 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t& return_amount, size_t 
             {
                 std::vector<xyzc> input;
                 input.reserve(amount * 6);
-                boost::shared_ptr<void> pArray(
+                std::shared_ptr<void> pArray(
                     new char[amount * m_fileAttributes[m_currentReadFile].m_PointBlockSize],
                     std::default_delete<char[]>());
                 xyzc pc;
@@ -445,7 +455,7 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t& return_amount, size_t 
             {
                 std::vector<xyznc> input;
                 input.reserve(amount * 6);
-                boost::shared_ptr<void> pArray(
+                std::shared_ptr<void> pArray(
                     new char[amount * m_fileAttributes[m_currentReadFile].m_PointBlockSize],
                     std::default_delete<char[]>());
                 xyznc pc;
@@ -497,7 +507,7 @@ boost::shared_ptr<void> LineReader::getNextPoints(size_t& return_amount, size_t 
     }
 
     // Return empty pointer if all else fails...
-    boost::shared_ptr<void> tmp;
+    std::shared_ptr<void> tmp;
     return tmp;
 }
 

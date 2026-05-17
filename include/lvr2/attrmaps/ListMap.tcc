@@ -77,7 +77,7 @@ bool ListMap<HandleT, ValueT>::containsKey(HandleT key) const
 }
 
 template<typename HandleT, typename ValueT>
-boost::optional<ValueT> ListMap<HandleT, ValueT>::insert(HandleT key, const ValueT& value)
+std::optional<ValueT> ListMap<HandleT, ValueT>::insert(HandleT key, const ValueT& value)
 {
     if (numValues() > 256)
     {
@@ -93,12 +93,12 @@ boost::optional<ValueT> ListMap<HandleT, ValueT>::insert(HandleT key, const Valu
 }
 
 template<typename HandleT, typename ValueT>
-boost::optional<ValueT> ListMap<HandleT, ValueT>::erase(HandleT key)
+std::optional<ValueT> ListMap<HandleT, ValueT>::erase(HandleT key)
 {
     auto it = keyIterator(key);
     if (it == m_list.end())
     {
-        return boost::none;
+        return std::nullopt;
     }
     else
     {
@@ -115,7 +115,7 @@ void ListMap<HandleT, ValueT>::clear()
 }
 
 template<typename HandleT, typename ValueT>
-boost::optional<ValueT&> ListMap<HandleT, ValueT>::get(HandleT key)
+std::optional<std::reference_wrapper<ValueT>> ListMap<HandleT, ValueT>::get(HandleT key)
 {
     // Try to lookup value. If none was found and a default value is set,
     // insert it and return that instead.
@@ -130,14 +130,14 @@ boost::optional<ValueT&> ListMap<HandleT, ValueT>::get(HandleT key)
         }
         else
         {
-            return boost::none;
+            return std::nullopt;
         }
     }
     return (*it).second;
 }
 
 template<typename HandleT, typename ValueT>
-boost::optional<const ValueT&> ListMap<HandleT, ValueT>::get(HandleT key) const
+std::optional<std::reference_wrapper<const ValueT>> ListMap<HandleT, ValueT>::get(HandleT key) const
 {
     // Try to lookup value. If none was found and a default value is set,
     // return that instead.
@@ -150,7 +150,7 @@ boost::optional<const ValueT&> ListMap<HandleT, ValueT>::get(HandleT key) const
         }
         else
         {
-            return boost::none;
+            return std::nullopt;
         }
     }
     return (*it).second;

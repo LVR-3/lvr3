@@ -52,7 +52,7 @@ VectorMap<HandleT, ValueT>::VectorMap(size_t countElements, const ValueT& defaul
 }
 
 template<typename HandleT, typename ValueT>
-VectorMap<HandleT, ValueT>::VectorMap(size_t countElements, const boost::shared_array<ValueT>& sharedArray)
+VectorMap<HandleT, ValueT>::VectorMap(size_t countElements, const std::shared_ptr<ValueT[]>& sharedArray)
     : m_vec(countElements, sharedArray)
 {}
 
@@ -63,14 +63,14 @@ bool VectorMap<HandleT, ValueT>::containsKey(HandleT key) const
 }
 
 template<typename HandleT, typename ValueT>
-boost::optional<ValueT> VectorMap<HandleT, ValueT>::insert(HandleT key, const ValueT& value)
+std::optional<ValueT> VectorMap<HandleT, ValueT>::insert(HandleT key, const ValueT& value)
 {
     // If the vector isn't large enough yet, we allocate additional space.
     if (key.idx() >= m_vec.size())
     {
         m_vec.increaseSize(key);
         m_vec.push(value);
-        return boost::none;
+        return std::nullopt;
     }
     else
     {
@@ -81,7 +81,7 @@ boost::optional<ValueT> VectorMap<HandleT, ValueT>::insert(HandleT key, const Va
 }
 
 template<typename HandleT, typename ValueT>
-boost::optional<ValueT> VectorMap<HandleT, ValueT>::erase(HandleT key)
+std::optional<ValueT> VectorMap<HandleT, ValueT>::erase(HandleT key)
 {
     auto val = m_vec.get(key);
     if (val)
@@ -92,7 +92,7 @@ boost::optional<ValueT> VectorMap<HandleT, ValueT>::erase(HandleT key)
     }
     else
     {
-        return boost::none;
+        return std::nullopt;
     }
 }
 
@@ -103,7 +103,7 @@ void VectorMap<HandleT, ValueT>::clear()
 }
 
 template<typename HandleT, typename ValueT>
-boost::optional<ValueT&> VectorMap<HandleT, ValueT>::get(HandleT key)
+std::optional<std::reference_wrapper<ValueT>> VectorMap<HandleT, ValueT>::get(HandleT key)
 {
     // Try to lookup value. If none was found and a default value is set,
     // insert it and return that instead.
@@ -117,7 +117,7 @@ boost::optional<ValueT&> VectorMap<HandleT, ValueT>::get(HandleT key)
 }
 
 template<typename HandleT, typename ValueT>
-boost::optional<const ValueT&> VectorMap<HandleT, ValueT>::get(HandleT key) const
+std::optional<std::reference_wrapper<const ValueT>> VectorMap<HandleT, ValueT>::get(HandleT key) const
 {
     // Try to lookup value. If none was found and a default value is set,
     // return that instead.

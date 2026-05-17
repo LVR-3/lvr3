@@ -270,7 +270,7 @@ namespace lvr2
                         {
                             for (int dz = -1; dz <= 1; dz++)
                             {
-                                boost::optional<PointBufferPtr> optPointBuffer;
+                                std::optional<PointBufferPtr> optPointBuffer;
                                 #pragma omp critical
                                 optPointBuffer = chunkManager->getChunk<PointBufferPtr>(layerNameTemp, coord.x() + dx, coord.y() + dy, coord.z() + dz);
                                 if (!optPointBuffer)
@@ -416,7 +416,7 @@ namespace lvr2
             {
                 std::string filename = chunkFile3dTiles->getName();
                 chunkFile3dTiles.reset();
-                boost::filesystem::remove(filename);
+                std::filesystem::remove(filename);
             }
 #endif // LVR2_USE_3DTILES
 
@@ -431,7 +431,7 @@ namespace lvr2
                     auto chunk = chunkManager->getChunk<PointBufferPtr>(layerName, coord.x(), coord.y(), coord.z());
                     if (chunk)
                     {
-                        tsdfChunks.push_back(chunk.get());
+                        tsdfChunks.push_back(chunk.value());
                     }
                     else
                     {
@@ -845,7 +845,7 @@ namespace lvr2
         for (int i = xMin - 1; i <= xMax + 1; i++) {
             for (int j = yMin - 1; j <= yMax + 1; j++) {
                 for (int k = zMin - 1; k <= zMax + 1; k++) {
-                    boost::optional<shared_ptr<PointBuffer>> chunk = chunkHashGrid->getChunk<PointBufferPtr>(layerName,
+                    std::optional<shared_ptr<PointBuffer>> chunk = chunkHashGrid->getChunk<PointBufferPtr>(layerName,
                                                                                                              i, j, k);
 
 
@@ -857,7 +857,7 @@ namespace lvr2
                         filteredPartitionBoxes.push_back(temp);
                         completeBB.expand(temp);
 
-                        tsdfChunks.push_back(chunk.get());
+                        tsdfChunks.push_back(chunk.value());
                     }
                 }
             }
@@ -1180,13 +1180,13 @@ namespace lvr2
                 // TODO: don't do the following reconstruction in ChunkingPipline-Workflow (put it in extra function for lsr_tool)
                 std::vector<PointBufferPtr> tsdfChunks;
                 for (BaseVector<int> coord : newChunks) {
-                    boost::optional<shared_ptr<PointBuffer>> chunk = chunkManager->getChunk<PointBufferPtr>(layerName,
+                    std::optional<shared_ptr<PointBuffer>> chunk = chunkManager->getChunk<PointBufferPtr>(layerName,
                                                                                                             coord.x,
                                                                                                             coord.y,
                                                                                                             coord.z);
                     if (chunk)
                     {
-                        tsdfChunks.push_back(chunk.get());
+                        tsdfChunks.push_back(chunk.value());
                     }
                     else
                     {

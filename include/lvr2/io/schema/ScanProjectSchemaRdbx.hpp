@@ -6,8 +6,8 @@
 #define LAS_VEGAS_SCANPROJECTSCHEMARDBX_HPP
 #include <string>
 
-#include <boost/optional.hpp>
-#include <boost/filesystem.hpp>
+#include <optional>
+#include <filesystem>
 #include <dirent.h>
 #include "lvr2/io/schema/ScanProjectSchema.hpp"
 #include <regex>

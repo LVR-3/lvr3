@@ -36,7 +36,8 @@
 #include <utility>
 #include <unordered_map>
 
-#include <boost/optional.hpp>
+#include <optional>
+#include <functional>
 
 #include "lvr2/attrmaps/AttributeMap.hpp"
 
@@ -115,10 +116,10 @@ public:
     // These methode work exactly like the ones from `AttributeMap`
     // =======================================================================
     bool containsKey(KeyT key) const;
-    boost::optional<ValueT> insert(KeyT key, const ValueT& value);
-    boost::optional<ValueT> erase(KeyT key);
+    std::optional<ValueT> insert(KeyT key, const ValueT& value);
+    std::optional<ValueT> erase(KeyT key);
     void clear();
-    boost::optional<const ValueT&> get(KeyT key) const;
+    std::optional<std::reference_wrapper<const ValueT>> get(KeyT key) const;
     size_t numValues() const;
 
 

@@ -64,7 +64,7 @@ using MultiChannelMap = VariantChannelMap<
     >;
 
 using MultiChannel = typename MultiChannelMap::val_type;
-using MultiChannelOptional = boost::optional<MultiChannel>;
+using MultiChannelOptional = std::optional<MultiChannel>;
 
 } // namespace lvr2
 

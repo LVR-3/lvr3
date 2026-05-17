@@ -149,15 +149,11 @@ lvr2_find_package(Eigen3 REQUIRED)
 # message(STATUS "Found Eigen3: ${EIGEN3_INCLUDE_DIR}")
 
 #------------------------------------------------------------------------------
-# Searching for Boost
+# Searching for remaining Boost hard-case dependencies
 #------------------------------------------------------------------------------
 #set(Boost_USE_STATIC_LIBS       ON)
-set(Boost_USE_MULTITHREADED     ON)
 set(Boost_COMPONENTS
-  filesystem
-  thread
   serialization
-  timer
   iostreams
   date_time)
 
@@ -570,11 +566,7 @@ endif()
 
 if(MSVC)
 set(LVR2_LIB_DEPENDENCIES
-    ${Boost_LIBARIES}
-    ${Boost_SYSTEM_LIBRARY}
-    ${Boost_THREAD_LIBRARY}
-    ${Boost_FILESYSTEM_LIBRARY}
-    ${Boost_IOSTREAMS_LIBRARY}
+    ${Boost_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${GLUT_LIBRARIES}
     ${GDAL_LIBRARY}
@@ -589,10 +581,7 @@ set(LVR2_LIB_DEPENDENCIES
     )
 else()
 set(LVR2_LIB_DEPENDENCIES
-    ${Boost_SYSTEM_LIBRARY}
-    ${Boost_THREAD_LIBRARY}
-    ${Boost_FILESYSTEM_LIBRARY}
-    ${Boost_IOSTREAMS_LIBRARY}
+    ${Boost_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${GLUT_LIBRARIES}
     ${GDAL_LIBRARY}

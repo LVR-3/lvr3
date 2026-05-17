@@ -236,11 +236,11 @@ bool exist(const HighFive::Group& group, const std::string& groupName)
     return false;
 }
 
-std::shared_ptr<HighFive::File> open(const boost::filesystem::path& filename, unsigned int flag)
+std::shared_ptr<HighFive::File> open(const std::filesystem::path& filename, unsigned int flag)
 {
     std::shared_ptr<HighFive::File> hdf5_file;
 
-    if (!boost::filesystem::exists(filename))
+    if (!std::filesystem::exists(filename))
     {
         hdf5_file.reset(
             new HighFive::File(filename.string(), flag | HighFive::File::Create));
@@ -254,9 +254,9 @@ std::shared_ptr<HighFive::File> open(const boost::filesystem::path& filename, un
     return hdf5_file;
 }
 
-boost::optional<std::string> highFiveTypeToLvr(std::string h5type)
+std::optional<std::string> highFiveTypeToLvr(std::string h5type)
 {
-    boost::optional<std::string> ret;
+    std::optional<std::string> ret;
 
     if(HighFive::AtomicType<char>().string() == h5type)
     {

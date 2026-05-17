@@ -40,7 +40,7 @@ namespace lvr2
 {
 
 void transformPointCloudAndAppend(PointBufferPtr& buffer,
-        boost::filesystem::path& transfromFile,
+        std::filesystem::path& transfromFile,
         std::vector<float>& pts,
         std::vector<float>& nrm)
 {
@@ -53,18 +53,18 @@ void transformPointCloudAndAppend(PointBufferPtr& buffer,
              transfromFile.stem().c_str());
      sprintf(pose, "%s/%s.pose", transfromFile.parent_path().c_str(), transfromFile.stem().c_str());
 
-     boost::filesystem::path framesPath(frames);
-     boost::filesystem::path posePath(pose);
+     std::filesystem::path framesPath(frames);
+     std::filesystem::path posePath(pose);
 
 
      Transformd transform = Transformd::Identity();
 
-     if(boost::filesystem::exists(framesPath))
+     if(std::filesystem::exists(framesPath))
      {
                 lvr2::log::info("{}{}", "[TransformPointCloudAndAppend] Transforming according to ", framesPath.filename().string());
         transform = getTransformationFromFrames<double>(framesPath);
      }
-     else if(boost::filesystem::exists(posePath))
+     else if(std::filesystem::exists(posePath))
      {
                 lvr2::log::info("{}{}", "[TransformPointCloudAndAppend] Transforming according to ", posePath.filename().string());
         transform = getTransformationFromFrames<double>(posePath);
@@ -130,7 +130,7 @@ void transformPointCloudAndAppend(PointBufferPtr& buffer,
 
 }
 
-size_t countPointsInFile(const boost::filesystem::path& inFile)
+size_t countPointsInFile(const std::filesystem::path& inFile)
 {
     std::ifstream in(inFile.c_str());
         lvr2::log::info("{}{}{}", "[CountPointsInFile] Counting points in ", inFile.filename().string(), "...");
@@ -150,7 +150,7 @@ size_t countPointsInFile(const boost::filesystem::path& inFile)
     return n_points;
 }
 
-size_t writeModel(ModelPtr model, const boost::filesystem::path& outfile)
+size_t writeModel(ModelPtr model, const std::filesystem::path& outfile)
 {
     size_t n_ip = model->m_pointCloud->numPoints();
     floatArr arr = model->m_pointCloud->getPointArray();
@@ -214,7 +214,7 @@ size_t getReductionFactor(ModelPtr model, size_t reduction)
     return 1;
 }
 
-size_t getReductionFactor(boost::filesystem::path& inFile, size_t targetSize)
+size_t getReductionFactor(std::filesystem::path& inFile, size_t targetSize)
 {
     /*
      * If reduction is less than the number of points it will segfault
@@ -271,7 +271,7 @@ void writePointsAndNormals(std::vector<float>& p, std::vector<float>& n, std::st
         lvr2::log::info("{}", "[WritePointsAndNormals] Done.");
 }
 
-void getPoseFromFile(BaseVector<float>& position, BaseVector<float>& angles, const boost::filesystem::path file)
+void getPoseFromFile(BaseVector<float>& position, BaseVector<float>& angles, const std::filesystem::path file)
 {
     std::ifstream in(file.c_str());
     if(in.good())
@@ -348,8 +348,8 @@ typename Channel<T>::Ptr subSampleChannel(Channel<T>& src, std::vector<size_t> i
 
     // Sample from original and insert into reduced
     // channel
-    boost::shared_array<T> a(red->dataPtr());
-    boost::shared_array<T> b(src.dataPtr());
+    std::shared_ptr<T[]> a(red->dataPtr());
+    std::shared_ptr<T[]> b(src.dataPtr());
     for(size_t i = 0; i < ids.size(); i++)
     {
         for(size_t j = 0; j < red->width(); j++)
@@ -386,7 +386,7 @@ PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const std::vector<size_t
         auto out = new WaveformBuffer();
 
         //calculate size of new array
-        boost::shared_array<size_t> waveformSizes(new size_t[indices.size()]);
+        std::shared_ptr<size_t[]> waveformSizes(new size_t[indices.size()]);
         auto oldSize = wSrc->getWaveformSize();
         for(int i = 0;i < indices.size(); i++)
         {
@@ -399,7 +399,7 @@ PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const std::vector<size_t
                 waveformSizes[i] =  waveformSizes[i] + oldSize[indices[i]] - oldSize[indices[i] - 1];
             }
         }
-        boost::shared_array<uint16_t> newWaveform(new uint16_t[waveformSizes[indices.size()]]);
+        std::shared_ptr<uint16_t[]> newWaveform(new uint16_t[waveformSizes[indices.size()]]);
         auto oldWaveform = wSrc->getWaveformArray();
         for(int i = 0; i < indices.size(); i++)
         {
@@ -506,17 +506,17 @@ void slamToLVRInPlace(PointBufferPtr src)
 
 void parseSLAMDirectory(std::string dir, vector<ScanPtr>& scans)
 {
-    boost::filesystem::path directory(dir);
+    std::filesystem::path directory(dir);
     if(is_directory(directory))
     {
 
-        boost::filesystem::directory_iterator lastFile;
-        std::vector<boost::filesystem::path> scan_files;
+        std::filesystem::directory_iterator lastFile;
+        std::vector<std::filesystem::path> scan_files;
 
         // First, look for .3d files
-        for(boost::filesystem::directory_iterator it(directory); it != lastFile; it++ )
+        for(std::filesystem::directory_iterator it(directory); it != lastFile; it++ )
         {
-            boost::filesystem::path p = it->path();
+            std::filesystem::path p = it->path();
             if(p.extension().string() == ".3d")
             {
                 // Check for naming convention "scanxxx.3d"
@@ -535,11 +535,11 @@ void parseSLAMDirectory(std::string dir, vector<ScanPtr>& scans)
                 ScanPtr scan = ScanPtr(new Scan());
 
                 std::string filename = (scan_files[i]).stem().string();
-                boost::filesystem::path frame_file(filename + ".frames");
-                boost::filesystem::path pose_file(filename + ".pose");
+                std::filesystem::path frame_file(filename + ".frames");
+                std::filesystem::path pose_file(filename + ".pose");
 
-                boost::filesystem::path frame_path = directory/frame_file;
-                boost::filesystem::path pose_path = directory/pose_file;
+                std::filesystem::path frame_path = directory/frame_file;
+                std::filesystem::path pose_path = directory/pose_file;
 
                                 lvr2::log::info("{}{}{}", "Loading '", filename, "'");
                 AsciiIO io;
@@ -559,7 +559,7 @@ void parseSLAMDirectory(std::string dir, vector<ScanPtr>& scans)
                 Transformd pose_estimate = Transformd::Identity();
                 Transformd registration = Transformd::Identity();
 
-                if(boost::filesystem::exists(frame_path))
+                if(std::filesystem::exists(frame_path))
                 {
                                         lvr2::log::info("{}{}", "[ParseSLAMDirectory] Loading frame information from ", frame_path.string());
                     registration = getTransformationFromFrames<double>(frame_path);
@@ -569,7 +569,7 @@ void parseSLAMDirectory(std::string dir, vector<ScanPtr>& scans)
                                         lvr2::log::warning("{}{}", "[ParseSLAMDirectory] Did not find a frame file for ", filename);
                 }
 
-                if(boost::filesystem::exists(pose_path))
+                if(std::filesystem::exists(pose_path))
                 {
                                         lvr2::log::info("{}{}", "[ParseSLAMDirectory] Loading pose estimation from ", pose_path.string());
                     pose_estimate = getTransformationFromPose<double>(pose_path);

@@ -34,8 +34,10 @@
 #ifndef LVR2_ATTRMAPS_ATTRIBUTEMAP_H_
 #define LVR2_ATTRMAPS_ATTRIBUTEMAP_H_
 
-#include <boost/optional.hpp>
+#include <optional>
+#include <functional>
 #include <memory>
+#include <type_traits>
 
 #include "lvr2/geometry/Handles.hpp"
 
@@ -99,7 +101,7 @@ public:
      *         inserting the new value, the old value is returned. None
      *         otherwise.
      */
-    virtual boost::optional<ValueT> insert(HandleT key, const ValueT& value) = 0;
+    virtual std::optional<ValueT> insert(HandleT key, const ValueT& value) = 0;
 
     /**
      * @brief Removes the value associated with the given key.
@@ -107,7 +109,7 @@ public:
      * @return If there was a value associated with the key, it is returned.
      *         None otherwise.
      */
-    virtual boost::optional<ValueT> erase(HandleT key) = 0;
+    virtual std::optional<ValueT> erase(HandleT key) = 0;
 
     /**
      * @brief Removes all values from the map.
@@ -121,7 +123,7 @@ public:
      * Note: this method can not be used to insert a new value. It only allows
      * reading and modifying an already inserted value.
      */
-    virtual boost::optional<ValueT&> get(HandleT key) = 0;
+    virtual std::optional<std::reference_wrapper<ValueT>> get(HandleT key) = 0;
 
     /**
      * @brief Returns the value associated with the given key or None
@@ -130,7 +132,7 @@ public:
      * Note: this method can not be used to insert a new value. It only allows
      * reading an already inserted value.
      */
-    virtual boost::optional<const ValueT&> get(HandleT key) const = 0;
+    virtual std::optional<std::reference_wrapper<const ValueT>> get(HandleT key) const = 0;
 
     /**
      * @brief Returns the number of values in this map.

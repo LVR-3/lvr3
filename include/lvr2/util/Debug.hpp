@@ -37,7 +37,6 @@
 #ifndef LVR2_UTIL_DEBUG_H_
 #define LVR2_UTIL_DEBUG_H_
 
-#include <boost/iostreams/device/null.hpp>
 #include <array>
 #include <fstream>
 #include <vector>

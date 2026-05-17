@@ -1213,8 +1213,8 @@ EdgeCollapseResult HalfEdgeMesh<BaseVecT>::collapseEdge(EdgeHandle edgeH)
     });
 
     // Save edges to delete for later
-    boost::optional<array<HalfEdgeHandle, 2>> edgesToDeleteAbove;
-    boost::optional<array<HalfEdgeHandle, 2>> edgesToDeleteBelow;
+    std::optional<array<HalfEdgeHandle, 2>> edgesToDeleteAbove;
+    std::optional<array<HalfEdgeHandle, 2>> edgesToDeleteBelow;
 
     // If there is a face above, collapse it.
     if (faceAboveH)

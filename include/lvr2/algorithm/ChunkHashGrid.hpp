@@ -49,7 +49,7 @@ namespace lvr2
  * @brief visitor that returns the channel that holds geometic information (like vertices-channel
  * for meshes)
  */
-class ChunkGeomtryChannelVisitor : public boost::static_visitor<FloatChannelOptional>
+class ChunkGeomtryChannelVisitor
 {
   public:
     FloatChannelOptional operator()(const MeshBufferPtr mesh) const
@@ -66,7 +66,7 @@ class ChunkGeomtryChannelVisitor : public boost::static_visitor<FloatChannelOpti
 class ChunkHashGrid
 {
   public:
-    using val_type = boost::variant<MeshBufferPtr, PointBufferPtr>;
+    using val_type = std::variant<MeshBufferPtr, PointBufferPtr>;
 
     using io = lvr2::io::storage::ChunkStore;
 
@@ -137,7 +137,7 @@ class ChunkHashGrid
      * @return content of the chunk
      */
     template <typename T>
-    boost::optional<T> getChunk(std::string layer, int x, int y, int z);
+    std::optional<T> getChunk(std::string layer, int x, int y, int z);
 
     /**
      * @brief indicates if wether or not a chunk is currently loaded in the local cache

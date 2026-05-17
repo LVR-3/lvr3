@@ -86,7 +86,7 @@ void ProgressBar::setProgressTitleCallback(ProgressTitleCallbackPtr ptr)
 
 void ProgressBar::operator++()
 {
-    boost::mutex::scoped_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
 
     m_currentVal++;
     short difference = (short)((float)m_currentVal/m_maxVal * 100 - m_percent);
@@ -111,7 +111,7 @@ void ProgressBar::operator++()
 
 void ProgressBar::operator+=(size_t n)
 {
-    boost::mutex::scoped_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
 
     m_currentVal+= n;
     short difference = (short)((float)m_currentVal/m_maxVal * 100 - m_percent);
@@ -168,7 +168,7 @@ ProgressCounter::ProgressCounter(int stepVal, string prefix)
 
 void ProgressCounter::operator++()
 {
-	boost::mutex::scoped_lock lock(m_mutex);
+	std::scoped_lock lock(m_mutex);
 	m_currentVal++;
 	if(m_currentVal % m_stepVal == 0)
 	{
@@ -219,7 +219,7 @@ void PacmanProgressBar::setProgressTitleCallback(ProgressTitleCallbackPtr ptr)
 
 void PacmanProgressBar::operator++()
 {
-    boost::mutex::scoped_lock lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
 
     m_currentVal++;
     short difference = (short)((float)m_currentVal/m_maxVal * 100 - m_percent);

@@ -2,7 +2,6 @@
 
 #include "lvr2/io/ModelFactory.hpp"
 
-#include <boost/range/iterator_range.hpp>
 #include <lvr2/util/Logging.hpp>
 
 namespace lvr2
@@ -13,10 +12,10 @@ void DirectoryKernel::saveMeshBuffer(
     const std::string &container,
     const MeshBufferPtr &buffer) const
 {
-    boost::filesystem::path p = getAbsolutePath(group, container);
-    if(!boost::filesystem::exists(p.parent_path()))
+    std::filesystem::path p = getAbsolutePath(group, container);
+    if(!std::filesystem::exists(p.parent_path()))
     {
-        boost::filesystem::create_directories(p.parent_path());
+        std::filesystem::create_directories(p.parent_path());
     }
 
     ModelPtr model(new Model);
@@ -29,10 +28,10 @@ void DirectoryKernel::savePointBuffer(
     const std::string &container,
     const PointBufferPtr &buffer) const
 {
-    boost::filesystem::path p = getAbsolutePath(group, container);
-    if(!boost::filesystem::exists(p.parent_path()))
+    std::filesystem::path p = getAbsolutePath(group, container);
+    if(!std::filesystem::exists(p.parent_path()))
     {
-        boost::filesystem::create_directories(p.parent_path());
+        std::filesystem::create_directories(p.parent_path());
     }
     ModelPtr model(new Model);
     model->m_pointCloud = buffer;
@@ -44,10 +43,10 @@ void DirectoryKernel::saveImage(
     const std::string &container,
     const cv::Mat &image) const
 {
-    boost::filesystem::path p = getAbsolutePath(group, container);
-    if(!boost::filesystem::exists(p.parent_path()))
+    std::filesystem::path p = getAbsolutePath(group, container);
+    if(!std::filesystem::exists(p.parent_path()))
     {
-        boost::filesystem::create_directories(p.parent_path());
+        std::filesystem::create_directories(p.parent_path());
     }
 
     cv::imwrite(p.string(), image);
@@ -58,10 +57,10 @@ void DirectoryKernel::saveMetaYAML(
     const std::string &container,
     const YAML::Node &node) const
 {
-    boost::filesystem::path p = getAbsolutePath(group, container);
-    if(!boost::filesystem::exists(p.parent_path()))
+    std::filesystem::path p = getAbsolutePath(group, container);
+    if(!std::filesystem::exists(p.parent_path()))
     {
-        boost::filesystem::create_directories(p.parent_path());
+        std::filesystem::create_directories(p.parent_path());
     }
     saveMetaInformation(p.string(), node);
 }
@@ -72,7 +71,7 @@ MeshBufferPtr DirectoryKernel::loadMeshBuffer(
 {
     MeshBufferPtr ret;
 
-    boost::filesystem::path p = getAbsolutePath(group, container);
+    std::filesystem::path p = getAbsolutePath(group, container);
         lvr2::log::info("{}{}", "Directory Kernel::loadMeshBuffer(): ", p.string());
     ModelPtr model = ModelFactory::readModel(p.string());
     if (model)
@@ -88,7 +87,7 @@ PointBufferPtr DirectoryKernel::loadPointBuffer(
 {
     PointBufferPtr ret;
 
-    boost::filesystem::path p = getAbsolutePath(group, container);
+    std::filesystem::path p = getAbsolutePath(group, container);
     ModelPtr model = ModelFactory::readModel(p.string());
     if (model)
     {
@@ -98,20 +97,20 @@ PointBufferPtr DirectoryKernel::loadPointBuffer(
     return ret;
 }
 
-boost::optional<cv::Mat> DirectoryKernel::loadImage(
+std::optional<cv::Mat> DirectoryKernel::loadImage(
     const std::string &group,
     const std::string &container) const
 {
-    boost::filesystem::path p = getAbsolutePath(group, container);
-    boost::optional<cv::Mat> opt;
-    if(boost::filesystem::exists(p))
+    std::filesystem::path p = getAbsolutePath(group, container);
+    std::optional<cv::Mat> opt;
+    if(std::filesystem::exists(p))
     {
         opt = cv::imread(p.string());
 
     }
     else
     {
-        opt = boost::none;
+        opt = std::nullopt;
         std::cout << "[DirectoryKernel - loadImage] Loading image at " << group << " - " << container << " failed!" << std::endl;
     }
     return opt;
@@ -122,7 +121,7 @@ bool DirectoryKernel::loadMetaYAML(
     const std::string &container,
     YAML::Node& n) const
 {
-    boost::filesystem::path p = getAbsolutePath(group, container);
+    std::filesystem::path p = getAbsolutePath(group, container);
     YAML::Node node = loadMetaInformation(p.string());
     n = node;
 
@@ -131,7 +130,7 @@ bool DirectoryKernel::loadMetaYAML(
 
 bool DirectoryKernel::exists(const std::string &group) const
 {
-    return boost::filesystem::exists(getAbsolutePath(group, ""));
+    return std::filesystem::exists(getAbsolutePath(group, ""));
 }
 
 bool DirectoryKernel::exists(const std::string &group, const std::string &container) const
@@ -140,18 +139,18 @@ bool DirectoryKernel::exists(const std::string &group, const std::string &contai
     // against the root itself
     if(container != "")
     {
-        return boost::filesystem::exists(getAbsolutePath(group, container));
+        return std::filesystem::exists(getAbsolutePath(group, container));
     }
     return false;
 }
 
 void DirectoryKernel::subGroupNames(const std::string &group, std::vector<string> &subGroupNames) const
 {
-    boost::filesystem::path groupPath(getAbsolutePath(group, ""));
-    boost::filesystem::directory_iterator it(groupPath);
-    while (it != boost::filesystem::directory_iterator{})
+    std::filesystem::path groupPath(getAbsolutePath(group, ""));
+    std::filesystem::directory_iterator it(groupPath);
+    while (it != std::filesystem::directory_iterator{})
     {
-        if (boost::filesystem::is_directory(*it))
+        if (std::filesystem::is_directory(*it))
         {
             subGroupNames.push_back(it->path().string());
         }
@@ -160,11 +159,11 @@ void DirectoryKernel::subGroupNames(const std::string &group, std::vector<string
 
 void DirectoryKernel::subGroupNames(const std::string &group, const std::regex &filter, std::vector<string> &subGroupNames) const
 {
-    boost::filesystem::path groupPath(getAbsolutePath(group, ""));
-    boost::filesystem::directory_iterator it(groupPath);
-    while (it != boost::filesystem::directory_iterator{})
+    std::filesystem::path groupPath(getAbsolutePath(group, ""));
+    std::filesystem::directory_iterator it(groupPath);
+    while (it != std::filesystem::directory_iterator{})
     {
-        if (boost::filesystem::is_directory(*it))
+        if (std::filesystem::is_directory(*it))
         {
             std::string currentName = it->path().string();
             if (std::regex_match(currentName, filter))
@@ -175,19 +174,19 @@ void DirectoryKernel::subGroupNames(const std::string &group, const std::regex &
     }
 }
 
-boost::filesystem::path DirectoryKernel::getAbsolutePath(const std::string &group, const std::string &name) const
+std::filesystem::path DirectoryKernel::getAbsolutePath(const std::string &group, const std::string &name) const
 {
-    boost::filesystem::path groupPath(group);
-    boost::filesystem::path namePath(name);
-    boost::filesystem::path rootPath(m_fileResourceName);
-    boost::filesystem::path ret = rootPath / groupPath / namePath;
+    std::filesystem::path groupPath(group);
+    std::filesystem::path namePath(name);
+    std::filesystem::path rootPath(m_fileResourceName);
+    std::filesystem::path ret = rootPath / groupPath / namePath;
     return ret;
 }
 
 std::vector<std::string> DirectoryKernel::listDatasets(const std::string& group) const
 {
-    // using namespace boost::filesystem;
-    namespace bfs = boost::filesystem;
+    // using namespace std::filesystem;
+    namespace bfs = std::filesystem;
 
     std::vector<std::string> ret;
     bfs::path pg = getAbsolutePath(group, "");
@@ -270,62 +269,62 @@ boolArr DirectoryKernel::loadBoolArray(const std::string& group, const std::stri
     return loadArray<bool>(group, container, dims);
 }
 
-void DirectoryKernel::saveCharArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<char>& data) const
+void DirectoryKernel::saveCharArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const std::shared_ptr<char[]>& data) const
 {
     saveArray<char>(groupName, datasetName, dimensions, data);
 }
 
-void DirectoryKernel::saveUCharArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<unsigned char>& data) const
+void DirectoryKernel::saveUCharArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const std::shared_ptr<unsigned char[]>& data) const
 {
     saveArray<unsigned char>(groupName, datasetName, dimensions, data);
 }
 
-void DirectoryKernel::saveShortArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<short>& data) const
+void DirectoryKernel::saveShortArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const std::shared_ptr<short[]>& data) const
 {
     saveArray<short>(groupName, datasetName, dimensions, data);
 }
 
-void DirectoryKernel::saveUShortArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<unsigned short>& data) const
+void DirectoryKernel::saveUShortArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const std::shared_ptr<unsigned short[]>& data) const
 {
     saveArray<unsigned short>(groupName, datasetName, dimensions, data);
 }
 
-void DirectoryKernel::saveUInt16Array(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<uint16_t>& data) const
+void DirectoryKernel::saveUInt16Array(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const std::shared_ptr<uint16_t[]>& data) const
 {
     saveArray<uint16_t>(groupName, datasetName, dimensions, data);
 }
 
-void DirectoryKernel::saveIntArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<int>& data) const
+void DirectoryKernel::saveIntArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const std::shared_ptr<int[]>& data) const
 {
     saveArray<int>(groupName, datasetName, dimensions, data);
 }
 
-void DirectoryKernel::saveUIntArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<unsigned int>& data) const
+void DirectoryKernel::saveUIntArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const std::shared_ptr<unsigned int[]>& data) const
 {
     saveArray<unsigned int>(groupName, datasetName, dimensions, data);
 }
 
-void DirectoryKernel::saveLIntArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<long int>& data) const
+void DirectoryKernel::saveLIntArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const std::shared_ptr<long int[]>& data) const
 {
     saveArray<long int>(groupName, datasetName, dimensions, data);
 }
 
-void DirectoryKernel::saveULIntArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<unsigned long int>& data) const
+void DirectoryKernel::saveULIntArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const std::shared_ptr<unsigned long int[]>& data) const
 {
     saveArray<unsigned long int>(groupName, datasetName, dimensions, data);
 }
 
-void DirectoryKernel::saveFloatArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<float>& data) const
+void DirectoryKernel::saveFloatArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const std::shared_ptr<float[]>& data) const
 {
     saveArray<float>(groupName, datasetName, dimensions, data);
 }
 
-void DirectoryKernel::saveDoubleArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<double>& data) const
+void DirectoryKernel::saveDoubleArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const std::shared_ptr<double[]>& data) const
 {
     saveArray<double>(groupName, datasetName, dimensions, data);
 }
 
-void DirectoryKernel::saveBoolArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const boost::shared_array<bool>& data) const
+void DirectoryKernel::saveBoolArray(const std::string& groupName, const std::string& datasetName, const std::vector<size_t>& dimensions, const std::shared_ptr<bool[]>& data) const
 {
     saveArray<bool>(groupName, datasetName, dimensions, data);
 }
@@ -335,8 +334,8 @@ std::unordered_map<std::string, YAML::Node> DirectoryKernel::metas(
 {
     std::unordered_map<std::string, YAML::Node> ret;
 
-    boost::filesystem::path groupPath(getAbsolutePath(group, ""));
-    for(auto& entry : boost::make_iterator_range(boost::filesystem::directory_iterator(groupPath), {}))
+    std::filesystem::path groupPath(getAbsolutePath(group, ""));
+    for(const auto& entry : std::filesystem::directory_iterator(groupPath))
     {
         if(isMeta(entry.path().string()))
         {
@@ -353,8 +352,8 @@ std::unordered_map<std::string, YAML::Node> DirectoryKernel::metas(
 {
     std::unordered_map<std::string, YAML::Node> ret;
 
-    boost::filesystem::path groupPath(getAbsolutePath(group, ""));
-    for(auto& entry : boost::make_iterator_range(boost::filesystem::directory_iterator(groupPath), {}))
+    std::filesystem::path groupPath(getAbsolutePath(group, ""));
+    for(const auto& entry : std::filesystem::directory_iterator(groupPath))
     {
         if(isMeta(entry.path().string()))
         {

@@ -37,7 +37,7 @@
 
 #include "lvr2/algorithm/ChunkManager.hpp"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "lvr2/reconstruction/LargeScaleReconstruction.hpp"
 #include "lvr2/registration/SLAMOptions.hpp"
@@ -57,7 +57,7 @@ public:
      * @param configPath path to the YAML config file
      * @param chunkManager shared pointer to ChunkManager instance if null a new instance is created
      */
-    ChunkingPipeline(const boost::filesystem::path& hdf5Path, const boost::filesystem::path& configPath, std::shared_ptr<ChunkManager> chunkManager = nullptr);
+    ChunkingPipeline(const std::filesystem::path& hdf5Path, const std::filesystem::path& configPath, std::shared_ptr<ChunkManager> chunkManager = nullptr);
 
     /**
      * @brief Start the chunking pipeline
@@ -66,14 +66,14 @@ public:
      *
      * @return true on success and false on failure
      */
-    bool start(const boost::filesystem::path& scanDir);
+    bool start(const std::filesystem::path& scanDir);
 
 private:
     // path to the HDF5 file
-    boost::filesystem::path m_hdf5Path;
+    std::filesystem::path m_hdf5Path;
 
     // path to config file
-    boost::filesystem::path m_configPath;
+    std::filesystem::path m_configPath;
 
     // chunk manger instance
     std::shared_ptr<ChunkManager> m_chunkManager;
@@ -106,7 +106,7 @@ private:
      * @param dirPath path to scan project directory
      * @return true on success and false on failure
      */
-    bool getScanProject(const boost::filesystem::path& dirPath);
+    bool getScanProject(const std::filesystem::path& dirPath);
 
     /**
      * @brief Calculates practicability analysis of given mesh and adds it as channels to mesh buffer

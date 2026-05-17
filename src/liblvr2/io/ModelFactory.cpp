@@ -64,7 +64,7 @@
 #include "lvr2/io/modelio/RxpIO.hpp"
 #endif
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 namespace lvr2
 {
@@ -86,7 +86,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
     ModelPtr m;
 
     // Check extension
-    boost::filesystem::path selectedFile( filename );
+    std::filesystem::path selectedFile( filename );
     std::string extension = selectedFile.extension().string();
 
     // Try to parse given file
@@ -167,11 +167,11 @@ ModelPtr ModelFactory::readModel( std::string filename )
         bool found_boctree = false;
 
         // Check for supported data in directory.
-        boost::filesystem::directory_iterator lastFile;
+        std::filesystem::directory_iterator lastFile;
 
-        for(boost::filesystem::directory_iterator it(filename); it != lastFile; it++ )
+        for(std::filesystem::directory_iterator it(filename); it != lastFile; it++ )
         {
-            boost::filesystem::path p = it->path();
+            std::filesystem::path p = it->path();
 
             // Check for 3d files
             if(p.extension().string() == ".3d")
@@ -254,7 +254,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
 void ModelFactory::saveModel( ModelPtr m, std::string filename)
 {
     // Get file extension
-    boost::filesystem::path selectedFile(filename);
+    std::filesystem::path selectedFile(filename);
     std::string extension = selectedFile.extension().string();
 
     ModelIOBase* io = 0;

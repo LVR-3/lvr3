@@ -205,6 +205,17 @@ set_tests_properties(lvr2_no_boost_cli_parser_dependency
 )
 
 add_test(
+  NAME lvr2_boost_stdlib_replacements
+  COMMAND ${CMAKE_COMMAND}
+    -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+    -P ${CMAKE_CURRENT_LIST_DIR}/boost_stdlib_replacements.cmake
+)
+set_tests_properties(lvr2_boost_stdlib_replacements
+  PROPERTIES
+    LABELS "cmake;dependencies;boost;cxx20"
+)
+
+add_test(
   NAME lvr2_system_optout_semantics
   COMMAND ${CMAKE_COMMAND}
     -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}

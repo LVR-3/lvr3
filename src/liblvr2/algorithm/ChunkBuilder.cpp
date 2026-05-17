@@ -152,7 +152,7 @@ MeshBufferPtr ChunkBuilder::buildMesh(
                 {
                     // a channel that is not a vertex or a face channel will be added unchanged to each chunk
                     mesh->addUCharChannel(std::make_shared<
-                            lvr2::Channel<unsigned char>>(attributedMesh->getUCharChannel(elem.first).get()), elem.first);
+                            lvr2::Channel<unsigned char>>(attributedMesh->getUCharChannel(elem.first).value()), elem.first);
                 }
             }
             else if(elem.second.is_type<unsigned int>())
@@ -171,7 +171,7 @@ MeshBufferPtr ChunkBuilder::buildMesh(
                 {
                     // a channel that is not a vertex or a face channel will be added unchanged to each chunk
                     mesh->addIndexChannel(std::make_shared<
-                            lvr2::Channel<unsigned int>>(attributedMesh->getIndexChannel(elem.first).get()), elem.first);
+                            lvr2::Channel<unsigned int>>(attributedMesh->getIndexChannel(elem.first).value()), elem.first);
                 }
             }
             else if(elem.second.is_type<float>())
@@ -190,7 +190,7 @@ MeshBufferPtr ChunkBuilder::buildMesh(
                 {
                     // a channel that is not a vertex or a face channel will be added unchanged to each chunk
                     mesh->addFloatChannel(std::make_shared<
-                            lvr2::Channel<float>>(attributedMesh->getFloatChannel(elem.first).get()), elem.first);
+                            lvr2::Channel<float>>(attributedMesh->getFloatChannel(elem.first).value()), elem.first);
                 }
             }
             else
@@ -228,7 +228,7 @@ MeshBufferPtr ChunkBuilder::buildMesh(
             // vertex channels
             for(const std::string& name : vertexChannelUChar)
             {
-                Channel<unsigned char> tmp = mesh->getUCharChannel(name).get();
+                Channel<unsigned char> tmp = mesh->getUCharChannel(name).value();
                 for(size_t component = 0; component < tmp.width(); component++)
                 {
 
@@ -242,7 +242,7 @@ MeshBufferPtr ChunkBuilder::buildMesh(
             }
             for(const std::string& name : vertexChannelUInt)
             {
-                Channel<unsigned int> tmp = mesh->getIndexChannel(name).get();
+                Channel<unsigned int> tmp = mesh->getIndexChannel(name).value();
                 for(size_t component = 0; component < tmp.width(); component++)
                 {
                     tmp.dataPtr()[vertexIndex * tmp.width() + component]
@@ -251,7 +251,7 @@ MeshBufferPtr ChunkBuilder::buildMesh(
             }
             for(const std::string& name : vertexChannelFloat)
             {
-                Channel<float> tmp = mesh->getFloatChannel(name).get();
+                Channel<float> tmp = mesh->getFloatChannel(name).value();
 
                 for(size_t component = 0; component < tmp.width(); component++)
                 {
@@ -295,7 +295,7 @@ MeshBufferPtr ChunkBuilder::buildMesh(
                 // vertex channels
                 for(const std::string& name : vertexChannelUChar)
                 {
-                    Channel<unsigned char> tmp = mesh->getUCharChannel(name).get();
+                    Channel<unsigned char> tmp = mesh->getUCharChannel(name).value();
                     for(size_t component = 0; component < tmp.width(); component++)
                     {
                         tmp.dataPtr()[vertexIndex * tmp.width() + component]
@@ -308,7 +308,7 @@ MeshBufferPtr ChunkBuilder::buildMesh(
                 }
                 for(const std::string& name : vertexChannelUInt)
                 {
-                    Channel<unsigned int> tmp = mesh->getIndexChannel(name).get();
+                    Channel<unsigned int> tmp = mesh->getIndexChannel(name).value();
                     for(size_t component = 0; component < tmp.width(); component++)
                     {
                         tmp.dataPtr()[vertexIndex * tmp.width() + component]
@@ -317,7 +317,7 @@ MeshBufferPtr ChunkBuilder::buildMesh(
                 }
                 for(const std::string& name : vertexChannelFloat)
                 {
-                    Channel<float> tmp = mesh->getFloatChannel(name).get();
+                    Channel<float> tmp = mesh->getFloatChannel(name).value();
 
                     for(size_t component = 0; component < tmp.width(); component++)
                     {
@@ -342,7 +342,7 @@ MeshBufferPtr ChunkBuilder::buildMesh(
         // face channels
         for(const std::string& name : faceChannelUChar)
         {
-            Channel<unsigned char> tmp = mesh->getUCharChannel(name).get();
+            Channel<unsigned char> tmp = mesh->getUCharChannel(name).value();
             for(size_t component = 0; component < tmp.width(); component++)
             {
                 tmp.dataPtr()[face * tmp.width() + component]
@@ -355,7 +355,7 @@ MeshBufferPtr ChunkBuilder::buildMesh(
         }
         for(const std::string& name : faceChannelUInt)
         {
-            Channel<unsigned int> tmp = mesh->getIndexChannel(name).get();
+            Channel<unsigned int> tmp = mesh->getIndexChannel(name).value();
             for(size_t component = 0; component < tmp.width(); component++)
             {
                 tmp.dataPtr()[face * tmp.width() + component]
@@ -364,7 +364,7 @@ MeshBufferPtr ChunkBuilder::buildMesh(
         }
         for(const std::string& name : faceChannelFloat)
         {
-            Channel<float> tmp = mesh->getFloatChannel(name).get();
+            Channel<float> tmp = mesh->getFloatChannel(name).value();
 
             for(size_t component = 0; component < tmp.width(); component++)
             {

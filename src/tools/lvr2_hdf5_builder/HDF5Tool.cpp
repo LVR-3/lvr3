@@ -55,15 +55,15 @@
 
 #include "Options.hpp"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include <opencv2/core/core.hpp>
 
 using namespace lvr2;
-using boost::filesystem::path;
-using boost::filesystem::directory_iterator;
+using std::filesystem::path;
+using std::filesystem::directory_iterator;
 
-bool compare_path(boost::filesystem::path p1, boost::filesystem::path p2)
+bool compare_path(std::filesystem::path p1, std::filesystem::path p2)
 {
     std::string ply_file_name1 = p1.stem().string();
     std::string number1 = ply_file_name1.substr(15);
@@ -94,14 +94,14 @@ bool checkPNGDir(path& dataDir, std::string number, int numExspected)
         int numPNGs = std::count_if(
             directory_iterator(png_dir),
             directory_iterator(),
-            static_cast<bool(*)(const path&)>(boost::filesystem::is_regular_file) );
+            static_cast<bool(*)(const path&)>(std::filesystem::is_regular_file) );
 
         if(numPNGs != numExspected)
         {
             consistency = false;
         }
     }
-    catch(boost::filesystem::filesystem_error)
+    catch(std::filesystem::filesystem_error)
     {
         consistency = false;
     }
@@ -136,7 +136,7 @@ int main( int argc, char ** argv )
     HDF5IO hdf5("hyper.h5", true);
 
     // Find all annotated scans and sort them
-    vector<boost::filesystem::path> annotated_scans;
+    vector<std::filesystem::path> annotated_scans;
     directory_iterator end;
     for(directory_iterator it(dataDir); it != end; ++it)
     {
@@ -245,12 +245,12 @@ int main( int argc, char ** argv )
 //    std::cout << options << ::std::endl;
 
 //    // Get directory with hyperspectral PNG files
-//    boost::filesystem::path pngPath(options.getPNGDir());
-//    boost::filesystem::directory_iterator end;
+//    std::filesystem::path pngPath(options.getPNGDir());
+//    std::filesystem::directory_iterator end;
 
 //    // Count files in directory
 //    int numPNGs = 0;
-//    for(boost::filesystem::directory_iterator it(pngPath); it != end; ++it)
+//    for(std::filesystem::directory_iterator it(pngPath); it != end; ++it)
 //    {
 //        std::string ext = it->path().extension().string();
 //        if(ext == ".png")
@@ -263,7 +263,7 @@ int main( int argc, char ** argv )
 //    char buffer[512];
 //    std::vector<string> pngFiles(numPNGs);
 //    int channel_nr = 0;
-//    for(boost::filesystem::directory_iterator it(pngPath); it != end; ++it)
+//    for(std::filesystem::directory_iterator it(pngPath); it != end; ++it)
 //    {
 //        std::string ext = it->path().extension().string();
 //        if(ext == ".png")

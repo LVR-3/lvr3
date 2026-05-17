@@ -31,9 +31,9 @@
 #include <tuple>
 #include <stdlib.h>
 
-#include <boost/optional.hpp>
-#include <boost/shared_array.hpp>
-#include <boost/smart_ptr/make_shared_array.hpp>
+#include <optional>
+#include <memory>
+#include <memory>
 
 #include "lvr2/config/lvropenmp.hpp"
 
@@ -107,7 +107,7 @@
     typedef lvr2::ClSurface GpuSurface;
 #endif
 
-using boost::optional;
+using std::optional;
 using std::unique_ptr;
 using std::make_unique;
 
@@ -868,7 +868,7 @@ int main(int argc, char** argv)
     ColorGradient::GradientType t = ColorGradient::gradientFromString(options.getClassifier());
 
     ClusterPainter painter(clusterBiMap);
-    auto clusterColors = boost::optional<DenseClusterMap<RGB8Color>>(painter.colorize(mesh, t));
+    auto clusterColors = std::optional<DenseClusterMap<RGB8Color>>(painter.colorize(mesh, t));
     auto vertexColors = calcColorFromPointCloud(mesh, surface);
 
     // Calc normals for vertices
@@ -959,9 +959,9 @@ int main(int argc, char** argv)
 
     for(const std::string& output_filename : options.getOutputFileNames())
     {
-        boost::filesystem::path outputDir(options.getOutputDirectory());
-        boost::filesystem::path selectedFile( output_filename );
-        boost::filesystem::path outputFile = outputDir/selectedFile;
+        std::filesystem::path outputDir(options.getOutputDirectory());
+        std::filesystem::path selectedFile( output_filename );
+        std::filesystem::path outputFile = outputDir/selectedFile;
         std::string extension = selectedFile.extension().string();
 
                 lvr2::log::info("{}{}{}", "[LVR2 Reconstruct] Saving mesh to ", output_filename, ".");

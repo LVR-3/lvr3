@@ -117,10 +117,10 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
 
         // Texturizers have to have the same settings for minClusterSize/maxClusterSize
         if (!m_texturizers
-            || (m_texturizers && numFacesInCluster < m_texturizers.get()[0]->m_texMinClusterSize
-                && m_texturizers.get()[0]->m_texMinClusterSize != 0)
-            || (m_texturizers && numFacesInCluster > m_texturizers.get()[0]->m_texMaxClusterSize
-                && m_texturizers.get()[0]->m_texMaxClusterSize != 0)
+            || (m_texturizers && numFacesInCluster < m_texturizers.value()[0]->m_texMinClusterSize
+                && m_texturizers.value()[0]->m_texMinClusterSize != 0)
+            || (m_texturizers && numFacesInCluster > m_texturizers.value()[0]->m_texMaxClusterSize
+                && m_texturizers.value()[0]->m_texMaxClusterSize != 0)
         )
         {
             // No textures, or using textures and texture is too small/large
@@ -130,11 +130,11 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
             if (m_texturizers)
             {
                 // If using textures, count whether this cluster was too small or too large
-                if (numFacesInCluster < m_texturizers.get()[0]->m_texMinClusterSize)
+                if (numFacesInCluster < m_texturizers.value()[0]->m_texMinClusterSize)
                 {
                     numClustersTooSmall++;
                 }
-                else if (numFacesInCluster > m_texturizers.get()[0]->m_texMaxClusterSize)
+                else if (numFacesInCluster > m_texturizers.value()[0]->m_texMaxClusterSize)
                 {
                     numClustersTooLarge++;
                 }
@@ -194,13 +194,13 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                 m_mesh,
                 cluster,
                 m_normals,
-                m_texturizers.get()[0]->m_texelSize,
+                m_texturizers.value()[0]->m_texelSize,
                 clusterH
             );
 
             // The texture handle to the texture from the first texturizer
             // only used for coordinate mapping
-            boost::optional<TextureHandle> first_opt;
+            std::optional<TextureHandle> first_opt;
             Material::LayerMap layers;
             // Use each texturizer once for this cluster
             for (auto texturizer: *m_texturizers)
@@ -265,7 +265,7 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
             for (auto vertexH : verticesOfCluster)
             {
                 // Use the first texturizer for mapping coordinates
-                auto texturizer = m_texturizers.get()[0];
+                auto texturizer = m_texturizers.value()[0];
                 // Calculate tex coords
                 TexCoords texCoords = texturizer->calculateTexCoords(
                     *first_opt,
@@ -276,7 +276,7 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
                 // Insert into result map
                 if (vertexTexCoords.get(vertexH))
                 {
-                    vertexTexCoords.get(vertexH).get().push(clusterH, texCoords);
+                    vertexTexCoords.get(vertexH).value().get().push(clusterH, texCoords);
                 }
                 else
                 {

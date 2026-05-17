@@ -5,7 +5,7 @@ namespace lvr2
 {
 
 template<>
-boost::shared_array<unsigned char> byteEncode(
+std::shared_ptr<unsigned char[]> byteEncode(
     const WaveformData& data, size_t& bsize)
 {
     bsize = 0;
@@ -13,7 +13,7 @@ boost::shared_array<unsigned char> byteEncode(
     bsize += sizeof(bool);
     bsize += sizeof(uint16_t) * data.samples.size();
 
-    boost::shared_array<unsigned char> ret(new unsigned char[bsize]);
+    std::shared_ptr<unsigned char[]> ret(new unsigned char[bsize]);
     unsigned char* data_ptr = &ret[0];
 
     std::memcpy(data_ptr, reinterpret_cast<const unsigned char*>(&data.echo_type), sizeof(uint16_t));
@@ -26,10 +26,10 @@ boost::shared_array<unsigned char> byteEncode(
 }
 
 template<>
-boost::optional<WaveformData> byteDecode(
+std::optional<WaveformData> byteDecode(
     const unsigned char* buffer, const size_t& bsize)
 {
-    boost::optional<WaveformData> ret;
+    std::optional<WaveformData> ret;
     WaveformData data;
 
     data.echo_type = *reinterpret_cast<const uint16_t*>(buffer);

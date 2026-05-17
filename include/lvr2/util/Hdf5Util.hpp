@@ -10,9 +10,8 @@
 #include <highfive/H5DataSpace.hpp>
 #include <highfive/H5File.hpp>
 
-// Boost libraries
-#include <boost/filesystem.hpp>
-#include <boost/optional.hpp>
+#include <filesystem>
+#include <optional>
 
 // C++ standard library
 #include <chrono>
@@ -38,7 +37,7 @@ using H5AllowedTypes = Tuple<
         unsigned char,
         short,
         unsigned short,
-        int, 
+        int,
         unsigned,
         long,
         unsigned long,
@@ -52,11 +51,11 @@ using H5AllowedTypes = Tuple<
 
 /**
  * @brief Adds a atomic as dataset to a group
- * 
+ *
  * @tparam T Atomic type (float, int, std::string)
- * @param g 
- * @param datasetName 
- * @param data 
+ * @param g
+ * @param datasetName
+ * @param data
  */
 template<typename T>
 void addAtomic(HighFive::Group& g,
@@ -65,43 +64,43 @@ void addAtomic(HighFive::Group& g,
 
 /**
  * @brief Adds an array (of possibly multiple dimensions) as dataset to a group
- * 
- * @tparam T 
- * @param g 
- * @param datasetName 
- * @param dim 
- * @param data 
+ *
+ * @tparam T
+ * @param g
+ * @param datasetName
+ * @param dim
+ * @param data
  */
 template<typename T>
 void addArray(
-    HighFive::Group& g, 
-    const std::string datasetName, 
-    std::vector<size_t>& dim, 
-    boost::shared_array<T>& data);
+    HighFive::Group& g,
+    const std::string datasetName,
+    std::vector<size_t>& dim,
+    std::shared_ptr<T[]>& data);
 
 /**
  * @brief Adds a flat array as dataset to a group
- * 
- * @tparam T 
- * @param g 
- * @param datasetName 
- * @param length 
- * @param data 
+ *
+ * @tparam T
+ * @param g
+ * @param datasetName
+ * @param length
+ * @param data
  */
 template<typename T>
 void addArray(
-    HighFive::Group& g, 
-    const std::string datasetName, 
-    const size_t& length, 
-    boost::shared_array<T>& data);
+    HighFive::Group& g,
+    const std::string datasetName,
+    const size_t& length,
+    std::shared_ptr<T[]>& data);
 
 /**
  * @brief Adds a std::vector of atomic type as dataset to a group
- * 
- * @tparam T 
- * @param g 
- * @param datasetName 
- * @param data 
+ *
+ * @tparam T
+ * @param g
+ * @param datasetName
+ * @param data
  */
 template<typename T>
 void addVector(HighFive::Group& g,
@@ -109,11 +108,11 @@ void addVector(HighFive::Group& g,
     const std::vector<T>& data);
 
 /**
- * @brief Adds an Eigen::Matrix as dataset to a group 
- * 
- * @param group 
- * @param datasetName 
- * @param mat 
+ * @brief Adds an Eigen::Matrix as dataset to a group
+ *
+ * @param group
+ * @param datasetName
+ * @param mat
  */
 template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
 void addMatrix(HighFive::Group& group,
@@ -121,73 +120,73 @@ void addMatrix(HighFive::Group& group,
     const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& mat);
 
 /**
- * @brief Gets a 
- * 
- * @tparam T 
- * @param g 
- * @param datasetName 
- * @return boost::optional<T> 
+ * @brief Gets a
+ *
+ * @tparam T
+ * @param g
+ * @param datasetName
+ * @return std::optional<T>
  */
 template<typename T>
-boost::optional<T> getAtomic(
+std::optional<T> getAtomic(
     const HighFive::Group& g,
     const std::string datasetName);
 
 template<typename T>
-boost::shared_array<T> getArray(
-    const HighFive::Group& g, 
+std::shared_ptr<T[]> getArray(
+    const HighFive::Group& g,
     const std::string& datasetName,
     std::vector<size_t>& dim);
 
 template<typename T>
-boost::shared_array<T> getArray(
-    const HighFive::Group& g, 
+std::shared_ptr<T[]> getArray(
+    const HighFive::Group& g,
     const std::string& datasetName,
     size_t& dim);
 
 template<typename T>
-boost::optional<std::vector<T> > getVector(
-    const HighFive::Group& g, 
+std::optional<std::vector<T> > getVector(
+    const HighFive::Group& g,
     const std::string& datasetName);
 
 template<typename T>
 std::vector<size_t> getDimensions(
-    const HighFive::Group& g, 
+    const HighFive::Group& g,
     const std::string& datasetName);
 
 
 template<typename MatrixT>
-boost::optional<MatrixT> getMatrix(const HighFive::Group& g, const std::string& datasetName);
+std::optional<MatrixT> getMatrix(const HighFive::Group& g, const std::string& datasetName);
 
 std::vector<std::string> splitGroupNames(const std::string& groupName);
 
 /**
- * @brief 
- * 
+ * @brief
+ *
  * @param groupName groupName   like groupA/groupB
  * @param datasetName datasetName like groupC/dataset (group hides in dataset name)
  * @return std::pair<std::string, std::string> Returns corrected groupName and datasetName
  */
 std::pair<std::string, std::string> validateGroupDataset(
-    const std::string& groupName, 
+    const std::string& groupName,
     const std::string& datasetName);
 
 /**
  * @brief Write Base structure to hdf5_file.
  * Base structure consists of
  * - version tag
- * 
- * @param hdf5_file 
+ *
+ * @param hdf5_file
  */
 void writeBaseStructure(std::shared_ptr<HighFive::File> hdf5_file);
 
 /**
  * @brief Get the Group from hdf5 file with specified groupName(string).
- *      
+ *
  * @param hdf5_file hdf5 file to search in
  * @param groupName groupName as std::string
  * @param create    if true: creates the group once it doesnt exist
- * @return HighFive::Group 
+ * @return HighFive::Group
  */
 HighFive::Group getGroup(std::shared_ptr<HighFive::File> hdf5_file,
                                 const std::string& groupName,
@@ -195,11 +194,11 @@ HighFive::Group getGroup(std::shared_ptr<HighFive::File> hdf5_file,
 
 /**
  * @brief Get the Group from a Group with specified groupName(string).
- *      
+ *
  * @param g hdf5 group to search in
  * @param groupName groupName as std::string
  * @param create    if true: creates the group once it doesnt exist
- * @return HighFive::Group 
+ * @return HighFive::Group
  */
 HighFive::Group getGroup(HighFive::Group& g, const std::string& groupName, bool create = true);
 
@@ -212,27 +211,27 @@ struct HighFiveSplit
 
 /**
  * @brief Split objects of HDF5 Group into Groups/Datasets
- * 
- * @param g 
- * @return HighFiveSplit 
+ *
+ * @param g
+ * @return HighFiveSplit
  */
 HighFiveSplit split(HighFive::Group g);
 
 /**
  * @brief Checks if a certain group name exists in a file
- * 
+ *
  * @param hdf5_file file
  * @param groupName name of the group as std::string. Can be nested group "groupA/groupB/groupC".
  * @return true   If group exists
  * @return false  If group doesnt exist
  */
-bool exist(const std::shared_ptr<HighFive::File>& hdf5_file, 
+bool exist(const std::shared_ptr<HighFive::File>& hdf5_file,
             const std::string& groupName);
 
 /**
  * @brief Checks if a certain group name exists in a group
- * 
- * @param group    Hdf5 Group 
+ *
+ * @param group    Hdf5 Group
  * @param groupName name of the group as std::string. Can be nested group "groupA/groupB/groupC".
  * @return true   If group exists
  * @return false  If group doesnt exist
@@ -241,31 +240,31 @@ bool exist(const HighFive::Group& group, const std::string& groupName);
 
 /**
  * @brief Open Helper function
- * 
+ *
  * @param filename   Path to Hdf5 file
- * @return std::shared_ptr<HighFive::File> shared_ptr of HighFive::File object 
+ * @return std::shared_ptr<HighFive::File> shared_ptr of HighFive::File object
  */
-std::shared_ptr<HighFive::File> open(const boost::filesystem::path& filename,
+std::shared_ptr<HighFive::File> open(const std::filesystem::path& filename,
     unsigned int flag = HighFive::File::ReadWrite);
 
 /**
- * @brief Create a Hdf5 Dataset savely. 
+ * @brief Create a Hdf5 Dataset savely.
  * Special behaviors over the normal HighFive::Group.createDataset:
  * - If there is an existing dataset of same type and shape:
  *   -> return it instead of a new constructed
- * - If there is an existing dataset of same type but different shape: 
+ * - If there is an existing dataset of same type but different shape:
  *   -> try to resize the dataset and return the result
  * - If there is an existing dataset of different type
  *   -> need to delete the dataset
  * - Else:
  *   -> same behavior as HighFive::Group::createDataset
- * 
- * @tparam T 
- * @param g 
- * @param datasetName 
- * @param dataSpace 
- * @param properties 
- * @return std::unique_ptr<HighFive::DataSet> 
+ *
+ * @tparam T
+ * @param g
+ * @param datasetName
+ * @param dataSpace
+ * @param properties
+ * @return std::unique_ptr<HighFive::DataSet>
  */
 template <typename T>
 std::unique_ptr<HighFive::DataSet> createDataset(HighFive::Group& g,
@@ -275,11 +274,11 @@ std::unique_ptr<HighFive::DataSet> createDataset(HighFive::Group& g,
 
 /**
  * @brief Sets an atomic type as Group-Attribute
- * 
- * @tparam T 
- * @param g 
- * @param attr_name 
- * @param data 
+ *
+ * @tparam T
+ * @param g
+ * @param attr_name
+ * @param data
  */
 template <typename T, typename HT>
 void setAttribute(
@@ -298,13 +297,13 @@ template<typename T, typename HT>
 void setAttributeArray(
     HT& g,
     const std::string& attr_name,
-    boost::shared_array<T> data,
+    std::shared_ptr<T[]> data,
     size_t size
 );
 
 template<typename HT>
 void setAttributeMatrix(
-    HT& g, 
+    HT& g,
     const std::string& attr_name,
     const Eigen::MatrixXd& mat);
 
@@ -312,48 +311,48 @@ void setAttributeMatrix(
 
 /**
  * @brief Checks if an Group-Attributes value equals a atomic
- * 
- * @tparam T 
- * @param g 
- * @param attr_name 
- * @param data 
- * @return true 
- * @return false 
+ *
+ * @tparam T
+ * @param g
+ * @param attr_name
+ * @param data
+ * @return true
+ * @return false
  */
 template <typename HT, typename T>
 bool checkAttribute(HT& g, const std::string& attr_name, T& data);
 
 /**
  * @brief Get a Group-Attributes value
- * 
+ *
  * @tparam HT HighFive::Group or HighFive::Dataset
- * @tparam T 
- * @param g 
- * @param attr_name 
- * @return boost::optional<T> 
+ * @tparam T
+ * @param g
+ * @param attr_name
+ * @return std::optional<T>
  */
 template <typename T, typename HT>
-boost::optional<T> getAttribute(
+std::optional<T> getAttribute(
     const HT& g,
     const std::string& attr_name);
 
 template<typename T, typename HT>
-boost::optional<std::vector<T> > getAttributeVector(
+std::optional<std::vector<T> > getAttributeVector(
     const HT& g,
     const std::string& attr_name);
 
 template<typename HT>
-boost::optional<Eigen::MatrixXd> getAttributeMatrix(
+std::optional<Eigen::MatrixXd> getAttributeMatrix(
     const HT& g,
     const std::string& attr_name);
 
 /**
  * @brief Converts HighFive::DataType.string() to the corresponding lvr2 Channel Type.
- * 
- * @param h5type 
- * @return boost::optional<std::string> 
+ *
+ * @param h5type
+ * @return std::optional<std::string>
  */
-boost::optional<std::string> highFiveTypeToLvr(std::string h5type);
+std::optional<std::string> highFiveTypeToLvr(std::string h5type);
 
 
 template<typename HT>

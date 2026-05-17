@@ -304,7 +304,7 @@ private:
     // coord3fArr                  m_normals;
 
     // /// A model of the current pointcloud
-    // boost::shared_ptr<Model>    m_model;
+    // std::shared_ptr<Model>    m_model;
 
     // size_t                      m_numPoints;
 

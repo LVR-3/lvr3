@@ -39,9 +39,9 @@
 
 namespace lvr2 {
 
-using intOptional = boost::optional<int>;
-using floatOptional = boost::optional<float>;
-using ucharOptional = boost::optional<unsigned char>;
+using intOptional = std::optional<int>;
+using floatOptional = std::optional<float>;
+using ucharOptional = std::optional<unsigned char>;
 
 using FloatProxy = ElementProxy<float>;
 using UCharProxy = ElementProxy<unsigned char>;
@@ -185,13 +185,13 @@ public:
     }
 
     /**
-     * @brief Constructs a channel from an boost::shared_array and saves it to the map.
+     * @brief Constructs a channel from an std::shared_ptr and saves it to the map.
      * @param[in] array The shared array of the data. 
      * @param[in] name Key of the channel.
      * @tparam T Type of the channel.
      */
     template<typename T>
-    void addChannel(boost::shared_array<T> array, std::string_view name, size_t n, size_t width);
+    void addChannel(std::shared_ptr<T[]> array, std::string_view name, size_t n, size_t width);
 
     /**
      * @brief Copies a contiguous span into an owned channel and saves it to the map.
@@ -205,7 +205,7 @@ public:
     void addChannel(std::span<const T> values, std::string_view name, size_t n, size_t width);
 
     /**
-     * @brief Constructs an index channel from an boost::shared_array and saves it to the map.
+     * @brief Constructs an index channel from an std::shared_ptr and saves it to the map.
      * @param[in] array The shared array of the data. 
      * @param[in] name Key of the channel.
      */
@@ -223,7 +223,7 @@ public:
     }
 
     /**
-     * @brief Constructs a float channel from an boost::shared_array and saves it to the map.
+     * @brief Constructs a float channel from an std::shared_ptr and saves it to the map.
      * @param[in] array The shared array of the data. 
      * @param[in] name Key of the channel.
      */
@@ -241,7 +241,7 @@ public:
     }
 
     /**
-     * @brief Constructs an uchar channel from an boost::shared_array
+     * @brief Constructs an uchar channel from an std::shared_ptr
      *          and saves it to the map.
      * 
      * @param[in] array The shared array of the data. 
@@ -550,10 +550,10 @@ public:
      * @param[out] n Number of elements stored in the channel.
      * @param[out] w Width of an element.
      * @param[in] name Key of the channel.
-     * @return boost::shared_array<T> The data pointer. Empty if the channel was not found.
+     * @return std::shared_ptr<T[]> The data pointer. Empty if the channel was not found.
      */
     template<typename T>
-    boost::shared_array<T> getArray(std::string_view name, size_t& n, size_t& w);
+    std::shared_ptr<T[]> getArray(std::string_view name, size_t& n, size_t& w);
 
     /**
      * @brief Gets a float channel as array.
@@ -661,7 +661,7 @@ public:
      * 
      */
     template<typename T>
-    boost::optional<T> getAtomic(std::string_view name);
+    std::optional<T> getAtomic(std::string_view name);
 
     /**
      * @brief Gets an atomic float value.
@@ -708,7 +708,7 @@ public:
         BaseBuffer cm;
         for(auto vchannel: *this)
         {
-            cm.insert({vchannel.first, boost::apply_visitor(visitor, vchannel.second)});
+            cm.insert({vchannel.first, std::visit(visitor, vchannel.second)});
         }
         return cm;
     }

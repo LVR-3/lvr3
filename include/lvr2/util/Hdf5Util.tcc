@@ -20,7 +20,7 @@ template<typename T>
 void addArray(HighFive::Group& g,
     const std::string datasetName,
     std::vector<size_t>& dim,
-    boost::shared_array<T>& data)
+    std::shared_ptr<T[]>& data)
 {
     HighFive::DataSpace dataSpace(dim);
     HighFive::DataSetCreateProps properties;
@@ -38,7 +38,7 @@ void addArray(
     HighFive::Group& g, 
     const std::string datasetName, 
     const size_t& length, 
-    boost::shared_array<T>& data)
+    std::shared_ptr<T[]>& data)
 {
     std::vector<size_t> dim = {length};
     addArray(g, datasetName, dim, data);
@@ -63,11 +63,11 @@ void addVector(HighFive::Group& g,
 }
 
 template<typename T>
-boost::optional<T> getAtomic(
+std::optional<T> getAtomic(
     const HighFive::Group& g,
     const std::string datasetName)
 {
-    boost::optional<T> ret;
+    std::optional<T> ret;
 
     if(g.isValid())
     {
@@ -94,12 +94,12 @@ boost::optional<T> getAtomic(
 }
 
 template<typename T>
-boost::shared_array<T> getArray(
+std::shared_ptr<T[]> getArray(
     const HighFive::Group& g, 
     const std::string& datasetName,
     std::vector<size_t>& dim)
 {
-    boost::shared_array<T> ret;
+    std::shared_ptr<T[]> ret;
 
     if (g.exist(datasetName))
     {
@@ -112,7 +112,7 @@ boost::shared_array<T> getArray(
 
         if (elementCount)
         {
-            ret = boost::shared_array<T>(new T[elementCount]);
+            ret = std::shared_ptr<T[]>(new T[elementCount]);
 
             dataset.read(ret.get());
         }
@@ -122,12 +122,12 @@ boost::shared_array<T> getArray(
 }
 
 template<typename T>
-boost::shared_array<T> getArray(
+std::shared_ptr<T[]> getArray(
     const HighFive::Group& g, 
     const std::string& datasetName,
     size_t& dim)
 {
-    boost::shared_array<T> ret;
+    std::shared_ptr<T[]> ret;
 
     if (g.exist(datasetName))
     {
@@ -143,7 +143,7 @@ boost::shared_array<T> getArray(
 
         if(dim)
         {
-            ret = boost::shared_array<T>(new T[dim]);
+            ret = std::shared_ptr<T[]>(new T[dim]);
 
             dataset.read(ret.get());
         }
@@ -154,11 +154,11 @@ boost::shared_array<T> getArray(
 
 
 template<typename T>
-boost::optional<std::vector<T> > getVector(
+std::optional<std::vector<T> > getVector(
     const HighFive::Group& g, 
     const std::string& datasetName)
 {
-    boost::optional<std::vector<T> > ret;
+    std::optional<std::vector<T> > ret;
 
     if(g.isValid())
     {
@@ -227,9 +227,9 @@ void addMatrix(HighFive::Group& group,
 }
 
 template<typename MatrixT>
-boost::optional<MatrixT> getMatrix(const HighFive::Group& g, const std::string& datasetName)
+std::optional<MatrixT> getMatrix(const HighFive::Group& g, const std::string& datasetName)
 {
-    boost::optional<MatrixT> ret;
+    std::optional<MatrixT> ret;
 
     if(g.isValid())
     {
@@ -449,7 +449,7 @@ template<typename T, typename HT>
 void setAttributeArray(
     HT& g,
     const std::string& attr_name,
-    boost::shared_array<T> data,
+    std::shared_ptr<T[]> data,
     size_t size)
 {
     std::vector<size_t> dims = {size};
@@ -594,9 +594,9 @@ bool checkAttribute(HT& g, const std::string& attr_name, T& data)
 }
 
 template <typename T, typename HT>
-boost::optional<T> getAttribute(const HT& g, const std::string& attr_name)
+std::optional<T> getAttribute(const HT& g, const std::string& attr_name)
 {
-    boost::optional<T> ret;
+    std::optional<T> ret;
 
     if(g.hasAttribute(attr_name))
     {
@@ -609,11 +609,11 @@ boost::optional<T> getAttribute(const HT& g, const std::string& attr_name)
 }
 
 template<typename T, typename HT>
-boost::optional<std::vector<T> > getAttributeVector(
+std::optional<std::vector<T> > getAttributeVector(
     const HT& g,
     const std::string& attr_name)
 {
-    boost::optional<std::vector<T> > ret;
+    std::optional<std::vector<T> > ret;
 
     if(g.hasAttribute(attr_name))
     {
@@ -639,11 +639,11 @@ boost::optional<std::vector<T> > getAttributeVector(
 }
 
 template<typename HT>
-boost::optional<Eigen::MatrixXd> getAttributeMatrix(
+std::optional<Eigen::MatrixXd> getAttributeMatrix(
     const HT& g,
     const std::string& attr_name)
 {
-    boost::optional<Eigen::MatrixXd> ret;
+    std::optional<Eigen::MatrixXd> ret;
 
     if(g.hasAttribute(attr_name))
     {
@@ -831,7 +831,7 @@ void setAttributeMeta(
                         // }
                         // hdf5util::setAttributeVector(g, attributeName, data);
 
-                        boost::shared_array<bool> data(new bool[nelements]);
+                        std::shared_ptr<bool[]> data(new bool[nelements]);
                         size_t i = 0;
                         for(auto seq_it = value.begin(); seq_it != value.end(); seq_it++, i++)
                         {

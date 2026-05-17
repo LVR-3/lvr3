@@ -32,7 +32,7 @@
  * @author Matthias Greshake
  */
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "lvr2/reconstruction/opencl/ClSurface.hpp"
 
@@ -150,17 +150,17 @@ int main(int argc, char** argv){
     std::cout << opt << std::endl;
 
 
-    boost::filesystem::path inFile(opt.inputFile());
+    std::filesystem::path inFile(opt.inputFile());
 
-    if(boost::filesystem::is_directory(inFile))
+    if(std::filesystem::is_directory(inFile))
     {
         vector<float> all_points;
         vector<float> all_normals;
 
-        boost::filesystem::directory_iterator lastFile;
-        for(boost::filesystem::directory_iterator it(inFile); it != lastFile; it++ )
+        std::filesystem::directory_iterator lastFile;
+        for(std::filesystem::directory_iterator it(inFile); it != lastFile; it++ )
         {
-            boost::filesystem::path p = boost::filesystem::canonical(it->path());
+            std::filesystem::path p = std::filesystem::canonical(it->path());
             string currentFile = p.filename().string();
 
             if(string(p.extension().string().c_str()) == ".3d")

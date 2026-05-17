@@ -36,7 +36,8 @@
 #define LVR2_ATTRMAPS_VECTORMAP_H_
 
 #include <vector>
-#include <boost/optional.hpp>
+#include <optional>
+#include <functional>
 
 #include "lvr2/attrmaps/StableVector.hpp"
 #include "lvr2/attrmaps/AttributeMap.hpp"
@@ -89,17 +90,17 @@ public:
      */
     VectorMap(size_t countElements, const ValueT& defaultValue);
 
-    VectorMap(size_t countElements, const boost::shared_array<ValueT>& values);
+    VectorMap(size_t countElements, const std::shared_ptr<ValueT[]>& values);
 
     // =======================================================================
     // Implemented methods from the interface (check interface for docs)
     // =======================================================================
     bool containsKey(HandleT key) const final;
-    boost::optional<ValueT> insert(HandleT key, const ValueT& value) final;
-    boost::optional<ValueT> erase(HandleT key) final;
+    std::optional<ValueT> insert(HandleT key, const ValueT& value) final;
+    std::optional<ValueT> erase(HandleT key) final;
     void clear() final;
-    boost::optional<ValueT&> get(HandleT key) final;
-    boost::optional<const ValueT&> get(HandleT key) const final;
+    std::optional<std::reference_wrapper<ValueT>> get(HandleT key) final;
+    std::optional<std::reference_wrapper<const ValueT>> get(HandleT key) const final;
     size_t numValues() const final;
 
     AttributeMapHandleIteratorPtr<HandleT> begin() const final;
@@ -114,7 +115,7 @@ public:
 private:
     /// The underlying storage
     StableVector<HandleT, ValueT> m_vec;
-    boost::optional<ValueT> m_default;
+    std::optional<ValueT> m_default;
 };
 
 template<typename HandleT, typename ValueT>

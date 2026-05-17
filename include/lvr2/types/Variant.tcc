@@ -31,27 +31,27 @@ namespace lvr2
 template<typename... T>
 int Variant<T...>::type() const
 {
-    return this->which();
+    return static_cast<int>(this->index());
 }
 
 template<typename... T>
 std::string Variant<T...>::typeName() const
 {
-    return boost::apply_visitor(TypeNameVisitor(), *this);
+    return std::visit(TypeNameVisitor(), static_cast<const base&>(*this));
 }
 
 template<typename... T>
 template<typename U>
 U Variant<T...>::get() const
 {
-    return boost::get<U>(*this);
+    return std::get<U>(static_cast<const base&>(*this));
 }
 
 template<typename... T>
 template<typename U>
 U& Variant<T...>::get()
 {
-    return boost::get<U>(*this);
+    return std::get<U>(static_cast<base&>(*this));
 }
 
 } // namespace lvr2

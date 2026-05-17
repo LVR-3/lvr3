@@ -252,7 +252,7 @@ size_t simpleMeshReduction(
         VertexHandle fromH,
         VertexHandle toH,
         const FaceMap<Normal<typename BaseVecT::CoordType>>& normals
-    ) -> boost::optional<float>
+    ) -> std::optional<float>
     {
         // The minimal value of the dot product between two normals that is allowed.
         const float MIN_NORMAL_DIFF = 0.5;
@@ -265,7 +265,7 @@ size_t simpleMeshReduction(
         // If the edge is lonely, we won't collapse it
         if (!adjacentFaces[0] || !adjacentFaces[1])
         {
-            return boost::none;
+            return std::nullopt;
         }
 
         // Calculate the curvature term
@@ -277,7 +277,7 @@ size_t simpleMeshReduction(
         mesh.getEdgesOfVertex(fromH, edgesAroundFrom);
         if (facesAroundFrom.size() != edgesAroundFrom.size())
         {
-            return boost::none;
+            return std::nullopt;
         }
 
         for (auto fH: facesAroundFrom)
@@ -306,12 +306,12 @@ size_t simpleMeshReduction(
 
             // We calculate the normal that the face would have if the edge in
             // question would be collapsed.
-            boost::optional<Normal<typename BaseVecT::CoordType>> newNormal = getFaceNormal(f_verts);
+            std::optional<Normal<typename BaseVecT::CoordType>> newNormal = getFaceNormal(f_verts);
 
             // If the face will have 0 area, we don't want to collapse this edge
             if (!newNormal)
             {
-                return boost::none;
+                return std::nullopt;
             }
 
             // If the new normal is too different from the old one, we don't want
@@ -319,7 +319,7 @@ size_t simpleMeshReduction(
             auto oldNormal = normals[fH];
             if (newNormal->dot(oldNormal) < MIN_NORMAL_DIFF)
             {
-                return boost::none;
+                return std::nullopt;
             }
 
 

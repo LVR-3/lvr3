@@ -31,10 +31,9 @@
 #include <string>
 #include <vector>
 
-#define BOOST_FILESYSTEM_NO_DEPRECATED
-#include <boost/filesystem.hpp>
-#include <boost/system/error_code.hpp>
-namespace fs = boost::filesystem;
+#define #include <filesystem>
+#include <system_error>
+namespace fs = std::filesystem;
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>

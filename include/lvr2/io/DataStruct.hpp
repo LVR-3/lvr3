@@ -40,7 +40,10 @@
 #pragma once
 
 
-#include <boost/shared_array.hpp>
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <string>
 
 #include "lvr2/display/GlTexture.hpp"
 
@@ -123,39 +126,39 @@ struct RGBMaterial
 };
 
 // fundamental types
-typedef boost::shared_array<char> charArr;
-typedef boost::shared_array<unsigned char> ucharArr;
-typedef boost::shared_array<short> shortArr;
-typedef boost::shared_array<unsigned short> ushortArr;
-typedef boost::shared_array<int> intArr;
-typedef boost::shared_array<unsigned int> uintArr;
-typedef boost::shared_array<long int> lintArr;
-typedef boost::shared_array<unsigned long int> ulintArr;
-typedef boost::shared_array<float> floatArr;
-typedef boost::shared_array<double> doubleArr;
-typedef boost::shared_array<bool> boolArr;
+typedef std::shared_ptr<char[]> charArr;
+typedef std::shared_ptr<unsigned char[]> ucharArr;
+typedef std::shared_ptr<short[]> shortArr;
+typedef std::shared_ptr<unsigned short[]> ushortArr;
+typedef std::shared_ptr<int[]> intArr;
+typedef std::shared_ptr<unsigned int[]> uintArr;
+typedef std::shared_ptr<long int[]> lintArr;
+typedef std::shared_ptr<unsigned long int[]> ulintArr;
+typedef std::shared_ptr<float[]> floatArr;
+typedef std::shared_ptr<double[]> doubleArr;
+typedef std::shared_ptr<bool[]> boolArr;
 
 
-typedef boost::shared_array<unsigned int> indexArray;
-typedef boost::shared_array<uint16_t> uint16Arr;
-typedef boost::shared_array< color<unsigned char> > color3bArr;
+typedef std::shared_ptr<unsigned int[]> indexArray;
+typedef std::shared_ptr<uint16_t[]> uint16Arr;
+typedef std::shared_ptr< color<unsigned char>[]> color3bArr;
 
-typedef boost::shared_array< coord<float> > coord3fArr;
-
-
-typedef boost::shared_array< idxVal<float> > idx1fArr;
+typedef std::shared_ptr< coord<float>[]> coord3fArr;
 
 
-typedef boost::shared_array< coord<unsigned int> > idx3uArr;
+typedef std::shared_ptr< idxVal<float>[]> idx1fArr;
 
 
-typedef boost::shared_array< idxVal<unsigned int> > idx1uArr;
+typedef std::shared_ptr< coord<unsigned int>[]> idx3uArr;
 
 
-typedef boost::shared_array< RGBMaterial* > materialArr;
+typedef std::shared_ptr< idxVal<unsigned int>[]> idx1uArr;
 
 
-typedef boost::shared_array< GlTexture* > textureArr;
+typedef std::shared_ptr< RGBMaterial*[]> materialArr;
+
+
+typedef std::shared_ptr< GlTexture*[]> textureArr;
 
 
 typedef std::pair<size_t, size_t> indexPair;

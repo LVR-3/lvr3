@@ -39,12 +39,12 @@
 #include "lvr2/reconstruction/LargeScaleReconstruction.hpp"
 
 #include "lvr2/config/CommandLine.hpp"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <iostream>
 #include <string>
 #include <vector>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 namespace LargeScaleOptions
 {

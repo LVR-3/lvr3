@@ -31,7 +31,7 @@
 
 #include <array>
 #include <iostream>
-#include <boost/optional.hpp>
+#include <optional>
 #include <memory>
 #include "lvr2/geometry/Handles.hpp"
 

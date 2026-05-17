@@ -28,7 +28,7 @@
 #ifndef LVR2_TEXTURE_MATERIAL_H_
 #define LVR2_TEXTURE_MATERIAL_H_
 
-#include <boost/optional.hpp>
+#include <optional>
 #include "lvr2/algorithm/ColorAlgorithms.hpp"
 #include "lvr2/geometry/Handles.hpp"
 #include <map>
@@ -46,9 +46,9 @@ struct Material
     using LayerMap = std::map<std::string, TextureHandle>;
 
     /// Optional texture handle
-    boost::optional<TextureHandle> m_texture;
+    std::optional<TextureHandle> m_texture;
     /// Optional color
-    boost::optional<RGB8Color> m_color;
+    std::optional<RGB8Color> m_color;
     /// Map from texture layer to texture
     LayerMap m_layers;
 };

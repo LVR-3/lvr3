@@ -211,9 +211,9 @@ public:
      * Note that modifications to this won't be reflected to higher levels if
      * finalize() was called prior to the change.
      */
-    boost::optional<Mesh&> mesh()
+    std::optional<std::reference_wrapper<Mesh>> mesh()
     {
-        return m_mesh ? boost::optional<Mesh&>(*m_mesh) : boost::none;
+        return m_mesh ? std::optional<std::reference_wrapper<Mesh>>(*m_mesh) : std::nullopt;
     }
     /**
      * @brief Returns a reference to the mesh on this level.
@@ -222,9 +222,9 @@ public:
      * a) finalize() has not been called yet. Or
      * b) it should be skipped according to combineDepth.
      */
-    boost::optional<const Mesh&> mesh() const
+    std::optional<std::reference_wrapper<const Mesh>> mesh() const
     {
-        return m_mesh ? boost::optional<const Mesh&>(*m_mesh) : boost::none;
+        return m_mesh ? std::optional<std::reference_wrapper<const Mesh>>(*m_mesh) : std::nullopt;
     }
 
     /**
@@ -286,7 +286,7 @@ private:
 
     static Ptr partitionRecursive(Ptr* start, Ptr* end, int combineDepth);
 
-    boost::optional<Mesh> m_mesh = boost::none;
+    std::optional<Mesh> m_mesh = std::nullopt;
     pmp::BoundingBox m_bb;
     std::vector<Ptr> m_children; // empty for leafs
     size_t m_depth = 0; // == max(m_children.m_depth) + 1.  0 for leafs

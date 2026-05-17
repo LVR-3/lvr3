@@ -39,7 +39,7 @@
 #include "lvr2/io/ModelFactory.hpp"
 
 #include <algorithm>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <cmath>
 #include <lvr2/util/Logging.hpp>
 
@@ -124,11 +124,11 @@ std::vector<std::string> ChunkManager::getChannelsFromMesh(std::string layer)
             for (int z = getChunkMinChunkIndex().z; z < getChunkMaxChunkIndex().z && !isChunkFound;
                  z++)
             {
-                boost::optional<MeshBufferPtr> requestedChunk
+                std::optional<MeshBufferPtr> requestedChunk
                     = getChunk<MeshBufferPtr>(layer, x, y, z);
                 if (requestedChunk)
                 {
-                    chunkPtr     = requestedChunk.get();
+                    chunkPtr     = requestedChunk.value();
                     isChunkFound = true;
                 }
             }
@@ -181,7 +181,7 @@ void ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& area,
                 //    continue;
                 //}
 
-                boost::optional<MeshBufferPtr> loadedChunk
+                std::optional<MeshBufferPtr> loadedChunk
                     = getChunk<MeshBufferPtr>(layer, cellCoord.x, cellCoord.y, cellCoord.z);
 
                 if (loadedChunk)
@@ -227,7 +227,7 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
                     adjustedArea.getMin() + BaseVector<float>(i, j, k) * getChunkSize());
                 size_t cellIndex = hashValue(cellCoord.x, cellCoord.y, cellCoord.z);
 
-                boost::optional<MeshBufferPtr> loadedChunk
+                std::optional<MeshBufferPtr> loadedChunk
                     = getChunk<MeshBufferPtr>(layer, cellCoord.x, cellCoord.y, cellCoord.z);
                 if (loadedChunk)
                 {
@@ -524,7 +524,7 @@ MeshBufferPtr ChunkManager::extractArea(const BoundingBox<BaseVector<float>>& ar
 void ChunkManager::initBoundingBox(MeshBufferPtr mesh)
 {
     BoundingBox<BaseVector<float>> boundingBox;
-    FloatChannel vertices = mesh->getFloatChannel("vertices").get();
+    FloatChannel vertices = mesh->getFloatChannel("vertices").value();
     for (unsigned int i = 0; i < vertices.numElements(); i++)
     {
         boundingBox.expand(static_cast<BaseVector<float>>(vertices[i]));

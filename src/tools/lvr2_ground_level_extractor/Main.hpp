@@ -12,7 +12,7 @@
 #include <chrono>
 #include <ctime>
 
-#include <boost/optional.hpp>
+#include <optional>
 
 #include <gdal.h>
 #include <gdalwarper.h>
@@ -47,7 +47,7 @@ typedef _W64 int   ssize_t;
 #endif
 #endif // MAIN
 
-using boost::optional;
+using std::optional;
 using std::unique_ptr;
 using std::make_unique;
 

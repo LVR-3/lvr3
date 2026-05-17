@@ -38,7 +38,7 @@
 #include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/types/PointBuffer.hpp"
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include <algorithm>
 #include <iostream>

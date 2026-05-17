@@ -43,8 +43,8 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
+#include <filesystem>
+namespace fs = std::filesystem;
 
 
 namespace lvr2

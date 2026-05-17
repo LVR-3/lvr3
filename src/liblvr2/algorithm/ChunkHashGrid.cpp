@@ -129,13 +129,13 @@ void ChunkHashGrid::rehashCache(const BaseVector<std::size_t>& oldChunkAmount,
 
 void ChunkHashGrid::expandBoundingBox(const val_type& data)
 {
-    FloatChannelOptional geometryChannel = boost::apply_visitor(ChunkGeomtryChannelVisitor(), data);
+    FloatChannelOptional geometryChannel = std::visit(ChunkGeomtryChannelVisitor(), data);
     if (geometryChannel)
     {
         BoundingBox<BaseVector<float>> boundingBox = m_boundingBox;
-        for (unsigned int i = 0; i < geometryChannel.get().numElements(); i++)
+        for (unsigned int i = 0; i < geometryChannel.value().numElements(); i++)
         {
-            boundingBox.expand(static_cast<BaseVector<float>>(geometryChannel.get()[i]));
+            boundingBox.expand(static_cast<BaseVector<float>>(geometryChannel.value()[i]));
         }
 
         setBoundingBox(boundingBox);

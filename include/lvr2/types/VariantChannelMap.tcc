@@ -58,7 +58,7 @@ Channel<U>& VariantChannelMap<T...>::get(std::string_view name)
     {
         throw std::out_of_range("channel name not found");
     }
-    return boost::get<Channel<U> >(it->second);
+    return std::get<Channel<U> >(it->second);
 }
 
 template<typename... T>
@@ -70,7 +70,7 @@ const Channel<U>& VariantChannelMap<T...>::get(std::string_view name) const
     {
         throw std::out_of_range("channel name not found");
     }
-    return boost::get<Channel<U> >(it->second);
+    return std::get<Channel<U> >(it->second);
 }
 
 template<typename... T>
@@ -81,7 +81,7 @@ typename Channel<U>::Optional VariantChannelMap<T...>::getOptional(std::string_v
     auto it = this->find(name);
     if(it != this->end() && it->second.template is_type<U>())
     {
-        ret = boost::get<Channel<U> >(it->second);
+        ret = std::get<Channel<U> >(it->second);
     }
 
     return ret;
@@ -95,7 +95,7 @@ const typename Channel<U>::Optional VariantChannelMap<T...>::getOptional(std::st
     auto it = this->find(name);
     if(it != this->end() && it->second.template is_type<U>())
     {
-        ret = boost::get<Channel<U> >(it->second);
+        ret = std::get<Channel<U> >(it->second);
     }
 
     return ret;

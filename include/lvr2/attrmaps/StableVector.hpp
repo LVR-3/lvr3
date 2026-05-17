@@ -37,8 +37,9 @@
 
 #include <vector>
 #include <utility>
-#include <boost/optional.hpp>
-#include <boost/shared_array.hpp>
+#include <optional>
+#include <functional>
+#include <memory>
 
 using std::move;
 using std::vector;
@@ -62,12 +63,12 @@ class StableVectorIterator
 {
 private:
     /// Reference to the deleted marker array this iterator belongs to
-    const vector<boost::optional<ElemT>>* m_elements;
+    const vector<std::optional<ElemT>>* m_elements;
 
     /// Current position in the vector
     size_t m_pos;
 public:
-    StableVectorIterator(const vector<boost::optional<ElemT>>* deleted, bool startAtEnd = false);
+    StableVectorIterator(const vector<std::optional<ElemT>>* deleted, bool startAtEnd = false);
     constexpr StableVectorIterator(const StableVectorIterator<HandleT, ElemT>&) = default;
 
     StableVectorIterator& operator=(const StableVectorIterator& other);
@@ -128,7 +129,7 @@ public:
      */
     StableVector(size_t countElements, const ElementType& defaultValue);
 
-    StableVector(size_t countElements, const boost::shared_array<ElementType>& sharedArray);
+    StableVector(size_t countElements, const std::shared_ptr<ElementType[]>& sharedArray);
 
     /**
      * @brief Adds the given element to the vector.
@@ -193,7 +194,7 @@ public:
      * Returns `none` if the element was deleted or if the handle is out of
      * bounds.
      */
-    boost::optional<ElementType&> get(HandleType handle);
+    std::optional<std::reference_wrapper<ElementType>> get(HandleType handle);
 
     /**
      * @brief Returns the element referred to by `handle`.
@@ -201,7 +202,7 @@ public:
      * Returns `none` if the element was deleted or if the handle is out of
      * bounds.
      */
-    boost::optional<const ElementType&> get(HandleType handle) const;
+    std::optional<std::reference_wrapper<const ElementType>> get(HandleType handle) const;
 
     /**
      * @brief Set a value for the existing `handle`.
@@ -279,7 +280,7 @@ private:
     size_t m_usedCount;
 
     /// Vector for stored elements
-    vector<boost::optional<ElementType>> m_elements;
+    vector<std::optional<ElementType>> m_elements;
 
     /**
      * @brief Assert that the requested handle is not deleted or throw an

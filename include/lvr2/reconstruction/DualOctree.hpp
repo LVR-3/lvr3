@@ -35,7 +35,7 @@
 #ifndef DualOctree_HPP_
 #define DualOctree_HPP_
 
-#include <boost/thread.hpp>
+#include <mutex>
 #include "OctreeTables.hpp"
 
 namespace lvr2

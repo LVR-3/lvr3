@@ -120,7 +120,7 @@ void BigGrid<BaseVecT>::initFromLineReader(LineReader &lineReader)
 
     while (lineReader.ok())
     {
-        auto a = boost::static_pointer_cast<LineType>(lineReader.getNextPoints(rsize, m_pointBufferSize));
+        auto a = std::static_pointer_cast<LineType>(lineReader.getNextPoints(rsize, m_pointBufferSize));
         if (rsize <= 0 && !lineReader.ok())
         {
             break;
@@ -184,7 +184,7 @@ void BigGrid<BaseVecT>::initFromLineReader(LineReader &lineReader)
 
     while (lineReader.ok())
     {
-        auto a = boost::static_pointer_cast<LineType>(lineReader.getNextPoints(rsize, m_pointBufferSize));
+        auto a = std::static_pointer_cast<LineType>(lineReader.getNextPoints(rsize, m_pointBufferSize));
         if (rsize <= 0 && !lineReader.ok())
         {
             break;
@@ -296,7 +296,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
         scan->load();
 
         size_t numPoints = scan->points->numPoints();
-        boost::shared_array<float> points = scan->points->getPointArray();
+        std::shared_ptr<float[]> points = scan->points->getPointArray();
 
         // Get transformation from scan position
         Transformd finalPose = pos->transformation;
@@ -435,7 +435,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
         ScanPtr scan = pos->lidars[0]->scans[0];
         scan->load();
         size_t numPoints = scan->points->numPoints();
-        boost::shared_array<float> points = scan->points->getPointArray();
+        std::shared_ptr<float[]> points = scan->points->getPointArray();
 
         for (size_t k = 0; k < numPoints; k++)
         {

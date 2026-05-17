@@ -51,8 +51,8 @@ namespace lvr2
 {
 template <typename BaseVecT>
 ChunkingPipeline<BaseVecT>::ChunkingPipeline(
-        const boost::filesystem::path& hdf5Path,
-        const boost::filesystem::path& configPath,
+        const std::filesystem::path& hdf5Path,
+        const std::filesystem::path& configPath,
         std::shared_ptr<ChunkManager> chunkManager) :  m_hdf5Path(hdf5Path), m_configPath(configPath)
 {
     if (chunkManager != nullptr)
@@ -70,7 +70,7 @@ ChunkingPipeline<BaseVecT>::ChunkingPipeline(
 template <typename BaseVecT>
 void ChunkingPipeline<BaseVecT>::parseYAMLConfig()
 {
-    if (boost::filesystem::exists(m_configPath) && boost::filesystem::is_regular_file(m_configPath))
+    if (std::filesystem::exists(m_configPath) && std::filesystem::is_regular_file(m_configPath))
     {
         YAML::Node config = YAML::LoadFile(m_configPath.string());
 
@@ -155,7 +155,7 @@ void ChunkingPipeline<BaseVecT>::practicabilityAnalysis(HalfEdgeMesh<BaseVecT>& 
 }
 
 template <typename BaseVecT>
-bool ChunkingPipeline<BaseVecT>::getScanProject(const boost::filesystem::path& dirPath)
+bool ChunkingPipeline<BaseVecT>::getScanProject(const std::filesystem::path& dirPath)
 {
     auto hdf5Project = lvr2::io::scan::load_project(
         m_hdf5Path.string(),
@@ -201,7 +201,7 @@ bool ChunkingPipeline<BaseVecT>::getScanProject(const boost::filesystem::path& d
 }
 
 template <typename BaseVecT>
-bool ChunkingPipeline<BaseVecT>::start(const boost::filesystem::path& scanDir)
+bool ChunkingPipeline<BaseVecT>::start(const std::filesystem::path& scanDir)
 {
     if (m_running)
     {

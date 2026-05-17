@@ -38,7 +38,7 @@
 
 using std::ifstream;
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "lvr2/io/modelio/AsciiIO.hpp"
 #include "lvr2/util/Progress.hpp"
@@ -55,7 +55,7 @@ ModelPtr AsciiIO::read(
         const int &rPos, const int& gPos, const int& bPos, const int &iPos)
 {
     // Check extension
-    boost::filesystem::path selectedFile(filename);
+    std::filesystem::path selectedFile(filename);
     std::string extension(selectedFile.extension().string());
 
     if ( extension != ".pts" && extension != ".3d" && extension != ".xyz" && extension != ".txt" )
@@ -227,7 +227,7 @@ ModelPtr AsciiIO::read(
 ModelPtr AsciiIO::read(string filename)
 {
     // Check extension
-    boost::filesystem::path selectedFile(filename);
+    std::filesystem::path selectedFile(filename);
     string extension(selectedFile.extension().string());
 
     if ( extension != ".pts" && extension != ".3d" && extension != ".xyz" && extension != ".txt" )

@@ -32,7 +32,7 @@
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/util/Progress.hpp"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include <iostream>
 #include <fstream>
@@ -280,12 +280,12 @@ int main(int argc, char** argv)
     size_t totalNumPoints = 0;
 
     // Check given arguments
-    boost::filesystem::path inputDir(options.inputDir());
-    if(boost::filesystem::exists(inputDir) && boost::filesystem::is_directory(inputDir))
+    std::filesystem::path inputDir(options.inputDir());
+    if(std::filesystem::exists(inputDir) && std::filesystem::is_directory(inputDir))
     {
         // Loop over directory and store names of all .ply files
-        boost::filesystem::directory_iterator end;
-        for(boost::filesystem::directory_iterator it(inputDir); it != end; ++it)
+        std::filesystem::directory_iterator end;
+        for(std::filesystem::directory_iterator it(inputDir); it != end; ++it)
         {
             std::string extension = it->path().extension().string();
             if(extension == ".ply")

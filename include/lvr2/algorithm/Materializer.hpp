@@ -36,9 +36,9 @@
 #ifndef LVR2_ALGORITHM_MATERIALIZER_H_
 #define LVR2_ALGORITHM_MATERIALIZER_H_
 
-#include <boost/shared_ptr.hpp>
-#include <boost/smart_ptr/make_shared.hpp>
-#include <boost/optional.hpp>
+#include <memory>
+#include <memory>
+#include <optional>
 
 #include "lvr2/geometry/BaseMesh.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
@@ -75,13 +75,13 @@ struct MaterializerResult
     DenseClusterMap<Material> m_clusterMaterials;
 
     /// A stable vector of textures. each texture is identified by a tex.-handle
-    boost::optional<StableVector<TextureHandle, Texture>> m_textures;
+    std::optional<StableVector<TextureHandle, Texture>> m_textures;
 
     /// Cluster texture coordinates for each vertex
-    boost::optional<SparseVertexMap<ClusterTexCoordMapping>> m_vertexTexCoords;
+    std::optional<SparseVertexMap<ClusterTexCoordMapping>> m_vertexTexCoords;
 
     /// Keypoints
-    boost::optional<std::unordered_map<BaseVecT, std::vector<float>>> m_keypoints;
+    std::optional<std::unordered_map<BaseVecT, std::vector<float>>> m_keypoints;
 
     /**
      * @brief Constructor
@@ -197,7 +197,7 @@ private:
 
     /// Texturizers
     using TexturizerPtrVec = std::vector<std::shared_ptr<Texturizer<BaseVecT>>>;
-    boost::optional<TexturizerPtrVec> m_texturizers;
+    std::optional<TexturizerPtrVec> m_texturizers;
 
 };
 

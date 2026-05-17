@@ -47,7 +47,7 @@
 #include <cuda_runtime.h>
 #include <driver_types.h>
 
-#include <boost/shared_array.hpp>
+#include <memory>
 
 namespace lvr2
 {
@@ -62,7 +62,7 @@ static void HandleError(cudaError_t err, const char *file, int line)
 #define HANDLE_ERROR( err ) (HandleError( err, __FILE__, __LINE__ ))
 
 using Vec = BaseVector<float>;
-typedef boost::shared_array<float> floatArr;
+typedef std::shared_ptr<float[]> floatArr;
 typedef ColorVertex<float, unsigned char> cVertex ;
 typedef QueryPoint<Vec> QueryPointC;
 
@@ -192,7 +192,7 @@ private:
     LBPointArray<unsigned char>* kd_tree_splits; // owned by kd_tree_gen
 
     LBPointArray<float> Result_Normals;
-    boost::shared_ptr<LBKdTree> kd_tree_gen;
+    std::shared_ptr<LBKdTree> kd_tree_gen;
 
     float m_vx, m_vy, m_vz;
     int m_k, m_ki, m_kd;

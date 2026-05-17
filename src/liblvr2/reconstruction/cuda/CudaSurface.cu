@@ -1161,7 +1161,7 @@ void CudaSurface::GPU_NN()
 void CudaSurface::initKdTree() {
 
 
-    kd_tree_gen = boost::shared_ptr<LBKdTree>(new LBKdTree(this->V, OpenMPConfig::getNumThreads() ) );
+    kd_tree_gen = std::shared_ptr<LBKdTree>(new LBKdTree(this->V, OpenMPConfig::getNumThreads() ) );
     this->kd_tree_values = kd_tree_gen->getKdTreeValues().get();
     this->kd_tree_splits = kd_tree_gen->getKdTreeSplits().get();
 

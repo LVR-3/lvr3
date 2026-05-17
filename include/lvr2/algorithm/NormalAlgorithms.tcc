@@ -44,15 +44,15 @@ namespace lvr2
 {
 
 template <typename BaseVecT>
-boost::optional<Normal<typename BaseVecT::CoordType>> getFaceNormal(std::array<BaseVecT, 3> vertices)
+std::optional<Normal<typename BaseVecT::CoordType>> getFaceNormal(std::array<BaseVecT, 3> vertices)
 {
     auto v1 = vertices[0];
     auto v2 = vertices[1];
     auto v3 = vertices[2];
     auto normalDir = (v1 - v2).cross(v1 - v3);
     return normalDir.length2() == 0
-        ? boost::none
-        : boost::optional<Normal<typename BaseVecT::CoordType>>(Normal<typename BaseVecT::CoordType>(normalDir));
+        ? std::nullopt
+        : std::optional<Normal<typename BaseVecT::CoordType>>(Normal<typename BaseVecT::CoordType>(normalDir));
 }
 
 template <typename BaseVecT>
@@ -73,7 +73,7 @@ DenseFaceMap<Normal<typename BaseVecT::CoordType>> calcFaceNormals(const BaseMes
 }
 
 template <typename BaseVecT>
-boost::optional<Normal<typename BaseVecT::CoordType>> interpolatedVertexNormal(
+std::optional<Normal<typename BaseVecT::CoordType>> interpolatedVertexNormal(
     const BaseMesh<BaseVecT>& mesh,
     const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
     VertexHandle handle
@@ -84,7 +84,7 @@ boost::optional<Normal<typename BaseVecT::CoordType>> interpolatedVertexNormal(
     // Return none, if vertex does not have connected faces
     if (faces.empty())
     {
-        return boost::none;
+        return std::nullopt;
     }
 
     // Average normal over all connected faces
@@ -96,7 +96,7 @@ boost::optional<Normal<typename BaseVecT::CoordType>> interpolatedVertexNormal(
 
     // It is indeed possible that `v` is the zero vector here: if there are two
     // faces with normals pointing into exactly different directions.
-    return v.length2() == 0 ? boost::none : boost::optional<Normal<typename BaseVecT::CoordType>>(v.normalized());
+    return v.length2() == 0 ? std::nullopt : std::optional<Normal<typename BaseVecT::CoordType>>(v.normalized());
 }
 
 template<typename BaseVecT>

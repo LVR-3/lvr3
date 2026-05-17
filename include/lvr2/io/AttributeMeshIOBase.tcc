@@ -185,12 +185,12 @@ bool AttributeMeshIOBase::addAttributeMap(const MapT &map, const std::string &na
 }
 
 template <typename MapT>
-boost::optional<MapT> AttributeMeshIOBase::getDenseAttributeMap(const std::string &name)
+std::optional<MapT> AttributeMeshIOBase::getDenseAttributeMap(const std::string &name)
 {
   typename AttributeChannel<typename channel_type<typename MapT::ValueType>::type>::Optional channel_opt;
-  if (getChannel(attribute_type<typename MapT::HandleType>::attr_group, name, channel_opt) && channel_opt && channel_opt.get().width() == channel_type<typename MapT::ValueType>::w)
+  if (getChannel(attribute_type<typename MapT::HandleType>::attr_group, name, channel_opt) && channel_opt && channel_opt.value().width() == channel_type<typename MapT::ValueType>::w)
   {
-    AttributeChannel<typename channel_type<typename MapT::ValueType>::type> &channel = channel_opt.get();
+    AttributeChannel<typename channel_type<typename MapT::ValueType>::type> &channel = channel_opt.value();
     MapT map;
     map.reserve(channel.numElements());
     for (size_t i = 0; i < channel.numElements(); i++)
@@ -199,18 +199,18 @@ boost::optional<MapT> AttributeMeshIOBase::getDenseAttributeMap(const std::strin
     }
     return map;
   }
-  return boost::none;
+  return std::nullopt;
 }
 
 template <typename MapT>
-boost::optional<MapT> AttributeMeshIOBase::getAttributeMap(const std::string &name)
+std::optional<MapT> AttributeMeshIOBase::getAttributeMap(const std::string &name)
 {
   typename AttributeChannel<typename channel_type<typename MapT::ValueType>::type>::Optional values_opt;
   typename IndexChannel::Optional indices_opt;
-  if (getChannel(attribute_type<typename MapT::HandleType>::attr_group, name + "_idx", indices_opt) && getChannel(attribute_type<typename MapT::HandleType>::attr_group, name, values_opt) && indices_opt && values_opt && indices_opt.get().width() == 1 && values_opt.get().width() == channel_type<typename MapT::ValueType>::w && indices_opt.get().numElements() == values_opt.get().numElements())
+  if (getChannel(attribute_type<typename MapT::HandleType>::attr_group, name + "_idx", indices_opt) && getChannel(attribute_type<typename MapT::HandleType>::attr_group, name, values_opt) && indices_opt && values_opt && indices_opt.value().width() == 1 && values_opt.value().width() == channel_type<typename MapT::ValueType>::w && indices_opt.value().numElements() == values_opt.value().numElements())
   {
-    auto &indices = indices_opt.get();
-    auto &values = values_opt.get();
+    auto &indices = indices_opt.value();
+    auto &values = values_opt.value();
     MapT map;
 
     map.reserve(indices.numElements());
@@ -220,7 +220,7 @@ boost::optional<MapT> AttributeMeshIOBase::getAttributeMap(const std::string &na
     }
     return map;
   }
-  return boost::none;
+  return std::nullopt;
 }
 
 } /* namespace lvr2 */

@@ -4,7 +4,7 @@
 #include "lvr2/io/MeshStores.hpp"
 #include "lvr2/util/Hdf5Util.hpp"
 
-#include <boost/shared_array.hpp>
+#include <memory>
 
 #include <highfive/H5DataSet.hpp>
 #include <highfive/H5DataSpace.hpp>
@@ -26,12 +26,12 @@ constexpr const char* kChunkSizeName = "size";
 constexpr const char* kBoundingBoxName = "bounding_box";
 
 template<typename T>
-boost::shared_array<T> loadArray(const std::shared_ptr<HighFive::File>& file,
+std::shared_ptr<T[]> loadArray(const std::shared_ptr<HighFive::File>& file,
                                  const std::string& group,
                                  const std::string& name,
                                  std::vector<std::size_t>& dimensions)
 {
-    boost::shared_array<T> result;
+    std::shared_ptr<T[]> result;
     if (!file || !file->isValid() || !hdf5util::exist(file, group))
     {
         return result;
@@ -61,7 +61,7 @@ void saveArray(const std::shared_ptr<HighFive::File>& file,
                const std::string& group,
                const std::string& name,
                std::vector<std::size_t> dimensions,
-               boost::shared_array<T> data)
+               std::shared_ptr<T[]> data)
 {
     if (!file || !file->isValid())
     {
@@ -151,7 +151,7 @@ void ChunkStore::open(const std::string& filename)
 
 void ChunkStore::saveAmount(lvr2::BaseVector<std::size_t> amount)
 {
-    boost::shared_array<std::size_t> values(new std::size_t[3]{amount.x, amount.y, amount.z});
+    std::shared_ptr<std::size_t[]> values(new std::size_t[3]{amount.x, amount.y, amount.z});
     saveArray(state_->file, kChunksName, kAmountName, {3, 1}, values);
 }
 

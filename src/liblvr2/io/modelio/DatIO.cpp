@@ -37,7 +37,7 @@
 #include <lvr2/util/Logging.hpp>
 #include "lvr2/util/Progress.hpp"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <iostream>
 #include <fstream>
 #include <vector>

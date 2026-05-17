@@ -4,7 +4,9 @@
 #include <string>
 #include <vector>
 #include <regex> 
-#include <boost/optional.hpp>
+#include <memory>
+#include <optional>
+#include <typeindex>
 #include <yaml-cpp/yaml.h>
 #include <unordered_map>
 
@@ -68,7 +70,7 @@ public:
         const std::string& group,
         const std::string& container) const = 0;
 
-    virtual boost::optional<cv::Mat> loadImage(
+    virtual std::optional<cv::Mat> loadImage(
         const std::string& group,
         const std::string& container) const = 0;
 
@@ -142,7 +144,7 @@ public:
 
     // Shortcut
     template<typename T>
-    boost::shared_array<T> loadArray(
+    std::shared_ptr<T[]> loadArray(
         const std::string& group, 
         const std::string& container, 
         std::vector<size_t>& dims) const;
@@ -152,73 +154,73 @@ public:
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<char>& data) const = 0;
+        const std::shared_ptr<char[]>& data) const = 0;
 
     virtual void saveUCharArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<unsigned char>& data) const = 0;
+        const std::shared_ptr<unsigned char[]>& data) const = 0;
 
     virtual void saveShortArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<short>& data) const = 0;
+        const std::shared_ptr<short[]>& data) const = 0;
 
     virtual void saveUShortArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<unsigned short>& data) const = 0;
+        const std::shared_ptr<unsigned short[]>& data) const = 0;
 
     virtual void saveUInt16Array(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<uint16_t>& data) const = 0;
+        const std::shared_ptr<uint16_t[]>& data) const = 0;
 
     virtual void saveIntArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<int>& data) const = 0;
+        const std::shared_ptr<int[]>& data) const = 0;
 
     virtual void saveUIntArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<unsigned int>& data) const = 0;
+        const std::shared_ptr<unsigned int[]>& data) const = 0;
 
     virtual void saveLIntArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<long int>& data) const = 0;
+        const std::shared_ptr<long int[]>& data) const = 0;
 
     virtual void saveULIntArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<unsigned long int>& data) const = 0;
+        const std::shared_ptr<unsigned long int[]>& data) const = 0;
 
     virtual void saveFloatArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<float>& data) const = 0;
+        const std::shared_ptr<float[]>& data) const = 0;
 
     virtual void saveDoubleArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<double>& data) const = 0;
+        const std::shared_ptr<double[]>& data) const = 0;
 
     virtual void saveBoolArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<bool>& data) const = 0;
+        const std::shared_ptr<bool[]>& data) const = 0;
 
     // shortcut
     template<typename T>
@@ -226,7 +228,7 @@ public:
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<T>& data) const;
+        const std::shared_ptr<T[]>& data) const;
 
     virtual bool exists(const std::string& group) const = 0;
     virtual bool exists(const std::string& group, const std::string& container) const = 0;

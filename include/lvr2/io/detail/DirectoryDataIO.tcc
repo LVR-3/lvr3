@@ -2,9 +2,9 @@
 namespace lvr2 {
 
 template<typename T>
-boost::shared_array<T> DataIO::load()
+std::shared_ptr<T[]> DataIO::load()
 {
-    boost::shared_array<T> ret;
+    std::shared_ptr<T[]> ret;
     
     movePosition(sizeof(Header) + m_header.JSON_BYTES);
 
@@ -16,9 +16,9 @@ boost::shared_array<T> DataIO::load()
 }
 
 template<typename T>
-boost::shared_array<T> DataIO::load(std::vector<size_t>& shape)
+std::shared_ptr<T[]> DataIO::load(std::vector<size_t>& shape)
 {
-    boost::shared_array<T> ret;
+    std::shared_ptr<T[]> ret;
     shape.clear();
 
     YAML::Node meta = loadMeta();
@@ -37,7 +37,7 @@ boost::shared_array<T> DataIO::load(std::vector<size_t>& shape)
 template<typename T>
 void DataIO::save(
     const std::vector<size_t>& shape, 
-    const boost::shared_array<T>& data)
+    const std::shared_ptr<T[]>& data)
 {
     Header header;
     header.MAGIC[0] = 'd';

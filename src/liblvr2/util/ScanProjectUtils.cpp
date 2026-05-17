@@ -7,7 +7,7 @@
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/scan.hpp"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/iostreams/stream.hpp>
 
@@ -30,7 +30,7 @@ std::string upperSchemaName(std::string schema)
     return schema;
 }
 
-bool isHdf5Path(const boost::filesystem::path& path)
+bool isHdf5Path(const std::filesystem::path& path)
 {
     const std::string extension = path.extension().string();
     return extension == ".h5" || extension == ".hdf5";
@@ -74,7 +74,7 @@ lvr2::io::storage::Result<lvr2::io::scan::Schema> hdf5ProjectStoreSchema(const s
 
 lvr2::io::storage::Result<lvr2::io::scan::LoadOptions> loadOptionsForScanProject(
     const std::string& schema,
-    const boost::filesystem::path& sourcePath,
+    const std::filesystem::path& sourcePath,
     bool loadData)
 {
     lvr2::io::scan::LoadOptions options;
@@ -107,7 +107,7 @@ lvr2::io::storage::Result<lvr2::io::scan::LoadOptions> loadOptionsForScanProject
 
 lvr2::io::storage::Result<lvr2::io::scan::SaveOptions> saveOptionsForScanProject(
     const std::string& schema,
-    const boost::filesystem::path& targetPath)
+    const std::filesystem::path& targetPath)
 {
     lvr2::io::scan::SaveOptions options;
     if (isHdf5Path(targetPath))
@@ -236,7 +236,7 @@ std::pair<ScanPtr, Transformd> scanFromProject(ScanProjectPtr project, size_t sc
 
 ScanProjectPtr scanProjectFromHDF5(std::string file, const std::string& schemaName)
 {
-    auto options = loadOptionsForScanProject(schemaName, boost::filesystem::path(file), false);
+    auto options = loadOptionsForScanProject(schemaName, std::filesystem::path(file), false);
     if (!options)
     {
         logStorageError("[Load Scan Project from HDF5] Unsupported scan-project options", options.error());
@@ -290,8 +290,8 @@ ScanProjectPtr scanProjectFromPLYFiles(const std::string &dir)
 {
         lvr2::log::info("{}", "[Load Scan Project from PLY] Creating scan project from a directory of .ply files...");
     ScanProjectPtr scanProject(new ScanProject);
-    boost::filesystem::directory_iterator it{dir};
-    while (it != boost::filesystem::directory_iterator{})
+    std::filesystem::directory_iterator it{dir};
+    while (it != std::filesystem::directory_iterator{})
     {
         string ext = it->path().extension().string();
         if (ext == ".ply")
@@ -328,8 +328,8 @@ ScanProjectPtr scanProjectFromPLYFiles(const std::string &dir)
 
 ScanProjectPtr loadScanProject(const std::string& schema, const std::string& source, bool loadData)
 {
-    boost::filesystem::path sourcePath(source);
-    if (!boost::filesystem::is_directory(sourcePath) && !isHdf5Path(sourcePath))
+    std::filesystem::path sourcePath(source);
+    if (!std::filesystem::is_directory(sourcePath) && !isHdf5Path(sourcePath))
     {
                 lvr2::log::error("{}{}", "[Load Scan Project] Source is neither a directory nor an HDF5 file: ", source);
         return nullptr;
@@ -414,7 +414,7 @@ void saveScanProject(ScanProjectPtr& project, const std::string& schema, const s
 {
     if(project)
     {
-        boost::filesystem::path targetPath(target);
+        std::filesystem::path targetPath(target);
         auto options = saveOptionsForScanProject(schema, targetPath);
         if (!options)
         {
@@ -609,8 +609,8 @@ ScanProjectPtr loadScanPositionsExplicitly(
     const std::string& root,
     const std::vector<size_t>& positions)
 {
-    boost::filesystem::path targetPath(root);
-    if (!boost::filesystem::is_directory(targetPath) && !isHdf5Path(targetPath))
+    std::filesystem::path targetPath(root);
+    if (!std::filesystem::is_directory(targetPath) && !isHdf5Path(targetPath))
     {
                 lvr2::log::error("{}{}", "[Load Positions Explicitly] : Root is neither a directory nor an HDF5 file: ", root);
         return nullptr;

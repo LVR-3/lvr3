@@ -4,11 +4,11 @@
 
 #include <lvr2/util/Hdf5Util.hpp>
 
-#include <boost/filesystem.hpp>
-#include <boost/algorithm/string.hpp>
+#include <filesystem>
+#include <sstream>
 
 
-namespace bfs = boost::filesystem;
+namespace bfs = std::filesystem;
 
 void printHDF5(const HighFive::Group& g, bool recursive=true, int depth=0)
 {
@@ -61,16 +61,11 @@ Command userInput()
     std::string line;
     std::getline(std::cin, line);
 
-    std::vector<std::string> strs;
-    boost::split(strs, line, boost::is_any_of(" "));
-
     std::vector<std::string> filtered;
-    for(auto str : strs)
+    std::istringstream stream(line);
+    for(std::string token; stream >> token; )
     {
-        if(str != "")
-        {
-            filtered.push_back(str);
-        }
+        filtered.push_back(token);
     }
 
     Command command;

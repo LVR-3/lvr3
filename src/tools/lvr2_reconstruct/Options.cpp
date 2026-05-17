@@ -38,7 +38,7 @@
 #include <iostream>
 #include <fstream>
 
-#include <boost/optional.hpp>
+#include <optional>
 
 namespace std
 {
@@ -470,7 +470,7 @@ bool Options::useGPU() const
     return m_variables.count("useGPU");
 }
 
-boost::optional<vector<float>>  Options::getFlippoint() const
+std::optional<vector<float>>  Options::getFlippoint() const
 {
     vector<float> dest;
     if(m_variables.count("flipPoint"))
@@ -481,7 +481,7 @@ boost::optional<vector<float>>  Options::getFlippoint() const
             return dest;
         }
     }
-    return boost::none;
+    return std::nullopt;
 }
 
 bool Options::texturesFromImages() const
