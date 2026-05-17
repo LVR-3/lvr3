@@ -12,9 +12,6 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include <boost/iostreams/code_converter.hpp>
-#include <boost/iostreams/device/mapped_file.hpp>
-
 #include "Hdf5ReaderOld.hpp"
 #include "ScanTypesCompare.hpp"
 

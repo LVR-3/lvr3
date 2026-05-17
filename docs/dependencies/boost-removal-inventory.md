@@ -1,95 +1,41 @@
 # Boost retirement inventory
 
-Date: 2026-05-17
+Status: complete for active LVR-owned build, package, and implementation surfaces.
 
-## Purpose
+The ROS 2 Lyrical / C++20 pivot removes Boost as an LVR dependency. Active public headers, implementation sources, CMake/package exports, vcpkg metadata, ROS/package metadata, Debian packaging, and CI smoke surfaces no longer require Boost.
 
-This inventory tracks the active Boost surface during the C++20 retirement work. The target end state is no Boost dependency in public headers, implementation code, CMake exports, vcpkg manifests, ROS/Debian metadata, or CI package installation lists unless a future ADR accepts a narrow exception.
+## Final snapshot
 
-## Current status after standard-library replacements
+Regenerate from the repository root with:
 
-The standard-equivalent Boost families have been replaced in active LVR-owned code. Remaining Boost usage is intentionally limited to hard cases assigned to follow-up cleanup:
+```bash
+rg -n --glob '!docs/**' --glob '!tests/boost_retirement_inventory.cmake' --glob '!tests/boost_stdlib_replacements.cmake' --glob '!tests/no_boost_cli_parser_dependency.cmake' --glob '!tests/no_boost_dependency.cmake' '#\s*include\s*[<"]boost/|\bboost::|\bBOOST_|find_(package|dependency)\s*\(\s*Boost|Boost_(COMPONENTS|LIBRARIES|INCLUDE_DIRS|LIBRARY_DIR|LOG_LIBRARY|DIAGNOSTIC_DEFINITIONS)|boost-[A-Za-z0-9.+-]+|libboost-[A-Za-z0-9.+-]+|<depend>boost</depend>' include src examples tests cmake package.xml vcpkg.json CMakePresets.json Singularity.def debian .github .gitlab-ci.yml
+```
 
-- `boost::iostreams::mapped_file` and related streams/code-converter use in large-grid/storage utilities;
-- Boost archive serialization in `BigVolumen`;
-- Boost property-tree XML parsing in the Riegl project converter;
-- Boost.MPI / DateTime package/link remnants that still need dependency isolation or deletion;
-- generic Boost package/export plumbing needed only while the hard cases remain.
+Expected result: no matches outside historical docs and Boost-specific policy guard names.
 
-Scanned active roots: `include`, `src`, `examples`, `tests`, `cmake`, `package.xml`, `vcpkg.json`, `CMakePresets.json`, `debian`, `.github`, and `.gitlab-ci.yml`. Historical Markdown migration notes and guard scripts are excluded from semantic counts.
+## Standard vocabulary replacements retained
 
-- Active files with Boost tokens: 21
-- Public headers with active Boost tokens: 3
-- `#include <boost/...>` directives: 10 across 7 distinct Boost headers
-- Active `boost::...` references: 14 across 3 distinct namespace names
-- Active `BOOST_*` macro references: 0
-- Build/package/CI Boost references: 41
+Earlier cleanup replaced standard-equivalent families with C++20 vocabulary: `std::filesystem`, `std::optional`, `std::variant`, `std::shared_ptr<T[]>`, `std::span`, and `std::chrono`.
 
-## Replacement families completed in this slice
+## Removed hard cases
 
-| Family | Replacement | Status |
-|---|---|---|
-| filesystem | `std::filesystem` | complete in active code; `boost-filesystem` package metadata removed |
-| optional | `std::optional` | complete; reference optionals use `std::optional<std::reference_wrapper<T>>` |
-| variant / visitor | `std::variant` + `std::visit` | complete for LVR `Variant` and `VariantChannel` wrappers |
-| shared_array | `std::shared_ptr<T[]>` owner + `std::span` view | complete for current array-owner APIs; prefer vector/span in new APIs |
-| shared_ptr | `std::shared_ptr` / `std::make_shared` | complete |
-| thread / mutex | `std::thread`, `std::jthread`, `std::mutex`, `std::scoped_lock` | mutex usage replaced; no active Boost thread code remains |
-| timer | `std::chrono` | complete for `NodeData` timers; `boost-timer` package metadata removed |
-| algorithm / range helpers | standard/ranges helpers | complete for active string/range helpers |
-| type_index / typeinfo | `std::type_index` or explicit type vocabulary | complete |
-| format | `std::format` or logging facade | complete |
-| foreach | range-for | no active use remains |
-| boost.system | `std::error_code` / filesystem errors | complete in active code |
-| program_options | LVR-owned typed CLI parser | complete in earlier CLI parser cleanup |
-
-## Remaining hard-case owner map
-
-| Hard case | Current locations | Required decision before deletion |
-|---|---|---|
-| `boost::iostreams::mapped_file` | `include/lvr2/reconstruction/BigGrid.hpp`, `include/lvr2/reconstruction/BigGrid.tcc`, `include/lvr2/reconstruction/BigVolumen.hpp`, `src/liblvr2/util/ScanProjectUtils.cpp`, `src/tools/lvr2_hdf5_convert_old/Main.cpp` | Choose an internal byte-span mmap adapter or simpler buffered file I/O; preserve large-grid behavior with smoke tests. |
-| Boost archive serialization | `include/lvr2/reconstruction/BigVolumen.hpp` and package metadata | Replace with explicit versioned binary records or delete unreachable serialization path. |
-| Boost property-tree XML parsing | `src/tools/lvr2_riegl_project_converter/RieglProject.hpp` | Replace with explicit XML parsing or an approved package-backed parser without changing converter behavior. |
-| Boost.MPI packaging | `cmake/Lvr3Dependencies.cmake`, `vcpkg.json`, `debian/control` | No active `boost/mpi` or `boost::mpi` code was found; either remove the package path or isolate an optional MPI path if follow-up review finds one. |
-| DateTime / Boost.Log link remnants | `src/tools/lvr2_dmc_reconstruction`, `src/tools/lvr2_fastsense_reconstruction`, `src/tools/lvr2_gs_reconstruction` CMake files plus `boost-date-time` package metadata | Verify the tools no longer need Boost.Log/DateTime after std-format spdlog migration; remove direct link variables. |
-| Generic Boost package/export plumbing | `cmake/Lvr3Dependencies.cmake`, `cmake/lvr2-config.cmake.in`, `cmake/Lvr3Packaging.cmake`, `package.xml`, `debian/control`, `vcpkg.json`, CI release workflow | Remove once hard-case code/package owners are gone. |
-
-## Public header leakage that remains
-
-| Public header | Families |
+| Former Boost surface | Replacement |
 |---|---|
-| `include/lvr2/reconstruction/BigGrid.hpp` | mapped file |
-| `include/lvr2/reconstruction/BigGrid.tcc` | mapped file params |
-| `include/lvr2/reconstruction/BigVolumen.hpp` | mapped file; Boost archive serialization |
+| `boost::iostreams::mapped_file` in BigGrid and scan-project PLY export scratch buffers | `lvr2::util::MappedFile`, a small C++20/POSIX file-backed byte-span scratch buffer |
+| Unused Boost archive includes in `BigVolumen` | Removed; remaining BigGrid persistence is explicit binary value reads/writes |
+| Boost property-tree XML parsing in the Riegl project converter | Tool-local XML parser for the specific RiSCAN project fields consumed by the converter |
+| Boost.MPI package path | Removed; no active `boost/mpi` or `boost::mpi` code exists |
+| Boost.DateTime / Boost.Log link remnants | Removed from reconstruction tool CMake links after std-format spdlog migration |
+| Generic Boost package/export plumbing | Removed from CMake dependency discovery, installed config, vcpkg, package.xml, CPack, Debian control, and CI package installs |
 
-No public header retains Boost filesystem, optional, variant, shared-array, shared-pointer, thread/mutex, timer, algorithm/range-helper, format, type-index, or Boost.System leakage.
+## Guards
 
-## Active guards
+- `lvr2_no_boost_dependency` bans active Boost include, namespace, package, CMake, and CI dependency tokens.
+- `lvr2_boost_stdlib_replacements` remains as a targeted regression guard for standard-equivalent Boost families.
+- `lvr2_no_boost_cli_parser_dependency` remains as a targeted CLI parser guard.
+- `lvr2_boost_retirement_inventory` keeps this final inventory present and checks the completed hard-case replacement summary.
 
-- `lvr2_boost_retirement_inventory` keeps this inventory present and checks required owner categories.
-- `lvr2_boost_stdlib_replacements` bans reintroduction of standard-equivalent Boost code/package metadata and catches common migration hazards such as `std::optional<T&>` or stale Boost-optional `.get()` call sites.
-- `lvr2_no_boost_cli_parser_dependency` keeps `boost::program_options` removed.
+## Historical notes
 
-## Regeneration commands
-
-Raw active-token inventory:
-
-```bash
-rg -n --glob '!docs/**' --glob '!tests/boost_retirement_inventory.cmake' --glob '!tests/boost_stdlib_replacements.cmake' --glob '!tests/no_boost_cli_parser_dependency.cmake' '#\s*include\s*[<"]boost/|\bboost::|\bBoost\b|\bBOOST_|boost-[A-Za-z0-9.+-]+|libboost-[A-Za-z0-9.+-]+|Boost_[A-Za-z0-9_]+|<depend>boost</depend>|libboost-all-dev' include src examples tests cmake package.xml vcpkg.json CMakePresets.json debian .github .gitlab-ci.yml
-```
-
-Standard-equivalent guard mirror:
-
-```bash
-python3 - <<'PY'
-from pathlib import Path
-import re
-banned = re.compile(r'#\s*include\s*[<"]boost/(filesystem|optional|shared_array|shared_ptr|smart_ptr|variant|type_index|core/typeinfo|format|foreach|thread|timer|system|algorithm)|boost::(filesystem|optional|none|shared_array|shared_ptr|make_shared|static_pointer_cast|variant|get|apply_visitor|static_visitor|typeindex|format|thread|mutex|timer|system|algorithm|split|is_any_of|to_upper_copy|core)|BOOST_(FOREACH|CORE)|make_shared_array|std::optional<[^>;]+&|getAttribute<[^;\r\n]+\.get\(')
-for root in ['include', 'src', 'examples', 'tests']:
-    for path in Path(root).rglob('*'):
-        if path.is_file() and path.name not in {'boost_retirement_inventory.cmake', 'boost_stdlib_replacements.cmake', 'no_boost_cli_parser_dependency.cmake'}:
-            if banned.search(path.read_text(errors='ignore')):
-                raise SystemExit(f'Banned standard-equivalent Boost token in {path}')
-print('standard-equivalent Boost guard passed')
-PY
-```
+Earlier Boost retirement work removed standard-equivalent Boost usage and Boost.Program_options first. This final cleanup removed the remaining hard cases and package/export dependency surfaces. Future Boost reintroduction requires a new ADR-approved exception.

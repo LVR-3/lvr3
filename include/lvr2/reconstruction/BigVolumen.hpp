@@ -38,9 +38,6 @@
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/io/DataStruct.hpp"
 
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/iostreams/device/mapped_file.hpp>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -123,9 +120,6 @@ class BigVolumen
     bool m_has_normal;
     bool m_has_color;
 
-    boost::iostreams::mapped_file m_PointFile;
-    boost::iostreams::mapped_file m_NomralFile;
-    boost::iostreams::mapped_file m_ColorFile;
     BoundingBox<BaseVecT> m_bb;
     std::unordered_map<size_t, VolumeCellInfo> m_gridNumPoints;
     float m_scale;

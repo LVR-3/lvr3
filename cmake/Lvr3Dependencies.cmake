@@ -66,12 +66,6 @@ else(MSVC)
   add_compile_options(-fmessage-length=0 -fPIC -Wno-deprecated)
 endif(MSVC)
 
-lvr2_find_package(MPI)
-if(MPI_FOUND)
-    message(STATUS "Found MPI")
-    include_directories(${MPI_CXX_INCLUDE_PATH})
-endif(MPI_FOUND)
-
 ###############################################################################
 # REQUIRED DEPENDENCIES
 ###############################################################################
@@ -147,27 +141,6 @@ message(STATUS "Found GSL")
 lvr2_find_package(Eigen3 REQUIRED)
 # include_directories(${EIGEN3_INCLUDE_DIR})
 # message(STATUS "Found Eigen3: ${EIGEN3_INCLUDE_DIR}")
-
-#------------------------------------------------------------------------------
-# Searching for remaining Boost hard-case dependencies
-#------------------------------------------------------------------------------
-#set(Boost_USE_STATIC_LIBS       ON)
-set(Boost_COMPONENTS
-  serialization
-  iostreams
-  date_time)
-
-if(MPI_FOUND)
-  set(Boost_COMPONENTS ${Boost_COMPONENTS} mpi)
-  message(STATUS "Found MPI. Adding Boost MPI library to required components.")
-endif()
-
-lvr2_find_package(Boost COMPONENTS ${Boost_COMPONENTS} CONFIG REQUIRED QUIET)
-message(STATUS "Found Boost libraries")
-
-link_directories(${Boost_LIBRARY_DIR})
-include_directories(${Boost_INCLUDE_DIRS})
-add_definitions(${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
 
 #------------------------------------------------------------------------------
 # Searching for HDF5
@@ -344,6 +317,7 @@ if(LVR2_WITH_PCL)
         lvr2_find_package(MPI)
         if(MPI_FOUND)
             message(STATUS "PCL and MPI found. Compile with PCL support.")
+            include_directories(${MPI_CXX_INCLUDE_PATH})
             include_directories(${PCL_INCLUDE_DIRS})
             link_directories(${PCL_LIBRARY_DIRS})
             add_definitions(${PCL_DEFINITIONS})
@@ -566,7 +540,6 @@ endif()
 
 if(MSVC)
 set(LVR2_LIB_DEPENDENCIES
-    ${Boost_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${GLUT_LIBRARIES}
     ${GDAL_LIBRARY}
@@ -581,7 +554,6 @@ set(LVR2_LIB_DEPENDENCIES
     )
 else()
 set(LVR2_LIB_DEPENDENCIES
-    ${Boost_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${GLUT_LIBRARIES}
     ${GDAL_LIBRARY}
@@ -625,10 +597,6 @@ endif(RiVLib_FOUND)
 if(OPENCL_FOUND)
   list(APPEND LVR2_LIB_DEPENDENCIES ${OpenCL_LIBRARIES})
 endif(OPENCL_FOUND)
-
-if(MPI_FOUND)
-  set(LVR2_LIB_DEPENDENCIES ${LVR2_LIB_DEPENDENCIES} ${MPI_LIBRARIES})
-endif(MPI_FOUND)
 
 if(MSVC)
   list(APPEND LVR2_LIB_DEPENDENCIES yaml-cpp)

@@ -23,7 +23,7 @@ set(DMC_DEPENDENCIES
 #####################################################################################
 
 add_executable(lvr2_dmc_reconstruction ${DMC_RECONSTRUCTION_SOURCES})
-target_link_libraries(lvr2_dmc_reconstruction ${DMC_DEPENDENCIES} ${Boost_LOG_LIBRARY_RELEASE})
+target_link_libraries(lvr2_dmc_reconstruction ${DMC_DEPENDENCIES})
 
 install(TARGETS lvr2_dmc_reconstruction
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

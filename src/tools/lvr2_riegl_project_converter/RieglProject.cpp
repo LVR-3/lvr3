@@ -28,14 +28,369 @@
 #include "RieglProject.hpp"
 
 #include <algorithm>
+#include <cctype>
+#include <fstream>
 #include <iostream>
+#include <iterator>
 #include <regex>
+#include <stdexcept>
+#include <string_view>
+#include <unordered_map>
+#include <utility>
 
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/registration/TransformUtils.hpp"
 namespace lvr2
 {
+
+
+namespace detail
+{
+
+namespace
+{
+
+std::string trim(std::string value)
+{
+    auto is_space = [](unsigned char c) { return std::isspace(c) != 0; };
+    while (!value.empty() && is_space(static_cast<unsigned char>(value.front())))
+    {
+        value.erase(value.begin());
+    }
+    while (!value.empty() && is_space(static_cast<unsigned char>(value.back())))
+    {
+        value.pop_back();
+    }
+    return value;
+}
+
+std::string decodeXmlEntities(std::string_view text)
+{
+    std::string out;
+    out.reserve(text.size());
+    for (std::size_t i = 0; i < text.size(); ++i)
+    {
+        if (text[i] != '&')
+        {
+            out.push_back(text[i]);
+            continue;
+        }
+
+        const auto end = text.find(';', i + 1);
+        if (end == std::string_view::npos)
+        {
+            out.push_back(text[i]);
+            continue;
+        }
+
+        const auto entity = text.substr(i + 1, end - i - 1);
+        if (entity == "amp") out.push_back('&');
+        else if (entity == "lt") out.push_back('<');
+        else if (entity == "gt") out.push_back('>');
+        else if (entity == "quot") out.push_back('"');
+        else if (entity == "apos") out.push_back('\'');
+        else
+        {
+            out.append(text.substr(i, end - i + 1));
+        }
+        i = end;
+    }
+    return out;
+}
+
+} // namespace
+
+class RieglXmlNode
+{
+  public:
+    std::string name;
+    std::string text;
+    std::unordered_map<std::string, std::string> attributes;
+    std::vector<RieglXmlNode> children;
+
+    [[nodiscard]] const RieglXmlNode& child_path(std::string_view path) const
+    {
+        const RieglXmlNode* current = this;
+        std::size_t begin = 0;
+        while (begin <= path.size())
+        {
+            const auto end = path.find('.', begin);
+            const auto segment = path.substr(begin, end == std::string_view::npos ? path.size() - begin : end - begin);
+            if (!segment.empty())
+            {
+                current = &current->child(segment);
+            }
+            if (end == std::string_view::npos)
+            {
+                break;
+            }
+            begin = end + 1;
+        }
+        return *current;
+    }
+
+    [[nodiscard]] const RieglXmlNode& child(std::string_view child_name) const
+    {
+        for (const auto& child_node : children)
+        {
+            if (child_node.name == child_name)
+            {
+                return child_node;
+            }
+        }
+        throw std::runtime_error("missing XML child: " + std::string(child_name));
+    }
+
+    [[nodiscard]] std::string get_string(std::string_view path) const
+    {
+        constexpr std::string_view attr_prefix = "<xmlattr>.";
+        constexpr std::string_view attr_segment = ".<xmlattr>.";
+
+        if (path.starts_with(attr_prefix))
+        {
+            return attribute(path.substr(attr_prefix.size()));
+        }
+
+        const auto attr_pos = path.find(attr_segment);
+        if (attr_pos != std::string_view::npos)
+        {
+            const auto node_path = path.substr(0, attr_pos);
+            const auto attr_name = path.substr(attr_pos + attr_segment.size());
+            return child_path(node_path).attribute(attr_name);
+        }
+
+        return trim(child_path(path).text);
+    }
+
+    [[nodiscard]] float get_float(std::string_view path) const
+    {
+        return std::stof(get_string(path));
+    }
+
+  private:
+    [[nodiscard]] std::string attribute(std::string_view attr_name) const
+    {
+        const auto it = attributes.find(std::string(attr_name));
+        if (it == attributes.end())
+        {
+            throw std::runtime_error("missing XML attribute: " + std::string(attr_name));
+        }
+        return it->second;
+    }
+};
+
+class RieglXmlParser
+{
+  public:
+    explicit RieglXmlParser(std::string input) : m_input(std::move(input)) {}
+
+    [[nodiscard]] RieglXmlNode parse_document()
+    {
+        RieglXmlNode root;
+        root.name = "#document";
+        while (true)
+        {
+            skip_ws();
+            if (m_pos >= m_input.size())
+            {
+                break;
+            }
+            if (m_input[m_pos] != '<')
+            {
+                ++m_pos;
+                continue;
+            }
+            if (skip_markup())
+            {
+                continue;
+            }
+            root.children.push_back(parse_node());
+        }
+        return root;
+    }
+
+  private:
+    [[nodiscard]] bool starts_with(std::string_view token) const
+    {
+        return std::string_view(m_input).substr(m_pos, token.size()) == token;
+    }
+
+    void skip_ws()
+    {
+        while (m_pos < m_input.size() && std::isspace(static_cast<unsigned char>(m_input[m_pos])) != 0)
+        {
+            ++m_pos;
+        }
+    }
+
+    void expect(char expected)
+    {
+        if (m_pos >= m_input.size() || m_input[m_pos] != expected)
+        {
+            throw std::runtime_error(std::string("expected XML character '") + expected + "'");
+        }
+        ++m_pos;
+    }
+
+    [[nodiscard]] std::string read_name()
+    {
+        const auto begin = m_pos;
+        while (m_pos < m_input.size())
+        {
+            const unsigned char c = static_cast<unsigned char>(m_input[m_pos]);
+            if (std::isalnum(c) == 0 && m_input[m_pos] != '_' && m_input[m_pos] != '-' && m_input[m_pos] != ':' && m_input[m_pos] != '.')
+            {
+                break;
+            }
+            ++m_pos;
+        }
+        if (begin == m_pos)
+        {
+            throw std::runtime_error("expected XML name");
+        }
+        return m_input.substr(begin, m_pos - begin);
+    }
+
+    [[nodiscard]] std::string read_quoted_value()
+    {
+        skip_ws();
+        const char quote = m_input.at(m_pos);
+        if (quote != '\'' && quote != '"')
+        {
+            throw std::runtime_error("expected quoted XML attribute value");
+        }
+        ++m_pos;
+        const auto begin = m_pos;
+        const auto end = m_input.find(quote, begin);
+        if (end == std::string::npos)
+        {
+            throw std::runtime_error("unterminated XML attribute value");
+        }
+        m_pos = end + 1;
+        return decodeXmlEntities(std::string_view(m_input).substr(begin, end - begin));
+    }
+
+    bool skip_markup()
+    {
+        if (starts_with("<!--"))
+        {
+            skip_until("-->");
+            return true;
+        }
+        if (starts_with("<?"))
+        {
+            skip_until("?>");
+            return true;
+        }
+        if (starts_with("<![CDATA["))
+        {
+            return false;
+        }
+        if (starts_with("<!"))
+        {
+            skip_until(">");
+            return true;
+        }
+        return false;
+    }
+
+    void skip_until(std::string_view token)
+    {
+        const auto end = m_input.find(std::string(token), m_pos + token.size());
+        if (end == std::string::npos)
+        {
+            throw std::runtime_error("unterminated XML markup");
+        }
+        m_pos = end + token.size();
+    }
+
+    [[nodiscard]] RieglXmlNode parse_node()
+    {
+        expect('<');
+        RieglXmlNode node;
+        node.name = read_name();
+
+        while (true)
+        {
+            skip_ws();
+            if (starts_with("/>"))
+            {
+                m_pos += 2;
+                return node;
+            }
+            if (m_pos < m_input.size() && m_input[m_pos] == '>')
+            {
+                ++m_pos;
+                break;
+            }
+            const auto attr_name = read_name();
+            skip_ws();
+            expect('=');
+            node.attributes[attr_name] = read_quoted_value();
+        }
+
+        while (m_pos < m_input.size())
+        {
+            if (starts_with("</"))
+            {
+                m_pos += 2;
+                const auto close_name = read_name();
+                if (close_name != node.name)
+                {
+                    throw std::runtime_error("mismatched XML closing tag: " + close_name);
+                }
+                skip_ws();
+                expect('>');
+                return node;
+            }
+            if (starts_with("<![CDATA["))
+            {
+                m_pos += 9;
+                const auto end = m_input.find("]]>", m_pos);
+                if (end == std::string::npos)
+                {
+                    throw std::runtime_error("unterminated XML CDATA");
+                }
+                node.text.append(m_input.substr(m_pos, end - m_pos));
+                m_pos = end + 3;
+                continue;
+            }
+            if (m_input[m_pos] == '<')
+            {
+                if (skip_markup())
+                {
+                    continue;
+                }
+                node.children.push_back(parse_node());
+                continue;
+            }
+
+            const auto begin = m_pos;
+            const auto end = m_input.find('<', begin);
+            m_pos = end == std::string::npos ? m_input.size() : end;
+            node.text.append(decodeXmlEntities(std::string_view(m_input).substr(begin, m_pos - begin)));
+        }
+
+        throw std::runtime_error("unterminated XML element: " + node.name);
+    }
+
+    std::string m_input;
+    std::size_t m_pos = 0;
+};
+
+[[nodiscard]] RieglXmlNode readRieglXml(const fs::path& path)
+{
+    std::ifstream input(path);
+    if (!input)
+    {
+        throw std::runtime_error("unable to open XML file: " + path.string());
+    }
+    std::string xml((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
+    return RieglXmlParser(std::move(xml)).parse_document();
+}
+
+} // namespace detail
 
 using Vec = BaseVector<float>;
 
@@ -76,14 +431,14 @@ RieglProject::RieglProject(
 
 }
 
-void RieglProject::parse_scanpositions(pt::ptree project_ptree, unsigned int start, unsigned int end) {
+void RieglProject::parse_scanpositions(const detail::RieglXmlNode& project_ptree, unsigned int start, unsigned int end) {
     int scan_id = 0;
-    for (auto scanpos_info : project_ptree.get_child("project.scanpositions")) {
-        if (scanpos_info.first != "scanposition") continue;
+    for (const auto& scanpos_info : project_ptree.child_path("project.scanpositions").children) {
+        if (scanpos_info.name != "scanposition") continue;
 
-        ScanPosition scanpos;
+        RieglScanPosition scanpos;
 
-        std::string scan_name = scanpos_info.second.get<std::string>("name");
+        std::string scan_name = scanpos_info.get_string("name");
 
         if (!scan_name.length() == 10) {
             std::cout << "[RieglProject] Warning: The scanpos " << scan_name << " is skipped"
@@ -107,10 +462,10 @@ void RieglProject::parse_scanpositions(pt::ptree project_ptree, unsigned int sta
 
         // @TODO What should happen in this case if it is possible?
         //       Currently we take the biggest file but maybe we should merge all scan files.
-        for (auto scan_data : scanpos_info.second.get_child("singlescans")) {
-            if (scan_data.first != "scan") continue;
+        for (const auto& scan_data : scanpos_info.child_path("singlescans").children) {
+            if (scan_data.name != "scan") continue;
 
-            std::string current_scan_filename = scan_data.second.get<std::string>("file");
+            std::string current_scan_filename = scan_data.get_string("file");
 
             // we don't want .mon files
             if (current_scan_filename.find(".mon") != std::string::npos) {
@@ -146,10 +501,10 @@ void RieglProject::parse_scanpositions(pt::ptree project_ptree, unsigned int sta
         }
 
         // parse scanpos transformation
-        std::string transform = scanpos_info.second.get<std::string>("sop.matrix");
+        std::string transform = scanpos_info.get_string("sop.matrix");
         scanpos.transform = string2mat4f(transform);
 
-        parse_images_per_scanpos(scanpos, scanpos_info.second, project_ptree);
+        parse_images_per_scanpos(scanpos, scanpos_info, project_ptree);
 
         // @TODO maybe we shouldn't skip scanpositions only because they have no images.
         if (scanpos.images.empty()) {
@@ -165,22 +520,22 @@ void RieglProject::parse_scanpositions(pt::ptree project_ptree, unsigned int sta
         } else {
             m_scan_positions.push_back(scanpos);
         }
-        
+
         scan_id++;
     }
 
 }
 
-void RieglProject::parse_images_per_scanpos(ScanPosition &scanpos,
-                              pt::ptree scanpos_ptree,
-                              pt::ptree project_ptree) {
+void RieglProject::parse_images_per_scanpos(RieglScanPosition &scanpos,
+                              const detail::RieglXmlNode& scanpos_ptree,
+                              const detail::RieglXmlNode& project_ptree) {
 
-    for (auto img_info : scanpos_ptree.get_child("scanposimages")) {
-        if (img_info.first != "scanposimage") continue;
+    for (const auto& img_info : scanpos_ptree.child_path("scanposimages").children) {
+        if (img_info.name != "scanposimage") continue;
 
-        ImageFile img;
+        RieglImageFile img;
 
-        std::string img_file = img_info.second.get<std::string>("file");
+        std::string img_file = img_info.get_string("file");
         img.image_file = scanpos.scan_file.parent_path().parent_path() / ("SCANPOSIMAGES/" + img_file);
 
 
@@ -195,24 +550,24 @@ void RieglProject::parse_images_per_scanpos(ScanPosition &scanpos,
 
 
         // get orientation of image
-        img.orientation_transform = string2mat4f(img_info.second.get<std::string>("cop.matrix"));
+        img.orientation_transform = string2mat4f(img_info.get_string("cop.matrix"));
 
 
 
         // @TODO refactor mountcalib and camcalib reference search into one...
 
         //get extrinsic transformation for image
-        std::string mountcalib_ref = img_info.second.get<std::string>("mountcalib_ref.<xmlattr>.noderef");
+        std::string mountcalib_ref = img_info.get_string("mountcalib_ref.<xmlattr>.noderef");
         mountcalib_ref = mountcalib_ref.substr(mountcalib_ref.find_last_of('/') + 1);
 
         bool found_mountcalib = false;
-        for (auto mountcalib_info : project_ptree.get_child("project.calibrations.mountcalibs")) {
-            if (mountcalib_info.first != "mountcalib") continue;
-            if (mountcalib_info.second.get<std::string>("<xmlattr>.name") != mountcalib_ref) continue;
+        for (const auto& mountcalib_info : project_ptree.child_path("project.calibrations.mountcalibs").children) {
+            if (mountcalib_info.name != "mountcalib") continue;
+            if (mountcalib_info.get_string("<xmlattr>.name") != mountcalib_ref) continue;
 
             found_mountcalib = true;
 
-            img.extrinsic_transform = string2mat4f(mountcalib_info.second.get<std::string>("matrix"));
+            img.extrinsic_transform = string2mat4f(mountcalib_info.get_string("matrix"));
         }
 
         // skip image if no calibration data was found...
@@ -227,29 +582,29 @@ void RieglProject::parse_images_per_scanpos(ScanPosition &scanpos,
 
 
         //get intrinsic params for image
-        std::string camcalib_ref = img_info.second.get<std::string>("camcalib_ref.<xmlattr>.noderef");
+        std::string camcalib_ref = img_info.get_string("camcalib_ref.<xmlattr>.noderef");
         camcalib_ref = camcalib_ref.substr(camcalib_ref.find_last_of('/') + 1);
 
         bool found_camcalib = false;
-        for (auto camcalib_info : project_ptree.get_child("project.calibrations.camcalibs")) {
-            if (camcalib_info.first != "camcalib_opencv") continue;
-            if (camcalib_info.second.get<std::string>("<xmlattr>.name") != camcalib_ref) continue;
+        for (const auto& camcalib_info : project_ptree.child_path("project.calibrations.camcalibs").children) {
+            if (camcalib_info.name != "camcalib_opencv") continue;
+            if (camcalib_info.get_string("<xmlattr>.name") != camcalib_ref) continue;
 
             found_camcalib = true;
 
-            pt::ptree intrinsic_ptree = camcalib_info.second.get_child("internal_opencv");
+            const auto& intrinsic_ptree = camcalib_info.child_path("internal_opencv");
 
-            img.intrinsic_params[0] = intrinsic_ptree.get<float>("fx");
-            img.intrinsic_params[1] = intrinsic_ptree.get<float>("fy");
-            img.intrinsic_params[2] = intrinsic_ptree.get<float>("cx");
-            img.intrinsic_params[3] = intrinsic_ptree.get<float>("cy");
+            img.intrinsic_params[0] = intrinsic_ptree.get_float("fx");
+            img.intrinsic_params[1] = intrinsic_ptree.get_float("fy");
+            img.intrinsic_params[2] = intrinsic_ptree.get_float("cx");
+            img.intrinsic_params[3] = intrinsic_ptree.get_float("cy");
 
-            img.distortion_params[0] = intrinsic_ptree.get<float>("k1");
-            img.distortion_params[1] = intrinsic_ptree.get<float>("k2");
-            img.distortion_params[2] = intrinsic_ptree.get<float>("k3");
-            img.distortion_params[3] = intrinsic_ptree.get<float>("k4");
-            img.distortion_params[4] = intrinsic_ptree.get<float>("p1");
-            img.distortion_params[5] = intrinsic_ptree.get<float>("p2");
+            img.distortion_params[0] = intrinsic_ptree.get_float("k1");
+            img.distortion_params[1] = intrinsic_ptree.get_float("k2");
+            img.distortion_params[2] = intrinsic_ptree.get_float("k3");
+            img.distortion_params[3] = intrinsic_ptree.get_float("k4");
+            img.distortion_params[4] = intrinsic_ptree.get_float("p1");
+            img.distortion_params[5] = intrinsic_ptree.get_float("p2");
         }
 
         // skip image if no calibration data was found...
@@ -331,7 +686,7 @@ void RieglProject::parse_asciiclouds()
         {
             m_scan_positions[scan_id].scan_file = biggest_cloud_path;
         } else {
-            ScanPosition sp;
+            RieglScanPosition sp;
             sp.scan_file = biggest_cloud_path;
             m_scan_positions.push_back(sp);
         }
@@ -358,8 +713,7 @@ bool RieglProject::parse_project(unsigned int start, unsigned int end) {
     }
 
     // read project.rsp file
-    pt::ptree project_ptree;
-    pt::read_xml(project_file.string(), project_ptree);
+    detail::RieglXmlNode project_ptree = detail::readRieglXml(project_file);
 
     parse_scanpositions(project_ptree, start, end);
 
@@ -381,20 +735,20 @@ bool RieglProject::parse_project(unsigned int start, unsigned int end) {
 std::ostream& operator<<(std::ostream &lhs, const RieglProject &rhs) {
     lhs << "Scan Project dir: " << rhs.m_project_dir << "\n";
 
-    for (const lvr2::ScanPosition &sp : rhs.m_scan_positions) {
+    for (const lvr2::RieglScanPosition &sp : rhs.m_scan_positions) {
         lhs << "\n" << sp;
     }
 
     return lhs;
 }
 
-std::ostream& operator<<(std::ostream &lhs, const ScanPosition &rhs) {
+std::ostream& operator<<(std::ostream &lhs, const RieglScanPosition &rhs) {
     lhs << "Scan File: " << rhs.scan_file << " "
         << fs::file_size(rhs.scan_file) << "\n"
         << rhs.transform
         << "Images: ";
 
-    for (ImageFile img : rhs.images) {
+    for (RieglImageFile img : rhs.images) {
         lhs << "\n\t" << img.image_file.filename() << " " << fs::file_size(img.image_file) << '\n'
             << "Orientation: " << img.orientation_transform << '\n'
             << "Extrinsic: " << img.extrinsic_transform << '\n';

@@ -275,7 +275,6 @@ namespace lvr2
     struct LIDAR : SensorEntity, Transformable, BoundedOptional
     {
         //// META BEGIN
-        // TODO: check boost type_info
         static constexpr char type[] = "lidar";
         SphericalModel model;
         //// META END

@@ -49,7 +49,6 @@ set(_LVR2_SYSTEM_PACKAGE_OPTOUTS
   LZ4
   GSL
   Eigen3
-  Boost
   HDF5
   OpenGL
   GLUT

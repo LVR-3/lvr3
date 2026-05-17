@@ -13,7 +13,7 @@ paths pass `-DBUILD_SHARED_LIBS=ON -DLVR2_BUILD_STATIC_LIBS=OFF`.
 The current Ubuntu/ROS dependency set has verified package or rosdep names for
 Assimp (`libassimp-dev` / `assimp`), tl-expected (`libexpected-dev`), spdlog
 (`libspdlog-dev` / `spdlog`), and the existing system dependencies such as TBB,
-TIFF, GDAL, HDF5, OpenCV, Eigen, Boost, YAML-CPP, OpenGL/GLUT, and OpenCL.
+TIFF, GDAL, HDF5, OpenCV, Eigen, YAML-CPP, OpenGL/GLUT, and OpenCL.
 
 The package-backed CMake build also requires HighFive, rply, and LASlib/LAStools.
 Verified Lyrical/Resolute Debian package names and rosdep keys for those dependencies

@@ -38,8 +38,8 @@
 #include "lvr2/geometry/BoundingBox.hpp"
 #include "lvr2/io/DataStruct.hpp"
 #include "lvr2/types/MatrixTypes.hpp"
+#include "lvr2/util/MappedFile.hpp"
 
-#include <boost/iostreams/device/mapped_file.hpp>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -222,9 +222,9 @@ private:
 
     fs::path m_pathPrefix = "./";
 
-    boost::iostreams::mapped_file m_PointFile;
-    boost::iostreams::mapped_file m_NormalFile;
-    boost::iostreams::mapped_file m_ColorFile;
+    lvr2::util::MappedFile m_PointFile;
+    lvr2::util::MappedFile m_NormalFile;
+    lvr2::util::MappedFile m_ColorFile;
     BoundingBox<BaseVecT> m_bb;
 
     //BoundingBox, of unreconstructed scans

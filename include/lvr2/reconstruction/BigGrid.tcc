@@ -155,28 +155,21 @@ void BigGrid<BaseVecT>::initFromLineReader(LineReader &lineReader)
         m_numPoints += cell.size;
     }
 
-    boost::iostreams::mapped_file_params mmfparam;
-    mmfparam.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
-    mmfparam.new_file_size = sizeof(float) * m_numPoints * 3;
+    m_PointFile.open_truncated(m_pathPrefix / "points.mmf", sizeof(float) * m_numPoints * 3);
+    float *mmfdata = m_PointFile.data_as<float>();
 
-    mmfparam.path = (m_pathPrefix / "points.mmf").string();
-    m_PointFile.open(mmfparam);
-    float *mmfdata = (float *)m_PointFile.data();
-
-    float *mmfdata_normal;
-    unsigned char *mmfdata_color;
+    float *mmfdata_normal = nullptr;
+    unsigned char *mmfdata_color = nullptr;
     if constexpr (LineTypeTraits<LineType>::hasNormal)
     {
-        mmfparam.path = (m_pathPrefix / "normals.mmf").string();
-        m_NormalFile.open(mmfparam);
-        mmfdata_normal = (float *)m_NormalFile.data();
+        m_NormalFile.open_truncated(m_pathPrefix / "normals.mmf", sizeof(float) * m_numPoints * 3);
+        mmfdata_normal = m_NormalFile.data_as<float>();
         m_hasNormal = true;
     }
     if constexpr (LineTypeTraits<LineType>::hasColor)
     {
-        mmfparam.path = (m_pathPrefix / "colors.mmf").string();
-        m_ColorFile.open(mmfparam);
-        mmfdata_color = (unsigned char *)m_ColorFile.data();
+        m_ColorFile.open_truncated(m_pathPrefix / "colors.mmf", sizeof(unsigned char) * m_numPoints * 3);
+        mmfdata_color = m_ColorFile.data_as<unsigned char>();
         m_hasColor = true;
     }
 
@@ -406,13 +399,8 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
                 lvr2::log::info("{}{}{}{}{}", "[BigGrid] ", m_numPoints, " in ", m_cells.size(), " cells remaining");
     }
 
-    boost::iostreams::mapped_file_params mmfparam;
-    mmfparam.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
-    mmfparam.new_file_size = sizeof(float) * m_numPoints * 3;
-
-    mmfparam.path = (m_pathPrefix / "points.mmf").string();
-    m_PointFile.open(mmfparam);
-    float *mmfdata = (float *)m_PointFile.data();
+    m_PointFile.open_truncated(m_pathPrefix / "points.mmf", sizeof(float) * m_numPoints * 3);
+    float *mmfdata = m_PointFile.data_as<float>();
 
     ss.str("");
     ss << timestamp << "[BigGrid] Building grid: filling cells";
@@ -535,22 +523,15 @@ BigGrid<BaseVecT>::BigGrid(std::string path)
         fread(ifs, c.inserted);
     }
 
-    boost::iostreams::mapped_file_params mmfparam;
-    mmfparam.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
-    mmfparam.new_file_size = sizeof(float) * m_numPoints * 3;
-
-    mmfparam.path = (m_pathPrefix / "points.mmf").string();
-    m_PointFile.open(mmfparam);
+    m_PointFile.open_truncated(m_pathPrefix / "points.mmf", sizeof(float) * m_numPoints * 3);
 
     if (m_hasNormal)
     {
-        mmfparam.path = (m_pathPrefix / "normals.mmf").string();
-        m_NormalFile.open(mmfparam);
+        m_NormalFile.open_truncated(m_pathPrefix / "normals.mmf", sizeof(float) * m_numPoints * 3);
     }
     if (m_hasColor)
     {
-        mmfparam.path = (m_pathPrefix / "colors.mmf").string();
-        m_ColorFile.open(mmfparam);
+        m_ColorFile.open_truncated(m_pathPrefix / "colors.mmf", sizeof(unsigned char) * m_numPoints * 3);
     }
 }
 
@@ -672,7 +653,7 @@ lvr2::floatArr BigGrid<BaseVecT>::points(const Vector3i &index, size_t &numPoint
 
         points = lvr2::floatArr(new float[3 * cell.size]);
 
-        const float *cellData = (const float *)m_PointFile.data() + 3 * cell.offset;
+        const float *cellData = m_PointFile.data_as<float>() + 3 * cell.offset;
 
         std::copy_n(cellData, 3 * cell.size, points.get());
 
@@ -702,7 +683,7 @@ lvr2::floatArr BigGrid<BaseVecT>::points(const BoundingBox<BaseVecT> &bb, size_t
         cellOutPoints.push_back(cellOutPoints.back() + count * 3);
     }
 
-    const float *pointFile = (const float *)m_PointFile.data();
+    const float *pointFile = m_PointFile.data_as<float>();
 
     auto min = bb.getMin(), max = bb.getMax();
 
@@ -760,8 +741,8 @@ lvr2::floatArr BigGrid<BaseVecT>::normals(const BoundingBox<BaseVecT> &bb, size_
         cellOutNormals.push_back(cellOutNormals.back() + count * 3);
     }
 
-    const float *pointFile = (const float *)m_PointFile.data();
-    const float *normalFile = (const float *)m_NormalFile.data();
+    const float *pointFile = m_PointFile.data_as<float>();
+    const float *normalFile = m_NormalFile.data_as<float>();
 
     auto min = bb.getMin(), max = bb.getMax();
 
@@ -810,7 +791,7 @@ lvr2::ucharArr BigGrid<BaseVecT>::colors(const BoundingBox<BaseVecT> &bb, size_t
         return lvr2::ucharArr();
     }
 
-    lvr2::ucharArr colors(new float[numColors * 3]);
+    lvr2::ucharArr colors(new uchar[numColors * 3]);
 
     // determine where each cell is going to start in the point array
     std::vector<uchar *> cellOutColors;
@@ -820,8 +801,8 @@ lvr2::ucharArr BigGrid<BaseVecT>::colors(const BoundingBox<BaseVecT> &bb, size_t
         cellOutColors.push_back(cellOutColors.back() + count * 3);
     }
 
-    const float *pointFile = (const float *)m_PointFile.data();
-    const uchar *colorFile = (const uchar *)m_ColorFile.data();
+    const float *pointFile = m_PointFile.data_as<float>();
+    const uchar *colorFile = m_ColorFile.data_as<uchar>();
 
     auto min = bb.getMin(), max = bb.getMax();
 
@@ -860,7 +841,7 @@ lvr2::floatArr BigGrid<BaseVecT>::getPointCloud(size_t &numPoints)
 
     lvr2::floatArr points(new float[3 * numPoints]);
 
-    const float *pointData = (const float *)m_PointFile.data();
+    const float *pointData = m_PointFile.data_as<float>();
     std::copy_n(pointData, 3 * numPoints, points.get());
 
     return points;
@@ -907,7 +888,7 @@ size_t BigGrid<BaseVecT>::getSizeofBox(const BoundingBox<BaseVecT> &bb, std::vec
     }
 
     size_t numPoints = 0;
-    const float *pointFile = (const float *)m_PointFile.data();
+    const float *pointFile = m_PointFile.data_as<float>();
 
 #pragma omp parallel for reduction(+ \
                                 : numPoints)

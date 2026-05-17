@@ -37,7 +37,7 @@
 // External libraries in lvr source tree
 #include <Eigen/Dense>
 
-// boost libraries
+// Standard library path support
 #include <filesystem>
 
 #include <fstream>

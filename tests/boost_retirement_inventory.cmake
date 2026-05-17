@@ -8,35 +8,19 @@ if(NOT EXISTS "${_inventory}")
 endif()
 
 file(READ "${_inventory}" _content)
-
-set(_required_tokens
-  "Active files with Boost tokens: 21"
-  "Public headers with active Boost tokens: 3"
-  "directives: 10 across 7 distinct Boost headers"
-  "Active `boost::...` references: 14"
-  "Build/package/CI Boost references: 41"
-  "standard-equivalent Boost families have been replaced"
-  "filesystem | `std::filesystem`"
-  "optional | `std::optional`"
-  "variant / visitor | `std::variant` + `std::visit`"
-  "shared_array | `std::shared_ptr<T[]>` owner + `std::span` view"
-  "boost.system | `std::error_code` / filesystem errors"
-  "program_options | LVR-owned typed CLI parser"
-  "`boost::iostreams::mapped_file`"
-  "Boost archive serialization"
+foreach(_token IN ITEMS
+  "Status: complete for active LVR-owned build, package, and implementation surfaces"
+  "Expected result: no matches outside historical docs and Boost-specific policy guard names"
+  "lvr2::util::MappedFile"
   "Boost property-tree XML parsing"
-  "Boost.MPI packaging"
-  "DateTime / Boost.Log link remnants"
-  "No active `boost/mpi` or `boost::mpi` code was found"
-  "cmake/Lvr3Dependencies.cmake"
-  "vcpkg.json"
-  "package.xml"
-  "debian/control"
+  "Boost.MPI package path"
+  "Generic Boost package/export plumbing"
+  "lvr2_no_boost_dependency"
+  "Future Boost reintroduction requires a new ADR-approved exception"
 )
-
-foreach(_token IN LISTS _required_tokens)
-  string(FIND "${_content}" "${_token}" _found)
-  if(_found EQUAL -1)
+  if(NOT _content MATCHES "${_token}")
     message(FATAL_ERROR "Boost retirement inventory is missing required token: ${_token}")
   endif()
 endforeach()
+
+message(STATUS "Boost retirement inventory records completed hard-case removal")

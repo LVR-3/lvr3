@@ -22,7 +22,7 @@ set(FASTSENSE_DEPENDENCIES
 #####################################################################################
 
 add_executable(lvr2_fastsense_reconstruction ${FASTSENSE_RECONSTRUCTION_SOURCES})
-target_link_libraries(lvr2_fastsense_reconstruction ${FASTSENSE_DEPENDENCIES} boost_date_time ${Boost_LOG_LIBRARY_RELEASE} lz4)
+target_link_libraries(lvr2_fastsense_reconstruction ${FASTSENSE_DEPENDENCIES} lz4)
 
 install(TARGETS lvr2_fastsense_reconstruction
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

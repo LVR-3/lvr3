@@ -104,6 +104,7 @@ set(LVR2_SOURCES
     util/Synthetic.cpp
     util/ScanProjectSchemaUtils.cpp
     util/ScanProjectUtils.cpp
+    util/MappedFile.cpp
     util/Util.cpp
     util/Progress.cpp
     util/Timestamp.cpp
@@ -262,7 +263,6 @@ if(BUILD_SHARED_LIBS)
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-        ${Boost_INCLUDE_DIRS}
         ${HDF5_INCLUDE_DIRS}
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/private

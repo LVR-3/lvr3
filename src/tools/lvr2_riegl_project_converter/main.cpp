@@ -188,7 +188,7 @@ bool write_mat4_to_pose_file(const fs::path file, const lvr2::Transformd& transf
 }
 
 void convert_rxp_to_3d_per_thread(
-    std::vector<lvr2::ScanPosition> *work,
+    std::vector<lvr2::RieglScanPosition> *work,
     int *read_file_count,
     int *current_file_idx,
     const fs::path *scans_dir,
@@ -207,7 +207,7 @@ void convert_rxp_to_3d_per_thread(
     while (*current_file_idx < work->size()) {
 
         int scan_nr = *current_file_idx + 1;
-        lvr2::ScanPosition &pos = (*work)[(*current_file_idx)++];
+        lvr2::RieglScanPosition &pos = (*work)[(*current_file_idx)++];
 
         mtx->unlock();
 
@@ -351,7 +351,7 @@ bool convert_riegl_project(
 
     int scan_nr = 1;
 
-    for (lvr2::ScanPosition &pos : ri_proj.m_scan_positions) {
+    for (lvr2::RieglScanPosition &pos : ri_proj.m_scan_positions) {
 
         // copy pose files
         char out_file_buf[2048];
@@ -363,7 +363,7 @@ bool convert_riegl_project(
         }
 
         int image_nr = 1;
-        for (const lvr2::ImageFile &image : pos.images) {
+        for (const lvr2::RieglImageFile &image : pos.images) {
             //copy image files
             char out_file_buf[2048];
             std::snprintf(out_file_buf, 2048, "scan%.3d_%.2d.jpg", scan_nr, image_nr);
@@ -397,7 +397,7 @@ bool convert_riegl_project(
             std::snprintf(out_file_buf, 2048, "scan%.3d_%.2d_intrinsic.txt", scan_nr, image_nr);
             if (!write_params_to_file(images_dir / out_file_buf,
                                       force_overwrite,
-                                      image.intrinsic_params,
+                                      image.intrinsic_params.data(),
                                       4)) {
                 std::cout << "[convert_riegl_project] Error: Error while writing image intrinsic \
                           params to " << (images_dir / out_file_buf) << std::endl;
@@ -407,7 +407,7 @@ bool convert_riegl_project(
             std::snprintf(out_file_buf, 2048, "scan%.3d_%.2d_distortion.txt", scan_nr, image_nr);
             if (!write_params_to_file(images_dir / out_file_buf,
                                       force_overwrite,
-                                      image.distortion_params,
+                                      image.distortion_params.data(),
                                       6)) {
                 std::cout << "[convert_riegl_project] Error: Error while writing image distortion \
                           params to " << (images_dir / out_file_buf) << std::endl;
