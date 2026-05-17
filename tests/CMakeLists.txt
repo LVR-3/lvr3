@@ -69,6 +69,19 @@ set_tests_properties(lvr2_storage_io_header_compile
     LABELS "cpp;io;scan;storage;header"
 )
 
+add_executable(lvr2_storage_backend_span_contracts
+  test_storage_backend_span_contracts.cpp
+  ${PROJECT_SOURCE_DIR}/src/liblvr2/io/storage/StorageRegistry.cpp
+)
+target_include_directories(lvr2_storage_backend_span_contracts PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_compile_features(lvr2_storage_backend_span_contracts PRIVATE cxx_std_20)
+target_link_libraries(lvr2_storage_backend_span_contracts PRIVATE tl::expected)
+add_test(NAME lvr2_storage_backend_span_contracts COMMAND lvr2_storage_backend_span_contracts)
+set_tests_properties(lvr2_storage_backend_span_contracts
+  PROPERTIES
+    LABELS "cpp;io;scan;storage;spans"
+)
+
 add_executable(lvr2_mapped_file_contracts
   test_mapped_file.cpp
   ${PROJECT_SOURCE_DIR}/src/liblvr2/util/MappedFile.cpp

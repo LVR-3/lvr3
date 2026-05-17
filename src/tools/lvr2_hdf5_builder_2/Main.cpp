@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <iostream>
+#include <span>
 #include <vector>
 
 using namespace lvr2;
@@ -110,7 +111,9 @@ lvr2::io::storage::Status writePreviews(const std::string& outputFile,
                                               &numPreview);
 
             std::vector<size_t> previewDim = {numPreview, 3};
-            lvr2::io::storage::FloatArrayView view{previewData.get(), previewDim};
+            lvr2::io::storage::FloatArrayView view{
+                std::span<const float>(previewData.get(), numPreview * 3),
+                previewDim};
             auto wrote = backend.value()->writeFloatArray({previewGroupName, "points"}, view);
             if (!wrote)
             {
