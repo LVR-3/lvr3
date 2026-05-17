@@ -120,7 +120,7 @@ FPFHFeaturePtr computeFPFHFeatures(const PointBufferPtr pointBuffer, SearchTreeP
     auto spfh = computeInitialFeatures(pointBuffer, tree, k);
     if (spfh == nullptr)
     {
-                lvr2::log::error("{}", fmt::streamed("Internal error: SPFH feature vector is nullptr."));
+                lvr2::log::error("{}", "Internal error: SPFH feature vector is nullptr.");
     }
 #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < pointBuffer->numPoints(); i++)
@@ -169,7 +169,7 @@ FPFHFeaturePtr computeFPFHFeatures(const PointBufferPtr pointCloud, size_t k)
 {
     if (!pointCloud->hasNormals())
     {
-                lvr2::log::error("{}", fmt::streamed("FPFH Failed because input point cloud has no normals"));
+                lvr2::log::error("{}", "FPFH Failed because input point cloud has no normals");
     }
 
     SearchTreePtr<BaseVector<float>> tree(new SearchTreeFlann<BaseVector<float>>(pointCloud));

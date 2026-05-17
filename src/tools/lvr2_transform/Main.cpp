@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 
     if(!model)
     {
-            lvr2::log::error("{}{}", fmt::streamed("IO Error: Unable to parse "), fmt::streamed(options.getInputFile()));
+            lvr2::log::error("{}{}", "IO Error: Unable to parse ", options.getInputFile());
       exit(-1);
     }
 
@@ -80,13 +80,13 @@ int main(int argc, char **argv)
       // read in accordingly.
       std::ifstream in(options.getTransformFile().c_str());
       if(!in.good()){
-                lvr2::log::warning("{}", fmt::streamed("Warning: Load transform file: File not found or corrupted."));
+                lvr2::log::warning("{}", "Warning: Load transform file: File not found or corrupted.");
         return -1;
       }
 
       if(options.getTransformFile().substr(options.getTransformFile().length()-5) == ".pose")
       {
-                lvr2::log::info("{}", fmt::streamed("Reading from .pose file"));
+                lvr2::log::info("{}", "Reading from .pose file");
         in >> x >> y >> z >> r1 >> r2 >> r3;
 
         r1 = r1 * 0.0174532925f;
@@ -97,7 +97,7 @@ int main(int argc, char **argv)
       }
       else //expect frames file instead
       {
-                lvr2::log::info("{}", fmt::streamed("Reading from .frames file"));
+                lvr2::log::info("{}", "Reading from .frames file");
         float t[17];
         std::ifstream in(options.getTransformFile().c_str());
         while(in.good())
@@ -154,7 +154,7 @@ int main(int argc, char **argv)
     {
       PointBufferPtr p_buffer = model->m_pointCloud;
 
-            lvr2::log::info("{}", fmt::streamed("Using points"));
+            lvr2::log::info("{}", "Using points");
       did_anything = true;
       FloatChannelOptional points = p_buffer->getFloatChannel("points");
 
@@ -175,7 +175,7 @@ int main(int argc, char **argv)
     {
       MeshBufferPtr m_buffer = model->m_mesh;
 
-            lvr2::log::info("{}", fmt::streamed("Using meshes"));
+            lvr2::log::info("{}", "Using meshes");
       did_anything = true;
       FloatChannelOptional points = m_buffer->getFloatChannel("vertices");
 
@@ -192,12 +192,12 @@ int main(int argc, char **argv)
 
     if(!did_anything)
     {
-            lvr2::log::error("{}", fmt::streamed("I had nothing to do. Terminating now..."));
+            lvr2::log::error("{}", "I had nothing to do. Terminating now...");
       return 0;
     }
     else
     {
-            lvr2::log::info("{}", fmt::streamed("Finished. Program end."));
+            lvr2::log::info("{}", "Finished. Program end.");
     }
 
     ModelFactory::saveModel(model, options.getOutputFile());

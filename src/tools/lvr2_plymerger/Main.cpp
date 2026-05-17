@@ -60,13 +60,13 @@ void parsePLYHeader(
 
     if(!ply)
     {
-                lvr2::log::error("{}{}{}", fmt::streamed("Could not open '"), fmt::streamed(filename), fmt::streamed("."));
+                lvr2::log::error("{}{}{}", "Could not open '", filename, ".");
         return;
     }
 
     if ( !ply_read_header( ply ) )
     {
-              lvr2::log::error("{}", fmt::streamed("Could not read header."));
+              lvr2::log::error("{}", "Could not read header.");
        return;
     }
 
@@ -103,7 +103,7 @@ void parsePLYHeader(
     // that the .ply does not contain point cloud data
     if(found_faces && found_vertices && !found_points)
     {
-                lvr2::log::warning("{}{}{}", fmt::streamed("Warning: While parsing '"), fmt::streamed(filename), fmt::streamed("': Found mesh data without points."));
+                lvr2::log::warning("{}{}{}", "Warning: While parsing '", filename, "': Found mesh data without points.");
         //return;
     }
 
@@ -113,13 +113,13 @@ void parsePLYHeader(
 
     if(!ply)
     {
-                lvr2::log::error("{}{}{}", fmt::streamed("Could not open '"), fmt::streamed(filename), fmt::streamed("."));
+                lvr2::log::error("{}{}{}", "Could not open '", filename, ".");
         return;
     }
 
     if ( !ply_read_header( ply ) )
     {
-              lvr2::log::error("{}", fmt::streamed("Could not read header."));
+              lvr2::log::error("{}", "Could not read header.");
        return;
     }
 
@@ -331,20 +331,20 @@ int main(int argc, char** argv)
             mergeNormals = true;
         }
 
-                lvr2::log::info("{}{}{}{}{}", fmt::streamed("Parsed directory. Reading "), fmt::streamed(totalNumPoints), fmt::streamed(" points from "), fmt::streamed(ply_file_names.size()), fmt::streamed(" files."));
+                lvr2::log::info("{}{}{}{}{}", "Parsed directory. Reading ", totalNumPoints, " points from ", ply_file_names.size(), " files.");
         if(mergeNormals)
         {
-                        lvr2::log::info("{}", fmt::streamed("Merging normals."));
+                        lvr2::log::info("{}", "Merging normals.");
         }
 
         if(mergeColors)
         {
-                        lvr2::log::info("{}", fmt::streamed("Merging colors."));
+                        lvr2::log::info("{}", "Merging colors.");
         }
     }
     else
     {
-                lvr2::log::info("{}{}", fmt::streamed(options.inputDir()), fmt::streamed(" does not exist or is not a directory."));
+                lvr2::log::info("{}{}", options.inputDir(), " does not exist or is not a directory.");
     }
 
     string outfile_name = options.outputFile();

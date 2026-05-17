@@ -113,7 +113,7 @@ ModelPtr UosIO::read(string dir)
             m_firstScan = firstScan;
             m_lastScan = lastScan;
 
-                        lvr2::log::info("{}{}{}{}{}{}{}{}", fmt::streamed("Reading "), fmt::streamed(n3dFiles), fmt::streamed(" scans in UOS format "), fmt::streamed("(From "), fmt::streamed(firstScan), fmt::streamed(" to "), fmt::streamed(lastScan), fmt::streamed(")."));
+                        lvr2::log::info("{}{}{}{}{}{}{}{}", "Reading ", n3dFiles, " scans in UOS format ", "(From ", firstScan, " to ", lastScan, ").");
             readNewFormat(model, dir, firstScan, lastScan, n);
         }
         else
@@ -156,7 +156,7 @@ ModelPtr UosIO::read(string dir)
                 m_firstScan = firstScan;
                 m_lastScan = lastScan;
 
-                                lvr2::log::info("{}{}{}{}{}{}{}{}", fmt::streamed("Reading "), fmt::streamed(nDirs), fmt::streamed(" scans in old UOS format "), fmt::streamed("(From "), fmt::streamed(firstScan), fmt::streamed(" to "), fmt::streamed(lastScan), fmt::streamed(")."));
+                                lvr2::log::info("{}{}{}{}{}{}{}{}", "Reading ", nDirs, " scans in old UOS format ", "(From ", firstScan, " to ", lastScan, ").");
                 readOldFormat(model, dir, firstScan, lastScan, n);
             }
             else
@@ -168,7 +168,7 @@ ModelPtr UosIO::read(string dir)
     }
     else
     {
-                lvr2::log::info("{}{}{}", fmt::streamed("UOSReader: "), fmt::streamed(dir), fmt::streamed(" is not a directory."));
+                lvr2::log::info("{}{}{}", "UOSReader: ", dir, " is not a directory.");
     }
 
     m_model = model;
@@ -182,7 +182,7 @@ void UosIO::reduce(string dir, string target, int reduction)
     m_outputFile.open(target.c_str());
     if(!m_outputFile.good())
     {
-                lvr2::log::error("{}{}{}{}{}", fmt::streamed("UOSReader: "), fmt::streamed(dir), fmt::streamed(" unable to open "), fmt::streamed(target), fmt::streamed(" for writing."));
+                lvr2::log::error("{}{}{}{}{}", "UOSReader: ", dir, " unable to open ", target, " for writing.");
         return;
     }
 
@@ -230,7 +230,7 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
 
     if(m_saveToDisk)
     {
-                lvr2::log::info("{}{}{}", fmt::streamed("Reduction mode. Writing every "), fmt::streamed(skipPoints), fmt::streamed("th point."));
+                lvr2::log::info("{}{}{}", "Reduction mode. Writing every ", skipPoints, "th point.");
     }
 
     for(int fileCounter = first; fileCounter <= last; fileCounter++)
@@ -256,12 +256,12 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
 
         if(has_color)
         {
-                        lvr2::log::info("{}", fmt::streamed("Reading color information."));
+                        lvr2::log::info("{}", "Reading color information.");
         }
 
         if(has_intensity)
         {
-                        lvr2::log::info("{}", fmt::streamed("Reading intensity information."));
+                        lvr2::log::info("{}", "Reading intensity information.");
         }
 
         // Read scan data
@@ -269,7 +269,7 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
         if(!scan_in.good())
         {
             // Continue with next file if the expected file couldn't be read
-                        lvr2::log::error("{}{}", fmt::streamed("UOS Reader: Unable to read scan "), fmt::streamed(scanFileName));
+                        lvr2::log::error("{}{}", "UOS Reader: Unable to read scan ", scanFileName);
             scan_in.close();
             scan_in.clear();
             continue;
@@ -312,7 +312,7 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
                 }
                 else
                 {
-                                        lvr2::log::warning("{}", fmt::streamed("UOS Reader: Warning: No position information found."));
+                                        lvr2::log::warning("{}", "UOS Reader: Warning: No position information found.");
                     tf = Matrix4<Vec>();
                 }
 
@@ -328,7 +328,7 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
             float euler[6];
             tf.toPostionAngle(euler);
 
-                        lvr2::log::info("{}{}{}{}{}{}{}{}{}{}{}{}{}{}", fmt::streamed("Processing "), fmt::streamed(scanFileName), fmt::streamed(" @ "), fmt::streamed(euler[0]), fmt::streamed(" "), fmt::streamed(euler[1]), fmt::streamed(" "), fmt::streamed(euler[2]), fmt::streamed(" "), fmt::streamed(euler[3]), fmt::streamed(" "), fmt::streamed(euler[4]), fmt::streamed(" "), fmt::streamed(euler[5]));
+                        lvr2::log::info("{}{}{}{}{}{}{}{}{}{}{}{}{}{}", "Processing ", scanFileName, " @ ", euler[0], " ", euler[1], " ", euler[2], " ", euler[3], " ", euler[4], " ", euler[5]);
 
             // Skip first line in scan file (maybe metadata)
             char dummy[1024];
@@ -447,7 +447,7 @@ void UosIO::readNewFormat(ModelPtr &model, string dir, int first, int last, size
     // Convert into array
     if ( allPoints.size() )
     {
-                lvr2::log::info("{}{}{}", fmt::streamed("UOS Reader: Read "), fmt::streamed(allPoints.size()), fmt::streamed(" points."));
+                lvr2::log::info("{}{}{}", "UOS Reader: Read ", allPoints.size(), " points.");
 
         // Save position information
 
@@ -541,7 +541,7 @@ void UosIO::readOldFormat(ModelPtr &model, string dir, int first, int last, size
 
         // Abort if opening failed and try with next die
         if (!pose_in.good()) continue;
-                lvr2::log::info("{}{}{}{}", fmt::streamed("Processing Scan "), fmt::streamed(dir), fmt::streamed("/"), fmt::streamed(to_string(fileCounter, 3)));
+                lvr2::log::info("{}{}{}{}", "Processing Scan ", dir, "/", to_string(fileCounter, 3));
 
         // Extract pose information
         for (unsigned int i = 0; i < 6; pose_in >> euler[i++]);
@@ -680,7 +680,7 @@ void UosIO::readOldFormat(ModelPtr &model, string dir, int first, int last, size
     // Convert into indexed array
     if(allPoints.size() > 0)
     {
-                lvr2::log::info("{}{}{}", fmt::streamed("UOS Reader: Read "), fmt::streamed(allPoints.size()), fmt::streamed(" points."));
+                lvr2::log::info("{}{}{}", "UOS Reader: Read ", allPoints.size(), " points.");
         n = allPoints.size();
         floatArr points( new float[3 * allPoints.size()] );
         list<Vec >::iterator p_it;

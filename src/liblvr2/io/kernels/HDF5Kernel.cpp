@@ -143,7 +143,7 @@ void HDF5Kernel::saveImage(
             dataset->write_raw(ptr);
         } else
         {
-                        lvr2::log::warning("{}{}", fmt::streamed("HDF5Kernel:SaveImage: Warning: unknown opencv type "), fmt::streamed(img.type()));
+                        lvr2::log::warning("{}{}", "HDF5Kernel:SaveImage: Warning: unknown opencv type ", img.type());
         }
 
         if(dataset)
@@ -287,7 +287,7 @@ boost::optional<cv::Mat> HDF5Kernel::loadImage(
                 ret = createMat<double>(dims);
                 dataset.read(reinterpret_cast<double*>(ret->data));
             } else {
-                                lvr2::log::warning("{}", fmt::streamed("HDF5Kernel::loadImage(): Warning: Could'nt load blob. Datatype unkown."));
+                                lvr2::log::warning("{}", "HDF5Kernel::loadImage(): Warning: Could'nt load blob. Datatype unkown.");
             }
         }
 

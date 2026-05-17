@@ -146,7 +146,7 @@ auto buildCombinedPointCloud(lvr2::ScanProjectPtr& project, lvr2::ReductionAlgor
     bool has_colors = true;
     int color_width = -1;
 
-        lvr2::log::info("{}{}", fmt::streamed("[LVR2 Reconstruct] Total number of points: "), fmt::streamed(npoints_total));
+        lvr2::log::info("{}{}", "[LVR2 Reconstruct] Total number of points: ", npoints_total);
 
     for (ScanPositionPtr pos: project->positions)
     {
@@ -288,7 +288,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     // Create point set surface object
     if(pcm_name == "PCL")
     {
-                lvr2::log::error("{}", fmt::streamed("[LVR2 Reconstruct] Using PCL as point cloud manager is not implemented yet!"));
+                lvr2::log::error("{}", "[LVR2 Reconstruct] Using PCL as point cloud manager is not implemented yet!");
         panic_unimplemented("PCL as point cloud manager");
     }
     else if(pcm_name == "FLANN" || pcm_name == "NANOFLANN" || pcm_name == "LVR2")
@@ -319,14 +319,14 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 options.getKn()
             );
         #else
-                        lvr2::log::error("{}", fmt::streamed("[LVR2 Reconstruct] ERROR: Cuda not found. Do not use LBVH_CUDA."));
+                        lvr2::log::error("{}", "[LVR2 Reconstruct] ERROR: Cuda not found. Do not use LBVH_CUDA.");
             return nullptr;
         #endif
     }
     else
     {
-                lvr2::log::error("{}", fmt::streamed("[LVR2 Reconstruct] Unable to create PointCloudManager."));
-                lvr2::log::error("{}{}{}", fmt::streamed("[LVR2 Reconstruct] Unknown option '"), fmt::streamed(pcm_name), fmt::streamed("'."));
+                lvr2::log::error("{}", "[LVR2 Reconstruct] Unable to create PointCloudManager.");
+                lvr2::log::error("{}{}{}", "[LVR2 Reconstruct] Unknown option '", pcm_name, "'.");
         return nullptr;
     }
 
@@ -344,11 +344,14 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
         flipPoint[0] = v[0];
         flipPoint[1] = v[1];
         flipPoint[2] = v[2];
-                lvr2::log::info("{}{}", fmt::streamed("[LVR2 Reconstruct] Flip point for normal estimation set to : "), fmt::streamed(flipPoint));
+                lvr2::log::info("[LVR2 Reconstruct] Flip point for normal estimation set to : ({}, {}, {})",
+                    flipPoint[0],
+                    flipPoint[1],
+                    flipPoint[2]);
     }
     else
     {
-                  lvr2::log::info("{}", fmt::streamed("[LVR2 Reconstruct] No flip point set, defaulting to (0,0,0) "));
+                  lvr2::log::info("{}", "[LVR2 Reconstruct] No flip point set, defaulting to (0,0,0) ");
     }
     surface->setFlipPoint(flipPoint);
 
@@ -362,7 +365,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 size_t num_points = buffer->numPoints();
                 floatArr points = buffer->getPointArray();
                 floatArr normals = floatArr(new float[ num_points * 3 ]);
-                                lvr2::log::info("{}", fmt::streamed("Generating GPU kd-tree"));
+                                lvr2::log::info("{}", "Generating GPU kd-tree");
                 GpuSurface gpu_surface(points, num_points);
 
 
@@ -370,14 +373,14 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
                 gpu_surface.setKi(options.getKi());
                 gpu_surface.setFlippoint(flipPoint[0], flipPoint[1], flipPoint[2]);
 
-                                lvr2::log::info("{}", fmt::streamed("Estimating Normals GPU"));
+                                lvr2::log::info("{}", "Estimating Normals GPU");
                 gpu_surface.calculateNormals();
                 gpu_surface.getNormals(normals);
 
                 buffer->setNormalArray(normals, num_points);
                 gpu_surface.freeGPU();
             #else
-                                lvr2::log::error("{}", fmt::streamed("[LVR2 Reconstruct] ERROR: GPU Driver not installed"));
+                                lvr2::log::error("{}", "[LVR2 Reconstruct] ERROR: GPU Driver not installed");
                 surface->calculateSurfaceNormals();
             #endif
         }
@@ -388,7 +391,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const reconstruct::Options& options)
     }
     else
     {
-                lvr2::log::info("{}", fmt::streamed("[LVR2 Reconstruct] Using given normals."));
+                lvr2::log::info("{}", "[LVR2 Reconstruct] Using given normals.");
     }
     if(pcm_name == "LBVH_CUDA")
     {
@@ -421,7 +424,7 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
     // Fail safe check
     if(decompositionType != "MT" && decompositionType != "MC" && decompositionType != "DMC" && decompositionType != "PMC" && decompositionType != "SF" )
     {
-                lvr2::log::warning("{}{}{}", fmt::streamed("[LVR2 Reconstruct] Unsupported decomposition type "), fmt::streamed(decompositionType), fmt::streamed(". Defaulting to PMC."));
+                lvr2::log::warning("{}{}{}", "[LVR2 Reconstruct] Unsupported decomposition type ", decompositionType, ". Defaulting to PMC.");
         decompositionType = "PMC";
     }
 
@@ -436,7 +439,7 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
         );
 
         grid->calcDistanceValues();
-                lvr2::log::info("{}{}", fmt::streamed("[LVR2 Reconstruct] Grid Cells: "), fmt::streamed(grid->getCells().size()));
+                lvr2::log::info("{}{}", "[LVR2 Reconstruct] Grid Cells: ", grid->getCells().size());
         auto reconstruction = std::make_unique<FastReconstruction<Vec, FastBox<Vec>>>(grid);
         return std::make_pair(grid, std::move(reconstruction));
     }
@@ -451,7 +454,7 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
             options.extrude()
         );
         grid->calcDistanceValues();
-                lvr2::log::info("{}{}", fmt::streamed("[LVR2 Reconstruct] Grid Cells: "), fmt::streamed(grid->getCells().size()));
+                lvr2::log::info("{}{}", "[LVR2 Reconstruct] Grid Cells: ", grid->getCells().size());
         auto reconstruction = std::make_unique<FastReconstruction<Vec, BilinearFastBox<Vec>>>(grid);
         return std::make_pair(grid, std::move(reconstruction));
     }
@@ -492,7 +495,7 @@ std::pair<shared_ptr<GridBase>, unique_ptr<FastReconstructionBase<Vec>>>
         return make_pair(grid, std::move(reconstruction));
     }
 
-        lvr2::log::warning("{}{}{}", fmt::streamed("[LVR2 Reconstruct] Unsupported decomposition type "), fmt::streamed(decompositionType), fmt::streamed("."));
+        lvr2::log::warning("{}{}{}", "[LVR2 Reconstruct] Unsupported decomposition type ", decompositionType, ".");
     return make_pair(nullptr, nullptr);
 }
 
@@ -506,7 +509,7 @@ void addSpectralTexturizers(const reconstruct::Options& options, lvr2::Materiali
 
     if(options.getScanPositionIndex().size() > 1)
     {
-                lvr2::log::warning("{}", fmt::streamed("[LVR2 Reconstruct] Warning: Spectral texturizing only supports one scan position. Ignoring all but the first."));
+                lvr2::log::warning("{}", "[LVR2 Reconstruct] Warning: Spectral texturizing only supports one scan position. Ignoring all but the first.");
     }
 
     // load panorama from hdf5 file
@@ -581,8 +584,8 @@ void addRaycastingTexturizer(const reconstruct::Options& options, lvr2::Material
 
     materializer.addTexturizer(texturizer);
 #else
-        lvr2::log::warning("{}", fmt::streamed("[LVR2 Reconstruct] This software was compiled without support for Embree!\n"));
-        lvr2::log::warning("{}", fmt::streamed("[LVR2 Reconstruct] The RaycastingTexturizer needs the Embree library."));
+        lvr2::log::warning("{}", "[LVR2 Reconstruct] This software was compiled without support for Embree!\n");
+        lvr2::log::warning("{}", "[LVR2 Reconstruct] The RaycastingTexturizer needs the Embree library.");
 #endif
 }
 
@@ -619,7 +622,7 @@ void optimizeMesh(reconstruct::Options options, BaseMeshT& mesh)
     // =======================================================================
     if(options.getDanglingArtifacts())
     {
-                lvr2::log::info("{}", fmt::streamed("[LVR2 Reconstruct] Removing dangling artifacts"));
+                lvr2::log::info("{}", "[LVR2 Reconstruct] Removing dangling artifacts");
         removeDanglingCluster(mesh, static_cast<size_t>(options.getDanglingArtifacts()));
     }
 
@@ -641,9 +644,9 @@ void optimizeMesh(reconstruct::Options options, BaseMeshT& mesh)
 
         size_t old = mesh.numVertices();
         size_t target = old * (1.0 - reductionRatio);
-                lvr2::log::info("{}{}{}{}{}", fmt::streamed("[LVR2 Reconstruct] Trying to remove "), fmt::streamed(old - target), fmt::streamed(" / "), fmt::streamed(old), fmt::streamed(" vertices."));
+                lvr2::log::info("{}{}{}{}{}", "[LVR2 Reconstruct] Trying to remove ", old - target, " / ", old, " vertices.");
         mesh.simplify(target);
-                lvr2::log::info("{}{}{}", fmt::streamed("[LVR2 Reconstruct] Removed "), fmt::streamed(old - mesh.numVertices()), fmt::streamed(" vertices."));
+                lvr2::log::info("{}{}{}", "[LVR2 Reconstruct] Removed ", old - mesh.numVertices(), " vertices.");
     }
 
     auto faceNormals = calcFaceNormals(mesh);
@@ -765,7 +768,7 @@ auto loadExistingMesh(reconstruct::Options options)
 
     if (!faceNormals)
     {
-                lvr2::log::info("{}", fmt::streamed("[LVR2 Reconstruct] Calculating face normals"));
+                lvr2::log::info("{}", "[LVR2 Reconstruct] Calculating face normals");
         faceNormalMap = calcFaceNormals(mesh);
     }
 
@@ -822,7 +825,7 @@ int main(int argc, char** argv)
 
     if (options.useExistingMesh())
     {
-                lvr2::log::info("{}{}{}{}{}", fmt::streamed("[LVR2 Reconstruct] Loading existing mesh '"), fmt::streamed(options.getInputMeshName()), fmt::streamed("' from file '"), fmt::streamed(options.getInputMeshFile()), fmt::streamed("'"));
+                lvr2::log::info("{}{}{}{}{}", "[LVR2 Reconstruct] Loading existing mesh '", options.getInputMeshName(), "' from file '", options.getInputMeshFile(), "'");
         std::tie(mesh, surface, faceNormals, clusterBiMap) = loadExistingMesh<lvr2::PMPMesh<Vec>, Vec>(options);
     }
     else
@@ -831,15 +834,15 @@ int main(int argc, char** argv)
         surface = loadPointCloud<Vec>(options);
         if (!surface)
         {
-                        lvr2::log::error("{}", fmt::streamed("[LVR2 Reconstruct] Failed to create pointcloud. Exiting."));
+                        lvr2::log::error("{}", "[LVR2 Reconstruct] Failed to create pointcloud. Exiting.");
             exit(EXIT_FAILURE);
         }
 
-                lvr2::log::info("{}", fmt::streamed("[LVR2 Reconstruct] Pointcloud loaded starting to reconstruct surfaces ..."));
+                lvr2::log::info("{}", "[LVR2 Reconstruct] Pointcloud loaded starting to reconstruct surfaces ...");
 
         // Reconstruct simple mesh
         mesh = reconstructMesh<lvr2::PMPMesh<Vec>>(options, surface);
-                lvr2::log::info("{}{}{}{}{}", fmt::streamed("[LVR2 Reconstruct] Reconstructed mesh (vertices, faces): "), fmt::streamed(mesh.numVertices()), fmt::streamed(", "), fmt::streamed(mesh.numFaces()), fmt::streamed(")"));
+                lvr2::log::info("{}{}{}{}{}", "[LVR2 Reconstruct] Reconstructed mesh (vertices, faces): ", mesh.numVertices(), ", ", mesh.numFaces(), ")");
     }
 
     // Save points and normals only
@@ -961,7 +964,7 @@ int main(int argc, char** argv)
         boost::filesystem::path outputFile = outputDir/selectedFile;
         std::string extension = selectedFile.extension().string();
 
-                lvr2::log::info("{}{}{}", fmt::streamed("[LVR2 Reconstruct] Saving mesh to "), fmt::streamed(output_filename), fmt::streamed("."));
+                lvr2::log::info("{}{}{}", "[LVR2 Reconstruct] Saving mesh to ", output_filename, ".");
 
         if (extension == ".h5")
         {
@@ -996,7 +999,7 @@ int main(int argc, char** argv)
         //map_io.addTextureKeypointsMap(matResult.m_keypoints.get());
     }
 
-        lvr2::log::info("{}", fmt::streamed("[LVR2 Reconstruct] Program end."));
+        lvr2::log::info("{}", "[LVR2 Reconstruct] Program end.");
 
     return 0;
 }

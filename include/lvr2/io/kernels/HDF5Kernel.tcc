@@ -244,7 +244,7 @@ bool HDF5Kernel::addChannel(
         const T* ptr = channel.dataPtr().get();
         dataset->write_raw(ptr);
         m_hdf5File->flush();
-                lvr2::log::info("{}{}{}{}{}", fmt::streamed(" Added attribute \""), fmt::streamed(name), fmt::streamed("\" to group \""), fmt::streamed(group), fmt::streamed("\" to the given HDF5 file!"));
+                lvr2::log::info("{}{}{}{}{}", " Added attribute \"", name, "\" to group \"", group, "\" to the given HDF5 file!");
     }
     else
     {

@@ -37,7 +37,7 @@ int GeoTIFFIO::writeBand(cv::Mat *mat, int band)
 {
     if (!m_gtif_dataset)
     {
-                lvr2::log::info("{}", fmt::streamed("GeoTIFF dataset not initialized!"));
+                lvr2::log::info("{}", "GeoTIFF dataset not initialized!");
         return -1;
     }
 
@@ -51,7 +51,7 @@ int GeoTIFFIO::writeBand(cv::Mat *mat, int band)
         if (m_gtif_dataset->GetRasterBand(band)->RasterIO(
                 GF_Write, 0, row, m_cols, 1, rowBuff, m_cols, 1, GDT_UInt16, 0, 0) != CPLE_None)
         {
-                        lvr2::log::error("{}{}{}{}{}", fmt::streamed("An error occurred in GDAL while writing band "), fmt::streamed(band), fmt::streamed(" in row "), fmt::streamed(row), fmt::streamed("."));
+                        lvr2::log::error("{}{}{}{}{}", "An error occurred in GDAL while writing band ", band, " in row ", row, ".");
             return -1;
         }
     }
@@ -131,7 +131,7 @@ cv::Mat *GeoTIFFIO::readBand(int index)
     }
     else
     {
-                lvr2::log::error("{}", fmt::streamed("Error getting raster band"));
+                lvr2::log::error("{}", "Error getting raster band");
         return new cv::Mat;
     }
 

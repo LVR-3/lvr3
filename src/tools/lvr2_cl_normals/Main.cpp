@@ -63,19 +63,19 @@ void computeNormals(string filename, cl_normals::Options& opt, PointBufferPtr& b
     {
         num_points = model->m_pointCloud->numPoints();
         points = model->m_pointCloud->getPointArray();
-                lvr2::log::info("{}{}{}{}", fmt::streamed("Read "), fmt::streamed(num_points), fmt::streamed(" points from "), fmt::streamed(filename));
+                lvr2::log::info("{}{}{}{}", "Read ", num_points, " points from ", filename);
     }
     else
     {
-                lvr2::log::warning("{}{}", fmt::streamed("Warning: No point cloud data found in "), fmt::streamed(filename));
+                lvr2::log::warning("{}{}", "Warning: No point cloud data found in ", filename);
         return;
     }
 
     floatArr normals = floatArr(new float[ num_points * 3 ]);
 
-        lvr2::log::info("{}", fmt::streamed("Constructing kd-tree..."));
+        lvr2::log::info("{}", "Constructing kd-tree...");
     ClSurface gpu_surface(points, num_points);
-        lvr2::log::info("{}", fmt::streamed("Finished kd-tree construction."));
+        lvr2::log::info("{}", "Finished kd-tree construction.");
 
     gpu_surface.setKn(opt.kn());
     gpu_surface.setKi(opt.ki());
@@ -89,11 +89,11 @@ void computeNormals(string filename, cl_normals::Options& opt, PointBufferPtr& b
     }
     gpu_surface.setFlippoint(opt.flipx(), opt.flipy(), opt.flipz());
 
-        lvr2::log::info("{}", fmt::streamed("Start Normal Calculation..."));
+        lvr2::log::info("{}", "Start Normal Calculation...");
     gpu_surface.calculateNormals();
 
     gpu_surface.getNormals(normals);
-        lvr2::log::info("{}", fmt::streamed("Finished Normal Calculation. "));
+        lvr2::log::info("{}", "Finished Normal Calculation. ");
 
     buffer->setPointArray(points, num_points);
     buffer->setNormalArray(normals, num_points);
@@ -139,7 +139,7 @@ void reconstructAndSave(PointBufferPtr& buffer, cl_normals::Options& opt)
 
     ModelPtr m( new Model( res ) );
 
-        lvr2::log::info("{}", fmt::streamed("Saving mesh."));
+        lvr2::log::info("{}", "Saving mesh.");
     ModelFactory::saveModel( m, "triangle_mesh.ply");
 }
 
@@ -169,7 +169,7 @@ int main(int argc, char** argv){
                 int num = 0;
                 if(sscanf(currentFile.c_str(), "scan%3d", &num))
                 {
-                                        lvr2::log::info("{}{}", fmt::streamed("Processing "), fmt::streamed(p.string()));
+                                        lvr2::log::info("{}{}", "Processing ", p.string());
                     PointBufferPtr buffer(new PointBuffer);
 
                     computeNormals(p.string(), opt, buffer);

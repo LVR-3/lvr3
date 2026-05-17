@@ -143,7 +143,7 @@ int main(int argc, char** argv)
             auto loaded = lvr2::io::scan::load_project(in, lvr2::io::scan::LoadOptions::hdf5());
             if (!loaded)
             {
-                                lvr2::log::error("{}{}", fmt::streamed("Unable to load HDF5 scan project: "), fmt::streamed(loaded.error().message));
+                                lvr2::log::error("{}{}", "Unable to load HDF5 scan project: ", loaded.error().message);
                 MPI_Finalize();
                 return EXIT_FAILURE;
             }
@@ -168,7 +168,7 @@ int main(int argc, char** argv)
                 }
                 else
                 {
-                                        lvr2::log::error("{}{}", fmt::streamed("Unable to load directory scan project: "), fmt::streamed(loadedDirectory.error().message));
+                                        lvr2::log::error("{}{}", "Unable to load directory scan project: ", loadedDirectory.error().message);
                 }
             }
             //reconstruction from ScanProject Folder

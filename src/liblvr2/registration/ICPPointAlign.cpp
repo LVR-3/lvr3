@@ -95,7 +95,7 @@ Transformd ICPPointAlign::match()
 
         if (m_verbose)
         {
-                        lvr2::log::error("{}{}{}{}{}{}{}{}{}", fmt::streamed("ICP Error is "), fmt::streamed(ret), fmt::streamed(" in iteration "), fmt::streamed(iteration), fmt::streamed(" / "), fmt::streamed(m_maxIterations), fmt::streamed(" using "), fmt::streamed(pairs), fmt::streamed(" points."));
+                        lvr2::log::error("{}{}{}{}{}{}{}{}{}", "ICP Error is ", ret, " in iteration ", iteration, " / ", m_maxIterations, " using ", pairs, " points.");
         }
 
         // Check minimum distance

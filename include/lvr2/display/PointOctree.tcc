@@ -69,14 +69,14 @@ namespace lvr2{
 //      std::vector<BaseVecT > pts = points->getPointBufferReference();
       std::cout << m_bbox << std::endl;
 
-            lvr2::log::info("{}{}", fmt::streamed("Start building octree with voxelsize "), fmt::streamed(m_voxelSize));
+            lvr2::log::info("{}{}", "Start building octree with voxelsize ", m_voxelSize);
       m_root = (BOct*)((unsigned char*) m_root + buildTree(m_root, 0, points->numPoints(), m_bbox));
 
-            lvr2::log::info("{}", fmt::streamed("generating genDisplayLists "));
+            lvr2::log::info("{}", "generating genDisplayLists ");
       genDisplayLists();
 
-            lvr2::log::info("{}", fmt::streamed("generating genDisplayLists done"));
-            lvr2::log::info("{}", fmt::streamed("Octree rdy "));
+            lvr2::log::info("{}", "generating genDisplayLists done");
+            lvr2::log::info("{}", "Octree rdy ");
 
 //        m_points.clear();
 //        std::vector<BaseVecT >().swap(m_points);

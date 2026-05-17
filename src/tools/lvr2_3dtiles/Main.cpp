@@ -62,7 +62,7 @@ const pmp::Point flip_point(100000, 100000, 100000);
 
 void print_chunk_size_error()
 {
-        lvr2::log::error("{}{}{}", fmt::streamed("Error: If your input does not contain Chunks, you need to specify a chunk size."), fmt::streamed("\n"), fmt::streamed("       Even if you don't want any splitting, you still need to explicitly set it to -1."));
+        lvr2::log::error("{}{}{}", "Error: If your input does not contain Chunks, you need to specify a chunk size.", "\n", "       Even if you don't want any splitting, you still need to explicitly set it to -1.");
 }
 
 int main(int argc, char** argv)
@@ -150,7 +150,7 @@ int main(int argc, char** argv)
             stringstream options_ss;
             options.print(options_ss);
 
-                        lvr2::log::info("{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}", fmt::streamed("The Mesh to 3D Tiles conversion tool"), fmt::streamed("\n"), fmt::streamed("Usage: "), fmt::streamed("\n"), fmt::streamed("    lvr2_3dtiles [OPTIONS] <inputFile> [<outputDir>]"), fmt::streamed("\n"), fmt::streamed("\n"), fmt::streamed(options_ss.str()), fmt::streamed("\n"), fmt::streamed("\n"), fmt::streamed("<inputFile> is the file where the input mesh is stored"), fmt::streamed("\n"), fmt::streamed("    Possible inputs:"), fmt::streamed("\n"), fmt::streamed("        - most mesh asset formats supported by the LVR mesh facade"), fmt::streamed("\n"), fmt::streamed("        - a HDF5 file with a single mesh"), fmt::streamed("\n"), fmt::streamed("        - a HDF5 file with chunks in /chunks/x_y_z"), fmt::streamed("\n"), fmt::streamed("        - a directory containing chunks named x_y_z.*"), fmt::streamed("\n"), fmt::streamed("          This option requires a chunk_metadata.yaml in the folder containing"), fmt::streamed("\n"), fmt::streamed("          at least chunk_size and voxel_size."), fmt::streamed("\n"), fmt::streamed(""), fmt::streamed("\n"), fmt::streamed("<outputDir> is the directory to create the output in."), fmt::streamed("\n"), fmt::streamed("    THE CONTENT OF THIS DIRECTORY WILL BE DELETED!"));
+                        lvr2::log::info("{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}", "The Mesh to 3D Tiles conversion tool", "\n", "Usage: ", "\n", "    lvr2_3dtiles [OPTIONS] <inputFile> [<outputDir>]", "\n", "\n", options_ss.str(), "\n", "\n", "<inputFile> is the file where the input mesh is stored", "\n", "    Possible inputs:", "\n", "        - most mesh asset formats supported by the LVR mesh facade", "\n", "        - a HDF5 file with a single mesh", "\n", "        - a HDF5 file with chunks in /chunks/x_y_z", "\n", "        - a directory containing chunks named x_y_z.*", "\n", "          This option requires a chunk_metadata.yaml in the folder containing", "\n", "          at least chunk_size and voxel_size.", "\n", "", "\n", "<outputDir> is the directory to create the output in.", "\n", "    THE CONTENT OF THIS DIRECTORY WILL BE DELETED!");
         }
 
         notify(variables);
@@ -348,18 +348,18 @@ int main(int argc, char** argv)
         auto& surface_mesh = mesh.getSurfaceMesh();
         if (fix_mesh)
         {
-                        lvr2::log::info("{}", fmt::streamed("Fixing mesh"));
+                        lvr2::log::info("{}", "Fixing mesh");
             surface_mesh.duplicate_non_manifold_vertices();
             surface_mesh.remove_degenerate_faces();
         }
         surface_mesh.garbage_collection();
 
-                lvr2::log::info("{}", fmt::streamed("Calculating normals"));
+                lvr2::log::info("{}", "Calculating normals");
         pmp::SurfaceNormals::compute_vertex_normals(surface_mesh, flip_point);
 
         for (auto file : mesh_out_files)
         {
-                        lvr2::log::info("{}{}", fmt::streamed("Writing mesh to "), fmt::streamed(file));
+                        lvr2::log::info("{}{}", "Writing mesh to ", file.string());
             surface_mesh.write(file.string());
         }
     }
@@ -406,7 +406,7 @@ int main(int argc, char** argv)
                     {
                         if (v_dist[vH] != pmp::PMP_MAX_INDEX && v_dist[vH] != id)
                         {
-                                                        lvr2::log::error("{}{}{}", fmt::streamed("ERROR: vertex "), fmt::streamed(vH), fmt::streamed(" has multiple materials"));
+                                                        lvr2::log::error("{}{}{}", "ERROR: vertex ", vH.idx(), " has multiple materials");
                         }
                         v_dist[vH] = id;
                     }
@@ -449,12 +449,12 @@ int main(int argc, char** argv)
     }
 
     tree->refresh();
-        lvr2::log::info("{}{}{}", fmt::streamed("Constructed tree with depth "), fmt::streamed(tree->depth()), fmt::streamed(". Creating LOD"));
+        lvr2::log::info("{}{}{}", "Constructed tree with depth ", tree->depth(), ". Creating LOD");
     tree->finalize(allowedMemUsage, reduction_factor, normal_deviation);
 
     // ==================== Write to file ====================
 
-        lvr2::log::info("{}", fmt::streamed("Creating 3D Tiles"));
+        lvr2::log::info("{}", "Creating 3D Tiles");
 
     IO io(output_dir.string());
     io.write(tree, compress, scale);
@@ -468,7 +468,7 @@ int main(int argc, char** argv)
         fs::remove(name);
     }
 
-        lvr2::log::info("{}", fmt::streamed("Finished"));
+        lvr2::log::info("{}", "Finished");
 
     return 0;
 }
@@ -490,7 +490,7 @@ void read_chunks(std::unordered_map<Vector3i, Tree::Ptr>& chunks,
         int read = std::sscanf(name.c_str(), "%d_%d_%d", &x, &y, &z);
         if (read != 3)
         {
-                        lvr2::log::info("{}{}", fmt::streamed("Skipping "), fmt::streamed(name));
+                        lvr2::log::info("{}{}", "Skipping ", name);
             ++progress;
             continue;
         }
@@ -525,8 +525,8 @@ void read_chunks(std::unordered_map<Vector3i, Tree::Ptr>& chunks,
 
     if (empty > 0)
     {
-                lvr2::log::info("{}{}", fmt::streamed(empty), fmt::streamed(" chunks contained only overlap with other chunks"));
+                lvr2::log::info("{}{}", empty, " chunks contained only overlap with other chunks");
     }
 
-        lvr2::log::info("{}{}{}", fmt::streamed("Found "), fmt::streamed(chunks.size()), fmt::streamed(" Chunks"));
+        lvr2::log::info("{}{}{}", "Found ", chunks.size(), " Chunks");
 }

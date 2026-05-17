@@ -54,7 +54,7 @@ int main(int argc, char** argv)
     {
         if(options.getReduction() == "")
         {
-                        lvr2::log::info("{}{}{}", fmt::streamed("[Main] Exporting all points to '"), fmt::streamed(options.getReduction()), fmt::streamed("'."));
+                        lvr2::log::info("{}{}{}", "[Main] Exporting all points to '", options.getReduction(), "'.");
             exportScanProjectToPLY(workProject, options.getPLYFileName());
         }
         else
@@ -62,7 +62,7 @@ int main(int argc, char** argv)
             OctreeReductionAlgorithmPtr red = nullptr;
             if(options.getReduction() == "OCTREE_RANDOM")
             {
-                                lvr2::log::info("{}{}{}", fmt::streamed("[Main] Exporting with octree random sampling to '"), fmt::streamed(options.getPLYFileName()), fmt::streamed("'."));
+                                lvr2::log::info("{}{}{}", "[Main] Exporting with octree random sampling to '", options.getPLYFileName(), "'.");
 
                 red.reset(new OctreeReductionAlgorithm(
                     options.getVoxelSize(),
@@ -70,7 +70,7 @@ int main(int argc, char** argv)
             }
             if(options.getReduction() == "OCTREE_NEAREST")
             {
-                                lvr2::log::info("{}{}{}", fmt::streamed("[Main] Exporting with nearest center sampling to '"), fmt::streamed(options.getPLYFileName()), fmt::streamed("'."));
+                                lvr2::log::info("{}{}{}", "[Main] Exporting with nearest center sampling to '", options.getPLYFileName(), "'.");
 
                 red.reset(new OctreeReductionAlgorithm(
                     options.getVoxelSize(),

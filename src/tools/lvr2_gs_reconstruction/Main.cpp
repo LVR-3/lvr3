@@ -36,7 +36,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options& op
     // Create point set surface object
     if (pcm_name == "PCL")
     {
-                lvr2::log::info("{}", fmt::streamed("Using PCL as point cloud manager is not implemented yet!"));
+                lvr2::log::info("{}", "Using PCL as point cloud manager is not implemented yet!");
         panic_unimplemented("PCL as point cloud manager");
     }
     else if (pcm_name == "FLANN" || pcm_name == "NANOFLANN")
@@ -46,8 +46,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const gs_reconstruction::Options& op
     }
     else
     {
-                lvr2::log::error("{}", fmt::streamed("Unable to create PointCloudManager."));
-                lvr2::log::info("{}{}{}", fmt::streamed("Unknown option '"), fmt::streamed(pcm_name), fmt::streamed("'."));
+                lvr2::log::error("{}", "Unable to create PointCloudManager.");
+                lvr2::log::info("{}{}{}", "Unknown option '", pcm_name, "'.");
         return nullptr;
     }
 
@@ -76,7 +76,7 @@ void saveMesh(int s = 0)
 
     ModelPtr m(new Model(res));
 
-        lvr2::log::info("{}", fmt::streamed("Saving mesh."));
+        lvr2::log::info("{}", "Saving mesh.");
     ModelFactory::saveModel(m, "triangle_init_mesh.ply");
     exit(0);
 }
@@ -100,7 +100,7 @@ int main(int argc, char** argv)
     // did model parse succeed
     if (!model)
     {
-                lvr2::log::error("{}{}", fmt::streamed("IO Error: Unable to parse "), fmt::streamed(options.getInputFileName()));
+                lvr2::log::error("{}{}", "IO Error: Unable to parse ", options.getInputFileName());
         return EXIT_FAILURE;
     }
 

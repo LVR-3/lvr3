@@ -165,7 +165,7 @@ void segmentMesh(pmp::SurfaceMesh& mesh, float chunkSize, std::unordered_map<Vec
     }
 
     progress.terminate();
-        lvr2::log::info("{}{}{}", fmt::streamed("Found "), fmt::streamed(segments.size()), fmt::streamed(" initial segments"));
+        lvr2::log::info("{}{}{}", "Found ", segments.size(), " initial segments");
 
     // ==================== merge small segments within a chunk together ====================
 
@@ -250,7 +250,7 @@ void segmentMesh(pmp::SurfaceMesh& mesh, float chunkSize, std::unordered_map<Vec
 
     if (!outChunks.empty())
     {
-                lvr2::log::info("{}{}{}{}{}", fmt::streamed("Merged "), fmt::streamed((segments.size() - outSegments.size())), fmt::streamed(" small segments into "), fmt::streamed(outChunks.size()), fmt::streamed(" chunks"));
+                lvr2::log::info("{}{}{}{}{}", "Merged ", (segments.size() - outSegments.size()), " small segments into ", outChunks.size(), " chunks");
     }
 }
 
@@ -587,7 +587,7 @@ void mergeChunkOverlap(pmp::SurfaceMesh& mesh, const pmp::BoundingBox& bb)
             }
             else
             {
-                                lvr2::log::warning("{}{}{}", fmt::streamed("Warning: Vertex "), fmt::streamed(src), fmt::streamed(" should have been deleted, but it is not."));
+                                lvr2::log::warning("{}{}{}", "Warning: Vertex ", src.idx(), " should have been deleted, but it is not.");
             }
         }
     }

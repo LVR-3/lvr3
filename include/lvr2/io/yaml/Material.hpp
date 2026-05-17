@@ -24,17 +24,17 @@ struct convert<lvr2::RGB8Color>
     {
         if (!node["r"])
         {
-                        lvr2::log::info("{}{}", fmt::streamed("[YAML::convert<Texture> - decode] "), fmt::streamed("Node has no tag 'r'."));
+                        lvr2::log::info("{}{}", "[YAML::convert<Texture> - decode] ", "Node has no tag 'r'.");
             return false;
         }
         if (!node["g"])
         {
-                        lvr2::log::info("{}{}", fmt::streamed("[YAML::convert<Texture> - decode] "), fmt::streamed("Node has no tag 'g'."));
+                        lvr2::log::info("{}{}", "[YAML::convert<Texture> - decode] ", "Node has no tag 'g'.");
             return false;
         }
         if (!node["b"])
         {
-                        lvr2::log::info("{}{}", fmt::streamed("[YAML::convert<Texture> - decode] "), fmt::streamed("Node has no tag 'b'."));
+                        lvr2::log::info("{}{}", "[YAML::convert<Texture> - decode] ", "Node has no tag 'b'.");
             return false;
         }
 
@@ -71,7 +71,7 @@ struct convert<lvr2::Material>
     {
         if (!node["color"])
         {
-                        lvr2::log::info("{}{}", fmt::streamed("[YAML::convert<Texture> - decode] "), fmt::streamed("Node has no tag 'color'."));
+                        lvr2::log::info("{}{}", "[YAML::convert<Texture> - decode] ", "Node has no tag 'color'.");
             return false;
         }
 

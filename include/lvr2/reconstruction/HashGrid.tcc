@@ -73,7 +73,7 @@ HashGrid<BaseVecT, BoxT>::HashGrid(float resolution, BoundingBox<BaseVecT> bound
 
     if (!m_boundingBox.isValid())
     {
-                lvr2::log::warning("{}", fmt::streamed("[HashGrid] Malformed BoundingBox."));
+                lvr2::log::warning("{}", "[HashGrid] Malformed BoundingBox.");
     }
 
     BoxT::m_voxelsize = m_voxelsize;
@@ -149,7 +149,7 @@ HashGrid<BaseVecT, BoxT>::HashGrid(const std::vector<PointBufferPtr>& chunks,
 
     if (chunks.size() > 1)
     {
-                lvr2::log::info("{}{}", fmt::streamed("[HashGrid] Number of Chunks: "), fmt::streamed(chunks.size()));
+                lvr2::log::info("{}{}", "[HashGrid] Number of Chunks: ", chunks.size());
         progress.reset(new lvr2::Monitor(lvr2::LogLevel::info, "[HashGrid] Loading grid", chunks.size()));
     }
 

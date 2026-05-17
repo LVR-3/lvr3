@@ -56,6 +56,22 @@ Node MergeNodes(Node a, Node b)
 
 namespace YAML_UTIL
 {
+
+inline std::string NodeSummary(const YAML::Node& node)
+{
+    if(!node)
+    {
+        return "<missing>";
+    }
+
+    if(node.IsScalar())
+    {
+        return node.Scalar();
+    }
+
+    return YAML::Dump(node);
+}
+
 /**
  * @brief Check if the \ref node has a \ref tag_name Tag with value \ref required_value
  *
@@ -70,13 +86,13 @@ inline bool ValidateNodeTag(const YAML::Node& node, const char* decoder_name, co
 {
     if(!node[tag_name])
     {
-                lvr2::log::info("{}{}{}{}{}{}", fmt::streamed("[YAML::convert<"), fmt::streamed(decoder_name), fmt::streamed("> - decode] "), fmt::streamed("Node has no '"), fmt::streamed(tag_name), fmt::streamed("' Tag"));
+                lvr2::log::info("{}{}{}{}{}{}", "[YAML::convert<", decoder_name, "> - decode] ", "Node has no '", tag_name, "' Tag");
         return false;
     }
     if (node[tag_name].as<std::string>() != required_value)
     {
         // different hierarchy level
-                lvr2::log::info("{}{}{}{}{}{}{}{}{}{}", fmt::streamed("[YAML::convert<"), fmt::streamed(decoder_name), fmt::streamed("> - decode] "), fmt::streamed("Nodes "), fmt::streamed(tag_name), fmt::streamed(" '"), fmt::streamed(node[tag_name].as<std::string>()), fmt::streamed("' is not '"), fmt::streamed(required_value), fmt::streamed("'"));
+                lvr2::log::info("{}{}{}{}{}{}{}{}{}{}", "[YAML::convert<", decoder_name, "> - decode] ", "Nodes ", tag_name, " '", node[tag_name].as<std::string>(), "' is not '", required_value, "'");
         return false;
     }
 

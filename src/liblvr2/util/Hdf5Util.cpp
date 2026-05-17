@@ -167,8 +167,8 @@ HighFive::Group getGroup(HighFive::Group& g, const std::string& groupName, bool 
     }
     catch (HighFive::Exception& e)
     {
-                lvr2::log::error("{}{}{}", fmt::streamed("Error in HDF5Util::getGroup '"), fmt::streamed(groupName), fmt::streamed("': "));
-                lvr2::log::info("{}", fmt::streamed(e.what()));
+                lvr2::log::error("{}{}{}", "Error in HDF5Util::getGroup '", groupName, "': ");
+                lvr2::log::info("{}", e.what());
         throw e;
     }
 

@@ -93,7 +93,7 @@ ModelToImage::~ModelToImage()
 
 void ModelToImage::computeDepthListMatrix(DepthListMatrix& mat)
 {
-        lvr2::log::info("{}{}{}{}", fmt::streamed("Initializting DepthListMatrix with dimensions "), fmt::streamed(m_width), fmt::streamed(" x "), fmt::streamed(m_height));
+        lvr2::log::info("{}{}{}{}", "Initializting DepthListMatrix with dimensions ", m_width, " x ", m_height);
     // Set correct image width and height
     for(int i = 0; i < m_height; i++)
     {
@@ -145,7 +145,7 @@ void ModelToImage::computeDepthListMatrix(DepthListMatrix& mat)
 
 void ModelToImage::computeDepthImage(ModelToImage::DepthImage& img, ModelToImage::ProjectionPolicy policy)
 {
-        lvr2::log::info("{}{}{}{}", fmt::streamed("Computing depth image. Image dimensions: "), fmt::streamed(m_width), fmt::streamed(" x "), fmt::streamed(m_height));
+        lvr2::log::info("{}{}{}{}", "Computing depth image. Image dimensions: ", m_width, " x ", m_height);
 
     // Set correct image width and height
     for(int i = 0; i < m_height; i++)
@@ -189,7 +189,7 @@ void ModelToImage::computeDepthImage(ModelToImage::DepthImage& img, ModelToImage
         ++progress;
     }
     cout << endl;
-        lvr2::log::info("{}{}{}{}", fmt::streamed("Min / Max range: "), fmt::streamed(img.minRange), fmt::streamed(" / "), fmt::streamed(img.maxRange));
+        lvr2::log::info("{}{}{}{}", "Min / Max range: ", img.minRange, " / ", img.maxRange);
 }
 
 void ModelToImage::writePGM(std::string filename, float cutoff)

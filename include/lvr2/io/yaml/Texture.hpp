@@ -33,37 +33,37 @@ struct convert<lvr2::Texture>
     {
         if (!node["index"])
         {
-                        lvr2::log::info("{}{}", fmt::streamed("[YAML::convert<Texture> - decode] "), fmt::streamed("Node has no tag 'index'."));
+                        lvr2::log::info("{}{}", "[YAML::convert<Texture> - decode] ", "Node has no tag 'index'.");
             return false;
         }
 
         if (!node["width"])
         {
-                        lvr2::log::info("{}{}", fmt::streamed("[YAML::convert<Texture> - decode] "), fmt::streamed("Node has no tag 'width'."));
+                        lvr2::log::info("{}{}", "[YAML::convert<Texture> - decode] ", "Node has no tag 'width'.");
             return false;
         }
 
         if (!node["height"])
         {
-                        lvr2::log::info("{}{}", fmt::streamed("[YAML::convert<Texture> - decode] "), fmt::streamed("Node has no tag 'height'."));
+                        lvr2::log::info("{}{}", "[YAML::convert<Texture> - decode] ", "Node has no tag 'height'.");
             return false;
         }
 
         if (!node["num_channels"])
         {
-                        lvr2::log::info("{}{}", fmt::streamed("[YAML::convert<Texture> - decode] "), fmt::streamed("Node has no tag 'num_channels'."));
+                        lvr2::log::info("{}{}", "[YAML::convert<Texture> - decode] ", "Node has no tag 'num_channels'.");
             return false;
         }
 
         if (!node["channel_width"])
         {
-                        lvr2::log::info("{}{}", fmt::streamed("[YAML::convert<Texture> - decode] "), fmt::streamed("Node has no tag 'channel_width'."));
+                        lvr2::log::info("{}{}", "[YAML::convert<Texture> - decode] ", "Node has no tag 'channel_width'.");
             return false;
         }
 
         if (!node["texel_size"])
         {
-                        lvr2::log::info("{}{}", fmt::streamed("[YAML::convert<Texture> - decode] "), fmt::streamed("Node has no tag 'texel_size'."));
+                        lvr2::log::info("{}{}", "[YAML::convert<Texture> - decode] ", "Node has no tag 'texel_size'.");
             return false;
         }
 

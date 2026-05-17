@@ -68,7 +68,7 @@ ModelPtr AsciiIO::read(
 
     if ( lines_in_file < 2 )
     {
-                lvr2::log::info("{}", fmt::streamed("AsciiIO: Too few lines in file (has to be > 2)."));
+                lvr2::log::info("{}", "AsciiIO: Too few lines in file (has to be > 2).");
         return ModelPtr();
     }
 
@@ -107,7 +107,7 @@ ModelPtr AsciiIO::read(
     // (Some) sanity checks for given paramters
     if(rPos > num_columns || gPos > num_columns || bPos > num_columns || iPos > num_columns)
     {
-                lvr2::log::error("{}", fmt::streamed("Error: At least one attribute index is larger than the number of columns"));
+                lvr2::log::error("{}", "Error: At least one attribute index is larger than the number of columns");
         // Retrun empty model
         return ModelPtr();
     }
@@ -195,7 +195,7 @@ ModelPtr AsciiIO::read(
     // Sanity check
     if(c != numPoints)
     {
-                lvr2::log::warning("{}{}{}{}", fmt::streamed("Warning: Point count / line count mismatch: "), fmt::streamed(numPoints), fmt::streamed(" / "), fmt::streamed(c));
+                lvr2::log::warning("{}{}{}{}", "Warning: Point count / line count mismatch: ", numPoints, " / ", c);
     }
 
     // Assign buffers
@@ -240,7 +240,7 @@ ModelPtr AsciiIO::read(string filename)
 
     if ( lines_in_file < 2 )
     {
-                lvr2::log::info("{}", fmt::streamed("AsciiIO: Too few lines in file (has to be > 2)."));
+                lvr2::log::info("{}", "AsciiIO: Too few lines in file (has to be > 2).");
         return ModelPtr();
     }
     // Open the given file. Skip the first line (as it may
@@ -267,9 +267,9 @@ ModelPtr AsciiIO::read(string filename)
 
     if(has_color || has_intensity)
     {
-                lvr2::log::info("{}", fmt::streamed("Autodetected the following attributes"));
-                lvr2::log::info("{}{}", fmt::streamed("Color:     "), fmt::streamed(has_color));
-                lvr2::log::info("{}{}", fmt::streamed("Intensity: "), fmt::streamed(has_intensity));
+                lvr2::log::info("{}", "Autodetected the following attributes");
+                lvr2::log::info("{}{}", "Color:     ", has_color);
+                lvr2::log::info("{}{}", "Intensity: ", has_intensity);
 
         if(has_color && has_intensity)
         {

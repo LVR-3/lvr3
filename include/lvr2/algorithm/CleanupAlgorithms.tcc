@@ -86,7 +86,7 @@ size_t naiveFillSmallHoles(BaseMesh<BaseVecT>& mesh, size_t maxSize, bool collap
         return 0;
     }
 
-        lvr2::log::info("{}{}", fmt::streamed("Trying to remove all holes with size ≤ "), fmt::streamed(maxSize));
+        lvr2::log::info("{}{}", "Trying to remove all holes with size ≤ ", maxSize);
 
 
     // First, we need to have a ClusterBiMap where each cluster describes one

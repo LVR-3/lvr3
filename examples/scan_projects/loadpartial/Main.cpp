@@ -14,7 +14,7 @@ namespace
 
 void reportStorageError(const std::string& action, const lvr2::io::storage::Error& error)
 {
-        lvr2::log::warning("{}{}{}", fmt::streamed(action), fmt::streamed(" failed: "), fmt::streamed(error.message));
+        lvr2::log::warning("{}{}{}", action, " failed: ", error.message);
 }
 
 size_t countLoadedPoints(const ScanProjectPtr& project)
@@ -73,7 +73,7 @@ void loadPartial(ScanProjectPtr sp)
     }
 
     auto& store = opened.value();
-        lvr2::log::debug("{}{}{}", fmt::streamed("Save complete scan project to '"), fmt::streamed(filename), fmt::streamed("'"));
+        lvr2::log::debug("{}{}{}", "Save complete scan project to '", filename, "'");
     auto saved = store.save(*sp);
     if (!saved)
     {
@@ -82,7 +82,7 @@ void loadPartial(ScanProjectPtr sp)
     }
 
     std::cout << std::endl;
-        lvr2::log::info("{}", fmt::streamed("Load project hierarchy lazily"));
+        lvr2::log::info("{}", "Load project hierarchy lazily");
     auto loadedProject = store.load();
     if (!loadedProject)
     {
@@ -90,10 +90,10 @@ void loadPartial(ScanProjectPtr sp)
         return;
     }
 
-        lvr2::log::debug("{}{}", fmt::streamed("Total points after explicit scan loads: "), fmt::streamed(countLoadedPoints(loadedProject.value())));
+        lvr2::log::debug("{}{}", "Total points after explicit scan loads: ", countLoadedPoints(loadedProject.value()));
     std::cout << std::endl;
 
-        lvr2::log::info("{}", fmt::streamed("Load one scan position through ProjectStore"));
+        lvr2::log::info("{}", "Load one scan position through ProjectStore");
     auto position = store.load_position(1);
     if (!position)
     {
@@ -103,11 +103,11 @@ void loadPartial(ScanProjectPtr sp)
     {
         ScanProjectPtr singlePositionProject(new ScanProject);
         singlePositionProject->positions.push_back(position.value());
-                lvr2::log::debug("{}{}", fmt::streamed("Total points in loaded position: "), fmt::streamed(countLoadedPoints(singlePositionProject)));
+                lvr2::log::debug("{}{}", "Total points in loaded position: ", countLoadedPoints(singlePositionProject));
     }
     std::cout << std::endl;
 
-        lvr2::log::info("{}", fmt::streamed("Load one LIDAR through ProjectStore"));
+        lvr2::log::info("{}", "Load one LIDAR through ProjectStore");
     auto lidar = store.load_lidar(1, 0);
     if (!lidar)
     {
@@ -128,11 +128,11 @@ void loadPartial(ScanProjectPtr sp)
                 scan->release();
             }
         }
-                lvr2::log::debug("{}{}", fmt::streamed("Total points in loaded LIDAR: "), fmt::streamed(totalPoints));
+                lvr2::log::debug("{}{}", "Total points in loaded LIDAR: ", totalPoints);
     }
     std::cout << std::endl;
 
-        lvr2::log::info("{}", fmt::streamed("Load one scan payload through ProjectStore"));
+        lvr2::log::info("{}", "Load one scan payload through ProjectStore");
     auto scan = store.load_scan(1, 0, 0);
     if (!scan)
     {
@@ -143,7 +143,7 @@ void loadPartial(ScanProjectPtr sp)
         scan.value()->load();
         if (scan.value()->points)
         {
-                        lvr2::log::debug("{}{}", fmt::streamed("Total points in scan: "), fmt::streamed(scan.value()->points->numPoints()));
+                        lvr2::log::debug("{}{}", "Total points in scan: ", scan.value()->points->numPoints());
         }
         scan.value()->release();
     }
@@ -173,14 +173,14 @@ void loadProjectMeta(ScanProjectPtr sp)
         return;
     }
 
-        lvr2::log::info("{}", fmt::streamed("Load scan-project metadata through ProjectStore"));
+        lvr2::log::info("{}", "Load scan-project metadata through ProjectStore");
     auto meta = store.load_meta();
     if (!meta)
     {
         reportStorageError("Load project metadata", meta.error());
         return;
     }
-        lvr2::log::debug("{}", fmt::streamed(meta.value().text));
+        lvr2::log::debug("{}", meta.value().text);
     std::cout << std::endl;
 }
 
@@ -197,18 +197,18 @@ int main(int argc, char** argv)
             lvr2::io::storage::LoadMode::Lazy);
         if (!opened)
         {
-                        lvr2::log::error("{}{}", fmt::streamed("Unable to open HDF5 scan project: "), fmt::streamed(opened.error().message));
+                        lvr2::log::error("{}{}", "Unable to open HDF5 scan project: ", opened.error().message);
             return 1;
         }
 
-                lvr2::log::info("{}", fmt::streamed("1. Load ScanProject no data"));
+                lvr2::log::info("{}", "1. Load ScanProject no data");
         auto loaded = opened.value().load();
         if (!loaded)
         {
-                        lvr2::log::error("{}{}", fmt::streamed("Unable to load HDF5 scan project: "), fmt::streamed(loaded.error().message));
+                        lvr2::log::error("{}{}", "Unable to load HDF5 scan project: ", loaded.error().message);
             return 1;
         }
-                lvr2::log::info("{}", fmt::streamed("- Done."));
+                lvr2::log::info("{}", "- Done.");
 
         ScanProjectPtr sp_loaded = loaded.value();
         if (sp_loaded && !sp_loaded->positions.empty() &&
@@ -218,9 +218,9 @@ int main(int argc, char** argv)
             ScanPtr scan = sp_loaded->positions[0]->lidars[0]->scans[0];
             if (scan)
             {
-                                lvr2::log::info("{}{}{}", fmt::streamed("- Load "), fmt::streamed(scan->numPoints), fmt::streamed(" points completely"));
+                                lvr2::log::info("{}{}{}", "- Load ", scan->numPoints, " points completely");
                 scan->load();
-                                lvr2::log::info("{}", fmt::streamed("- Done."));
+                                lvr2::log::info("{}", "- Done.");
                 if (scan->points)
                 {
                     std::cout << *scan->points << std::endl;
@@ -228,9 +228,9 @@ int main(int argc, char** argv)
                 scan->release();
 
                 ReductionAlgorithmPtr red(new FixedSizeReductionAlgorithm(1000));
-                                lvr2::log::info("{}{}{}", fmt::streamed("- Load "), fmt::streamed(scan->numPoints), fmt::streamed(" points reduced"));
+                                lvr2::log::info("{}{}{}", "- Load ", scan->numPoints, " points reduced");
                 scan->load(red);
-                                lvr2::log::info("{}", fmt::streamed("- Done."));
+                                lvr2::log::info("{}", "- Done.");
                 if (scan->points)
                 {
                     std::cout << *scan->points << std::endl;
@@ -243,17 +243,17 @@ int main(int argc, char** argv)
     {
         lvr2::log::set_level(lvr2::log::Level::debug);
 
-                lvr2::log::info("{}", fmt::streamed("ScanProjects Load Partial"));
+                lvr2::log::info("{}", "ScanProjects Load Partial");
 
-                lvr2::log::debug("{}", fmt::streamed("Generating dataset, wait."));
+                lvr2::log::debug("{}", "Generating dataset, wait.");
         ScanProjectPtr sp = dummyScanProjectStorage();
 
         std::cout << std::endl;
-                lvr2::log::info("{}", fmt::streamed("1. Example: Load datasets partially"));
+                lvr2::log::info("{}", "1. Example: Load datasets partially");
         loadPartial(sp);
 
         std::cout << std::endl;
-                lvr2::log::info("{}", fmt::streamed("2. Example: Load project metadata"));
+                lvr2::log::info("{}", "2. Example: Load project metadata");
         loadProjectMeta(sp);
     }
 

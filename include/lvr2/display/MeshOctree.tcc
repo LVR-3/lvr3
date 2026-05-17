@@ -102,12 +102,12 @@ namespace lvr2{
 
 
 
-                lvr2::log::info("{}{}", fmt::streamed("Start building octree with voxelsize "), fmt::streamed(m_voxelSize));
-                lvr2::log::info("{}", fmt::streamed(hashes.size()));
+                lvr2::log::info("{}{}", "Start building octree with voxelsize ", m_voxelSize);
+                lvr2::log::info("{}", hashes.size());
         m_root = reinterpret_cast<BOct*>(m_mem.alloc<BOct>(1, offset));
         m_root = (BOct*)((unsigned char*) m_root + buildTree(m_root, hashes, centroids, m_bbox));
 //        buildTree(m_root, hashes, centroids, m_bbox);
-                lvr2::log::info("{}", fmt::streamed(numLeafs));
+                lvr2::log::info("{}", numLeafs);
     }
 
     template  <typename BaseVecT>

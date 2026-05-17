@@ -131,7 +131,7 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
                 if (leftbb.getXSize() == 0 || rightbb.getXSize() == 0)
                 {
                     ignoreSplit = true;
-                                        lvr2::log::warning("{}{}{}{}{}", fmt::streamed("[BigGridKdTree] WARNING: m_numPoints + numPoints = "), fmt::streamed(m_numPoints + numPoints), fmt::streamed(" > "), fmt::streamed(s_maxNodePoints), fmt::streamed(". Ignoring x-split"));
+                                        lvr2::log::warning("{}{}{}{}{}", "[BigGridKdTree] WARNING: m_numPoints + numPoints = ", m_numPoints + numPoints, " > ", s_maxNodePoints, ". Ignoring x-split");
                 }
             }
             // Split at Y-Axis
@@ -159,7 +159,7 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
                     exit(1);
                     */
                     ignoreSplit = true;
-                                        lvr2::log::warning("{}{}{}{}{}", fmt::streamed("[BigGridKdTree] m_numPoints + numPoints = "), fmt::streamed(m_numPoints + numPoints), fmt::streamed(" > "), fmt::streamed(s_maxNodePoints), fmt::streamed(". Ignoring y-split"));
+                                        lvr2::log::warning("{}{}{}{}{}", "[BigGridKdTree] m_numPoints + numPoints = ", m_numPoints + numPoints, " > ", s_maxNodePoints, ". Ignoring y-split");
                 }
             }
             // Split at Z-Axis
@@ -186,7 +186,7 @@ void BigGridKdTree<BaseVecT>::insert(size_t numPoints, BaseVecT pos)
                     exit(1);
                     */
                     ignoreSplit = true;
-                                        lvr2::log::warning("{}{}{}{}{}", fmt::streamed("[BigGridKdTree] m_numPoints + numPoints = "), fmt::streamed(m_numPoints + numPoints), fmt::streamed(" > "), fmt::streamed(s_maxNodePoints), fmt::streamed(". Ignoring z-split"));
+                                        lvr2::log::warning("{}{}{}{}{}", "[BigGridKdTree] m_numPoints + numPoints = ", m_numPoints + numPoints, " > ", s_maxNodePoints, ". Ignoring z-split");
                 }
             }
 

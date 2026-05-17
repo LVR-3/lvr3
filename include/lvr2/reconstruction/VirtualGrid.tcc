@@ -39,7 +39,7 @@ VirtualGrid<BaseVecT>::VirtualGrid(BoundingBox<BaseVecT>& bb, float gridCellSize
     if (fmod(gridCellSize, voxelSize) != 0)
     {
         m_gridCellSize = ceil(gridCellSize / voxelSize) * voxelSize;
-                lvr2::log::warning("{}{}", fmt::streamed("[VirtualGrid] Warning: Adjusted grid cell size to "), fmt::streamed(m_gridCellSize));
+                lvr2::log::warning("{}{}", "[VirtualGrid] Warning: Adjusted grid cell size to ", m_gridCellSize);
     }
     else
     {

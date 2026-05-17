@@ -256,7 +256,7 @@ public:
         {
             return m_octree->getReducedPoints();
         }
-                lvr2::log::warning("{}", fmt::streamed("[OctreeReduction] Cannot get reduced points without point buffer."));
+                lvr2::log::warning("{}", "[OctreeReduction] Cannot get reduced points without point buffer.");
 
         return PointBufferPtr(new PointBuffer());
     }

@@ -61,7 +61,7 @@ Texture TextureFactory::readTexture(std::string filename)
     // if unable to read file
     if (mat.data == NULL)
     {
-                lvr2::log::error("{}{}{}", fmt::streamed("TextureFactory: Unable to read file '"), fmt::streamed(filename), fmt::streamed("'. Returning empty Texture."));
+                lvr2::log::error("{}{}{}", "TextureFactory: Unable to read file '", filename, "'. Returning empty Texture.");
 
         // return empty Texture
         return Texture();
@@ -82,7 +82,7 @@ void TextureFactory::saveTexture(const Texture& tex, std::string filename)
     if (tex.m_data == NULL || tex.m_width == 0 || tex.m_height == 0 ||
         tex.m_numChannels == 0 || tex.m_numBytesPerChan == 0)
     {
-                lvr2::log::info("{}{}{}", fmt::streamed("TextureFactory: Texture will not be saved to file '"), fmt::streamed(filename), fmt::streamed("' because the texture has no data."));
+                lvr2::log::info("{}{}{}", "TextureFactory: Texture will not be saved to file '", filename, "' because the texture has no data.");
 
         return;
     }
@@ -90,16 +90,16 @@ void TextureFactory::saveTexture(const Texture& tex, std::string filename)
     // TODO convert the data instead of only allowing 1 byte channels
     if (tex.m_numBytesPerChan != 1)
     {
-                lvr2::log::info("{}{}{}", fmt::streamed("TextureFactory: Texture will not be saved to file '"), fmt::streamed(filename), fmt::streamed("' because texture has more than 1 byte \
-            per channel (currently only 1-byte channels are supported)."));
+                lvr2::log::info("{}{}{}", "TextureFactory: Texture will not be saved to file '", filename, "' because texture has more than 1 byte \
+            per channel (currently only 1-byte channels are supported).");
 
         return;
     }
 
     if (tex.m_numChannels != 1 && tex.m_numChannels != 3 && tex.m_numChannels != 4)
     {
-                lvr2::log::info("{}{}{}", fmt::streamed("TextureFactory: Texture will not be saved to file '"), fmt::streamed(filename), fmt::streamed("' because the texture has an unsupported amount of channels \
-            (currently only 1, 3 and 4 channels per pixel are supported)."));
+                lvr2::log::info("{}{}{}", "TextureFactory: Texture will not be saved to file '", filename, "' because the texture has an unsupported amount of channels \
+            (currently only 1, 3 and 4 channels per pixel are supported).");
 
         return;
     }
@@ -135,7 +135,7 @@ void TextureFactory::saveTexture(const Texture& tex, std::string filename)
     // todo include params like binary mode for ppm files for example...
     if (!cv::imwrite(filename, mat))
     {
-                lvr2::log::error("{}{}{}", fmt::streamed("TextureFactory: Unable to save texture to file '"), fmt::streamed(filename), fmt::streamed("'."));
+                lvr2::log::error("{}{}{}", "TextureFactory: Unable to save texture to file '", filename, "'.");
     };
 }
 

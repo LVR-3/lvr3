@@ -50,7 +50,7 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
             // what to do here?
         }
     } else {
-                lvr2::log::warning("{}{}{}", fmt::streamed("[MetaFormatFactory] Meta extension "), fmt::streamed(p.extension()), fmt::streamed(" unknown. "));
+                lvr2::log::warning("{}{}{}", "[MetaFormatFactory] Meta extension ", p.extension().string(), " unknown. ");
     }
 }
 
@@ -72,7 +72,7 @@ YAML::Node loadMetaInformation(const std::string &in)
         }
         else
         {
-                        lvr2::log::error("{}{}", fmt::streamed("[MetaFormatFactory] LoadMetaInformation(YAML): Unable to find yaml file: "), fmt::streamed(inPath));
+                        lvr2::log::error("{}{}", "[MetaFormatFactory] LoadMetaInformation(YAML): Unable to find yaml file: ", inPath.string());
         }
         return n;
     }
@@ -103,7 +103,7 @@ YAML::Node loadMetaInformation(const std::string &in)
         }
         else
         {
-                        lvr2::log::warning("{}", fmt::streamed("[MetaFormatFactory] LoadMetaInformation(SLAM6D): Warning: No pose file found."));
+                        lvr2::log::warning("{}", "[MetaFormatFactory] LoadMetaInformation(SLAM6D): Warning: No pose file found.");
         }
 
         if (frames_exist)
@@ -115,7 +115,7 @@ YAML::Node loadMetaInformation(const std::string &in)
             // node frames found. taking poseEstimate as transformation
             sp.transformation = sp.poseEstimation;
 
-                        lvr2::log::warning("{}", fmt::streamed("[MetaFormatFactory] LoadMetaInformation(SLAM6D): Warning: No frames file found."));
+                        lvr2::log::warning("{}", "[MetaFormatFactory] LoadMetaInformation(SLAM6D): Warning: No frames file found.");
         }
 
         node = sp;
@@ -134,7 +134,7 @@ YAML::Node loadMetaInformation(const std::string &in)
     }
     else
     {
-                lvr2::log::error("{}{}{}", fmt::streamed("[MetaFormatFactory] Meta extension "), fmt::streamed(inPath.extension()), fmt::streamed(" unknown. "));
+                lvr2::log::error("{}{}{}", "[MetaFormatFactory] Meta extension ", inPath.extension().string(), " unknown. ");
         YAML::Node node;
         return node;
     }

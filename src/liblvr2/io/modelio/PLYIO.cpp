@@ -59,7 +59,7 @@ void PLYIO::save( string filename )
 {
     if ( !m_model )
     {
-                lvr2::log::error("{}", fmt::streamed("No data to save."));
+                lvr2::log::error("{}", "No data to save.");
         return;
     }
 
@@ -132,14 +132,14 @@ void PLYIO::save( string filename )
     p_ply oply = ply_create( filename.c_str(), mode, NULL, 0, NULL );
     if ( !oply )
     {
-                lvr2::log::error("{}{}{}", fmt::streamed("Could not create »"), fmt::streamed(filename), fmt::streamed("«"));
+                lvr2::log::error("{}{}{}", "Could not create »", filename, "«");
         return;
     }
 
     /* Check if we have vertex information. */
     if ( !( m_vertices || m_points ) )
     {
-                lvr2::log::info("{}{}", fmt::streamed("Neither vertices nor points to write. "), fmt::streamed(filename));
+                lvr2::log::info("{}{}", "Neither vertices nor points to write. ", filename);
 
         if(m_model->m_pointCloud)
         {
@@ -148,7 +148,7 @@ void PLYIO::save( string filename )
 
         if ( !ply_close( oply ) )
         {
-                        lvr2::log::error("{}", fmt::streamed("Could not close file."));
+                        lvr2::log::error("{}", "Could not close file.");
         }
         return;
     }
@@ -180,7 +180,7 @@ void PLYIO::save( string filename )
         {
             if ( m_numVertexColors != m_numVertices )
             {
-                                lvr2::log::error("{}{}", fmt::streamed("Amount of vertices and color information is"), fmt::streamed(" not equal. Color information won't be written."));
+                                lvr2::log::error("{}{}", "Amount of vertices and color information is", " not equal. Color information won't be written.");
             }
             else
             {
@@ -196,7 +196,7 @@ void PLYIO::save( string filename )
         {
             if ( m_numVertexIntensities != m_numVertices )
             {
-                                lvr2::log::info("{}{}{}", fmt::streamed("Amount of vertices and intensity"), fmt::streamed(" information is not equal. Intensity information won't be"), fmt::streamed(" written."));
+                                lvr2::log::info("{}{}{}", "Amount of vertices and intensity", " information is not equal. Intensity information won't be", " written.");
             }
             else
             {
@@ -210,7 +210,7 @@ void PLYIO::save( string filename )
         {
             if ( m_numVertexConfidences != m_numVertices )
             {
-                                lvr2::log::info("{}{}{}", fmt::streamed("Amount of vertices and confidence"), fmt::streamed(" information is not equal. Confidence information won't be"), fmt::streamed(" written."));
+                                lvr2::log::info("{}{}{}", "Amount of vertices and confidence", " information is not equal. Confidence information won't be", " written.");
             }
             else
             {
@@ -224,7 +224,7 @@ void PLYIO::save( string filename )
         {
             if ( m_numVertexNormals != m_numVertices )
             {
-                                lvr2::log::info("{}{}", fmt::streamed("Amount of vertices and normals"), fmt::streamed(" does not match. Normals won't be written."));
+                                lvr2::log::info("{}{}", "Amount of vertices and normals", " does not match. Normals won't be written.");
             }
             else
             {
@@ -258,7 +258,7 @@ void PLYIO::save( string filename )
         {
             if ( m_numPointColors != m_numPoints )
             {
-                                lvr2::log::info("{}{}", fmt::streamed("Amount of points and color information is"), fmt::streamed(" not equal. Color information won't be written."));
+                                lvr2::log::info("{}{}", "Amount of points and color information is", " not equal. Color information won't be written.");
             }
             else
             {
@@ -274,7 +274,7 @@ void PLYIO::save( string filename )
         {
             if ( m_numPointIntensities != m_numPoints )
             {
-                                lvr2::log::info("{}{}{}", fmt::streamed("Amount of points and intensity"), fmt::streamed(" information is not equal. Intensity information won't be"), fmt::streamed(" written."));
+                                lvr2::log::info("{}{}{}", "Amount of points and intensity", " information is not equal. Intensity information won't be", " written.");
             }
             else
             {
@@ -288,7 +288,7 @@ void PLYIO::save( string filename )
         {
             if ( m_numPointConfidence != m_numPoints )
             {
-                                lvr2::log::info("{}{}{}", fmt::streamed("Amount of point and confidence"), fmt::streamed(" information is not equal. Confidence information won't be"), fmt::streamed(" written."));
+                                lvr2::log::info("{}{}{}", "Amount of point and confidence", " information is not equal. Confidence information won't be", " written.");
             }
             else
             {
@@ -302,7 +302,7 @@ void PLYIO::save( string filename )
         {
             if ( m_numPointNormals != m_numPoints )
             {
-                                lvr2::log::info("{}{}", fmt::streamed("Amount of point and normals does"), fmt::streamed(" not match. Normals won't be written."));
+                                lvr2::log::info("{}{}", "Amount of point and normals does", " not match. Normals won't be written.");
             }
             else
             {
@@ -317,7 +317,7 @@ void PLYIO::save( string filename )
     /* Write header to file. */
     if ( !ply_write_header( oply ) )
     {
-                lvr2::log::error("{}", fmt::streamed("Could not write header."));
+                lvr2::log::error("{}", "Could not write header.");
         return;
     }
 
@@ -391,7 +391,7 @@ void PLYIO::save( string filename )
 
     if ( !ply_close( oply ) )
     {
-              lvr2::log::error("{}", fmt::streamed("Could not close file."));
+              lvr2::log::error("{}", "Could not close file.");
     }
 
 }
@@ -420,12 +420,12 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
 
     if ( !ply )
     {
-                lvr2::log::error("{}{}{}", fmt::streamed("Could not open »"), fmt::streamed(filename), fmt::streamed("«."));
+                lvr2::log::error("{}{}{}", "Could not open »", filename, "«.");
         return ModelPtr();
     }
     if ( !ply_read_header( ply ) )
     {
-                lvr2::log::error("{}", fmt::streamed("Could not read header."));
+                lvr2::log::error("{}", "Could not read header.");
         return ModelPtr();
     }
 
@@ -534,7 +534,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
 
     if ( !( numVertices || numPoints ) )
     {
-                lvr2::log::info("{}", fmt::streamed("Neither vertices nor points in ply."));
+                lvr2::log::info("{}", "Neither vertices nor points in ply.");
         return ModelPtr();
     }
 
@@ -702,14 +702,14 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
     /* Read ply file. */
     if ( !ply_read( ply ) )
     {
-                lvr2::log::error("{}{}{}", fmt::streamed("Could not read »"), fmt::streamed(filename), fmt::streamed("«."));
+                lvr2::log::error("{}{}{}", "Could not read »", filename, "«.");
     }
 
     /* Check if we got only vertices and neither points nor faces. If that is
      * the case then use the vertices as points. */
     if ( vertices && !points && !faceIndices )
     {
-                lvr2::log::info("{}{}", fmt::streamed("PLY contains neither faces nor points. "), fmt::streamed("Assuming that vertices are meant to be points."));
+                lvr2::log::info("{}{}", "PLY contains neither faces nor points. ", "Assuming that vertices are meant to be points.");
         points                  = vertices;
         pointColors             = vertexColors;
         pointConfidences        = vertexConfidence;
@@ -767,7 +767,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
             }
         }
 
-                lvr2::log::info("{}{}{}{}", fmt::streamed(numPoints), fmt::streamed("Found "), fmt::streamed((numPoints - numPointPanoramaCoords)), fmt::streamed(" without spectral data. Reodering..."));
+                lvr2::log::info("{}{}{}{}", numPoints, "Found ", (numPoints - numPointPanoramaCoords), " without spectral data. Reodering...");
 
 
         size_t pos_underscore = filename.find_last_of("_");
@@ -781,12 +781,12 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
 
         if (!boost::filesystem::exists(dir / "channel0.png"))
         {
-                        lvr2::log::error("{}", fmt::streamed("Annotated Data given, but " + dir.string() + " does not contain channel files"));
+                        lvr2::log::error("{}", "Annotated Data given, but " + dir.string() + " does not contain channel files");
         }
         else
         {
-                        lvr2::log::info("{}{}{}", fmt::streamed("Found Annotated Data. Loading spectral channel images from: "), fmt::streamed(dir.string()), fmt::streamed("/"));
-                        lvr2::log::info("{}", fmt::streamed("This may take a while depending on data size"));
+                        lvr2::log::info("{}{}{}", "Found Annotated Data. Loading spectral channel images from: ", dir.string(), "/");
+                        lvr2::log::info("{}", "This may take a while depending on data size");
 
             std::vector<cv::Mat> imgs;
             std::vector<unsigned char*> pixels;
@@ -810,7 +810,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
 
             unsigned char* point_spectral_channels = pointSpectralChannels.get();
 
-                        lvr2::log::info("{}{}{}", fmt::streamed("Finished loading "), fmt::streamed(n_channels), fmt::streamed(" channel images"));
+                        lvr2::log::info("{}{}{}", "Finished loading ", n_channels, " channel images");
 
             #pragma omp parallel for
             for (int i = 0; i < numPointPanoramaCoords; i++)
@@ -828,7 +828,7 @@ ModelPtr PLYIO::read( string filename, bool readColor, bool readConfidence,
                     pixel[channel] = pixels[channel][panoramaPosition];
                 }
             }*/
-                        lvr2::log::info("{}", fmt::streamed("Finished extracting channel information"));
+                        lvr2::log::info("{}", "Finished extracting channel information");
         }
     }
 
@@ -948,7 +948,7 @@ int PLYIO::readFaceCb( p_ply_argument argument )
         {
             return 1;
         }
-                lvr2::log::error("{}", fmt::streamed("Mesh is not a triangle mesh."));
+                lvr2::log::error("{}", "Mesh is not a triangle mesh.");
         return 0;
     }
     **face = ply_get_argument_value( argument );

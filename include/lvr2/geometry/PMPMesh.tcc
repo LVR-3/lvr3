@@ -116,7 +116,7 @@ PMPMesh<BaseVecT>::PMPMesh(MeshBufferPtr ptr)
 
     if (this->numFaces() < numFaces)
     {
-                lvr2::log::warning("{}{}", fmt::streamed(numFaces - this->numFaces()), fmt::streamed(" faces could not be added."));
+                lvr2::log::warning("{}{}", numFaces - this->numFaces(), " faces could not be added.");
     }
 
     if (ptr->hasFaceNormals())
@@ -698,11 +698,11 @@ void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
             }
             catch(PanicException exception)
             {
-                                lvr2::log::warning("{}", fmt::streamed(exception.what()));
+                                lvr2::log::warning("{}", exception.what());
             }
             catch(pmp::TopologyException exception)
             {
-                                lvr2::log::warning("{}{}", fmt::streamed("Error filling a hole: "), fmt::streamed(exception.what()));
+                                lvr2::log::warning("{}{}", "Error filling a hole: ", exception.what());
             }
         }
     }
@@ -731,7 +731,7 @@ void PMPMesh<BaseVecT>::fillHoles(size_t maxSize, bool simple)
         }
     }
 
-        lvr2::log::info("{}{}{}{}{}", fmt::streamed("Filled "), fmt::streamed(filled), fmt::streamed(" / "), fmt::streamed(contours.size()), fmt::streamed(" holes"));
+        lvr2::log::info("{}{}{}{}{}", "Filled ", filled, " / ", contours.size(), " holes");
 }
 
 template<typename BaseVecT>
