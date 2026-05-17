@@ -255,7 +255,8 @@ bool HDF5Kernel::addChannel(
 
 
 // R == 0
-template<typename VariantT, int R, typename std::enable_if<R == 0, void>::type* = nullptr>
+template<typename VariantT, int R>
+requires (R == 0)
 void saveVChannel(
     const VariantT& vchannel,
     const HDF5Kernel* channel_io,
@@ -273,7 +274,8 @@ void saveVChannel(
 }
 
 // R != 0
-template<typename VariantT, int R, typename std::enable_if<R != 0, void>::type* = nullptr>
+template<typename VariantT, int R>
+requires (R != 0)
 void saveVChannel(
     const VariantT& vchannel,
     const HDF5Kernel* channel_io,
@@ -368,7 +370,8 @@ void HDF5Kernel::save(
 }
 
 // R == 0
-template<typename VariantChannelT, int R, typename std::enable_if<R == 0, void>::type* = nullptr>
+template<typename VariantChannelT, int R>
+requires (R == 0)
 boost::optional<VariantChannelT> loadVChannel(
     HighFive::DataType dtype,
     const HDF5Kernel* channel_io,
@@ -389,7 +392,8 @@ boost::optional<VariantChannelT> loadVChannel(
 }
 
 // R != 0
-template<typename VariantChannelT, int R, typename std::enable_if<R != 0, void>::type* = nullptr>
+template<typename VariantChannelT, int R>
+requires (R != 0)
 boost::optional<VariantChannelT> loadVChannel(
     HighFive::DataType dtype,
     const HDF5Kernel* channel_io,

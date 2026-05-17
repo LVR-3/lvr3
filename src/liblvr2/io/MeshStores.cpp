@@ -707,7 +707,8 @@ void saveChannel(const std::shared_ptr<HighFive::File>& file,
     saveChannel(file, compress, defaultChunkSize, group, datasetName, channel);
 }
 
-template<typename Derived, typename VariantT, int R, typename std::enable_if<R == 0, int>::type = 0>
+template<typename Derived, typename VariantT, int R>
+requires (R == 0)
 void saveVariantChannel(const std::shared_ptr<HighFive::File>& file,
                         bool compress,
                         std::size_t defaultChunkSize,
@@ -721,7 +722,8 @@ void saveVariantChannel(const std::shared_ptr<HighFive::File>& file,
     }
 }
 
-template<typename Derived, typename VariantT, int R, typename std::enable_if<R != 0, int>::type = 0>
+template<typename Derived, typename VariantT, int R>
+requires (R != 0)
 void saveVariantChannel(const std::shared_ptr<HighFive::File>& file,
                         bool compress,
                         std::size_t defaultChunkSize,
@@ -739,7 +741,8 @@ void saveVariantChannel(const std::shared_ptr<HighFive::File>& file,
     }
 }
 
-template<typename VariantT, int R, typename std::enable_if<R == 0, int>::type = 0>
+template<typename VariantT, int R>
+requires (R == 0)
 boost::optional<VariantT> loadVariantChannel(const std::shared_ptr<HighFive::File>& file,
                                              const HighFive::DataType& type,
                                              HighFive::Group& group,
@@ -757,7 +760,8 @@ boost::optional<VariantT> loadVariantChannel(const std::shared_ptr<HighFive::Fil
     return boost::none;
 }
 
-template<typename VariantT, int R, typename std::enable_if<R != 0, int>::type = 0>
+template<typename VariantT, int R>
+requires (R != 0)
 boost::optional<VariantT> loadVariantChannel(const std::shared_ptr<HighFive::File>& file,
                                              const HighFive::DataType& type,
                                              HighFive::Group& group,

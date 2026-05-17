@@ -3,6 +3,7 @@
 
 #include <tl/expected.hpp>
 
+#include <concepts>
 #include <cstddef>
 #include <functional>
 #include <map>
@@ -157,6 +158,38 @@ public:
 
 using StorageFactory = std::function<Result<std::unique_ptr<StorageBackend>>(const OpenRequest&)>;
 
+template<class Backend>
+concept StorageBackendLike = requires(Backend& backend,
+                                      const Backend& constBackend,
+                                      const GroupKey& groupKey,
+                                      const DataKey& dataKey,
+                                      const MetaKey& metaKey,
+                                      const MetaValue& metaValue,
+                                      const lvr2::PointBufferPtr& pointBuffer,
+                                      const FloatArrayView& floatArray)
+{
+    { constBackend.info() } -> std::same_as<BackendInfo>;
+    { constBackend.exists(groupKey) } -> std::same_as<Result<bool>>;
+    { constBackend.exists(dataKey) } -> std::same_as<Result<bool>>;
+    { constBackend.list(groupKey) } -> std::same_as<Result<std::vector<std::string>>>;
+    { constBackend.readMeta(metaKey) } -> std::same_as<Result<MetaValue>>;
+    { backend.writeMeta(metaKey, metaValue) } -> std::same_as<Status>;
+    { constBackend.readPointBuffer(dataKey) } -> std::same_as<Result<lvr2::PointBufferPtr>>;
+    { backend.writePointBuffer(dataKey, pointBuffer) } -> std::same_as<Status>;
+    { backend.writeFloatArray(dataKey, floatArray) } -> std::same_as<Status>;
+};
+
+template<class Factory>
+concept StorageFactoryLike = requires(Factory factory, const OpenRequest& request)
+{
+    { std::invoke(factory, request) } -> std::same_as<Result<std::unique_ptr<StorageBackend>>>;
+};
+
+static_assert(StorageBackendLike<StorageBackend>,
+              "storage backend concept must match the runtime backend interface");
+static_assert(StorageFactoryLike<StorageFactory>,
+              "storage factory concept must match the runtime registry factory interface");
+
 class StorageRegistry final
 {
 public:
@@ -189,24 +222,24 @@ inline tl::unexpected<Error> unexpected(Error error)
 Status register_default_backends(StorageRegistry& registry);
 StorageRegistry make_default_registry();
 
-static_assert(std::is_enum<ErrorCode>::value,
+static_assert(std::is_enum_v<ErrorCode>,
               "storage error code must remain an enum vocabulary");
-static_assert(!std::is_convertible<ErrorCode, int>::value,
+static_assert(!std::is_convertible_v<ErrorCode, int>,
               "storage error code must not implicitly convert to integer values");
-static_assert(std::is_enum<LoadMode>::value,
+static_assert(std::is_enum_v<LoadMode>,
               "storage load mode must remain an enum vocabulary");
-static_assert(!std::is_convertible<LoadMode, int>::value,
+static_assert(!std::is_convertible_v<LoadMode, int>,
               "storage load mode must not implicitly convert to integer values");
-static_assert(std::is_same<Result<lvr2::PointBufferPtr>,
-                           tl::expected<lvr2::PointBufferPtr, Error>>::value,
+static_assert(std::is_same_v<Result<lvr2::PointBufferPtr>,
+                             tl::expected<lvr2::PointBufferPtr, Error>>,
               "storage result must stay backed by tl::expected");
-static_assert(std::is_default_constructible<FloatArrayView>::value,
+static_assert(std::is_default_constructible_v<FloatArrayView>,
               "storage float-array views must remain simple value options");
-static_assert(std::is_same<Status, tl::expected<void, Error>>::value,
+static_assert(std::is_same_v<Status, tl::expected<void, Error>>,
               "storage status must stay backed by tl::expected");
-static_assert(!std::is_copy_constructible<StorageContext>::value,
+static_assert(!std::is_copy_constructible_v<StorageContext>,
               "storage context owns its opened backend and must not be copyable");
-static_assert(std::is_move_constructible<StorageContext>::value,
+static_assert(std::is_move_constructible_v<StorageContext>,
               "storage context must remain movable");
 
 } // namespace lvr2::io::storage
