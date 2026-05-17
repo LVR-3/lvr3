@@ -43,11 +43,6 @@ else()
 endif()
 message(STATUS "Required private mesh asset I/O backend enabled for shared lvr2 target only")
 
-include_directories(include)
-# Build-only include root for private implementation headers removed from the
-# installed public API. Do not add this path to install/export interfaces.
-include_directories(src/liblvr2/include)
-
 ###############################################################################
 # Compiler specific settings
 ###############################################################################

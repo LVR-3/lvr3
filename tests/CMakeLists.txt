@@ -236,6 +236,17 @@ set_tests_properties(lvr2_cmake_module_audit
 )
 
 add_test(
+  NAME lvr2_source_include_root_guard
+  COMMAND ${CMAKE_COMMAND}
+    -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+    -P ${CMAKE_CURRENT_LIST_DIR}/source_include_root_guard.cmake
+)
+set_tests_properties(lvr2_source_include_root_guard
+  PROPERTIES
+    LABELS "cmake;source-layout;includes"
+)
+
+add_test(
   NAME lvr2_lyrical_cxx20_baseline
   COMMAND ${CMAKE_COMMAND}
     -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
@@ -267,7 +278,7 @@ if(LVR2_MESH_IO_ASSIMP_AVAILABLE)
   )
   target_include_directories(lvr2_assimp_adapter_smoke PRIVATE
     ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/src/liblvr2/include
+    ${PROJECT_SOURCE_DIR}/src/liblvr2/private
     ${Boost_INCLUDE_DIRS}
     ${HDF5_INCLUDE_DIRS}
   )
@@ -405,7 +416,7 @@ if(_LVR2_GTEST_MAIN_TARGET)
   )
   target_include_directories(lvr2_mesh_io_assimp_gtest PRIVATE
     ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/src/liblvr2/include
+    ${PROJECT_SOURCE_DIR}/src/liblvr2/private
     ${CMAKE_CURRENT_SOURCE_DIR}
   )
   target_compile_features(lvr2_mesh_io_assimp_gtest PRIVATE cxx_std_20)

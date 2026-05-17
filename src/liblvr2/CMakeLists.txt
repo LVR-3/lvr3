@@ -222,6 +222,11 @@ if(LVR2_BUILD_STATIC_LIBS)
         ${LVR2_FMT_TARGET}
         ${LVR2_HIGHFIVE_TARGET}
     )
+    target_include_directories(lvr2core
+        PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/private
+    )
     target_compile_features(lvr2core PRIVATE cxx_std_20)
 
     add_library(lvr2_static STATIC $<TARGET_OBJECTS:lvr2core>)
@@ -255,11 +260,14 @@ endif()
 if(BUILD_SHARED_LIBS)
     message(STATUS "Building shared library")
     add_library(lvr2 SHARED ${LVR2_SOURCES})
-    target_include_directories(lvr2 PUBLIC
+    target_include_directories(lvr2
+        PUBLIC
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         ${Boost_INCLUDE_DIRS}
         ${HDF5_INCLUDE_DIRS}
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/private
     )
     target_link_libraries(lvr2
         PUBLIC
@@ -429,8 +437,8 @@ if(CUDA_FOUND)
 
         target_include_directories(lvr2cuda
             PUBLIC
-                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-                $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/lvr2>
+                $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+                $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
                 ${CUDA_INCLUDE_DIRS}
             )
 
