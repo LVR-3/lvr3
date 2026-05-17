@@ -64,11 +64,11 @@ set(_LVR2_SYSTEM_PACKAGE_OPTOUTS
   CUDAToolkit
   CUDA
   RDB
-  OpenCL2
+  OpenCL
   PCL
   OpenMP
   RiVLib
-  Draco
+  draco
   Doxygen
   GTest
   Python3

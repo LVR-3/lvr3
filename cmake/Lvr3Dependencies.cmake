@@ -308,19 +308,36 @@ if(RDB_FOUND)
 endif(RDB_FOUND)
 
 #------------------------------------------------------------------------------
-# Searching for OpenCl
+# Searching for OpenCL
 #------------------------------------------------------------------------------
+set(OPENCL_FOUND OFF)
+set(OpenCL_NEW_API OFF)
 if(LVR2_WITH_OPENCL)
-  lvr2_find_package(OpenCL2)
-  if(OPENCL_FOUND)
+  lvr2_find_package(OpenCL QUIET)
+  if(OpenCL_FOUND)
+    set(OPENCL_FOUND ON)
+    if(TARGET OpenCL::OpenCL)
+      set(OpenCL_LIBRARIES OpenCL::OpenCL)
+    endif()
+    if(TARGET OpenCL::OpenCL AND NOT OpenCL_INCLUDE_DIRS)
+      get_target_property(OpenCL_INCLUDE_DIRS OpenCL::OpenCL INTERFACE_INCLUDE_DIRECTORIES)
+    endif()
     message(STATUS "Found OpenCL")
-      include_directories(${OPENCL_INCLUDE_DIR})
-      list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPENCL)
-      if(OpenCL_NEW_API)
-        list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPENCL_NEW_API)
-      endif(OpenCL_NEW_API)
-  endif(OPENCL_FOUND)
-endif(LVR2_WITH_OPENCL)
+    if(OpenCL_INCLUDE_DIRS)
+      include_directories(${OpenCL_INCLUDE_DIRS})
+    endif()
+    list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPENCL)
+    foreach(_LVR2_OPENCL_INCLUDE_DIR IN LISTS OpenCL_INCLUDE_DIRS)
+      if(EXISTS "${_LVR2_OPENCL_INCLUDE_DIR}/CL/cl2.hpp" OR EXISTS "${_LVR2_OPENCL_INCLUDE_DIR}/OpenCL/cl2.hpp")
+        set(OpenCL_NEW_API ON)
+      endif()
+    endforeach()
+    unset(_LVR2_OPENCL_INCLUDE_DIR)
+    if(OpenCL_NEW_API)
+      list(APPEND LVR2_DEFINITIONS -DLVR2_USE_OPENCL_NEW_API)
+    endif()
+  endif()
+endif()
 
 #------------------------------------------------------------------------------
 ## Searching for PCL
@@ -467,6 +484,10 @@ if(RiVLib_DIR OR LVR2_USE_SYSTEM_RIVLIB)
     endif(RiVLib_FOUND)
 endif()
 
+set(draco_FOUND OFF)
+set(draco_INCLUDE_DIRS "")
+set(draco_LIBRARIES "")
+
 # 3D Tiles support needs a package-backed Cesium Native integration. The old
 # ExternalProject download fallback was removed with the vendored dependencies.
 if(LVR2_WITH_3DTILES)
@@ -474,17 +495,31 @@ if(LVR2_WITH_3DTILES)
     "LVR2_WITH_3DTILES requires package-backed Cesium Native/Draco support. "
     "The old ExternalProject download fallback was removed in vcpkg-first dependency policy; keep this "
     "option OFF until a non-vendored package path is added.")
-else(LVR2_WITH_3DTILES)
+else()
   #------------------------------------------------------------------------------
   # Searching for Draco
   #------------------------------------------------------------------------------
-  lvr2_find_package(Draco)
+  lvr2_find_package(draco CONFIG QUIET)
+  if(TARGET draco::draco)
+    set(draco_FOUND ON)
+    set(draco_LIBRARIES draco::draco)
+    get_target_property(draco_INCLUDE_DIRS draco::draco INTERFACE_INCLUDE_DIRECTORIES)
+  elseif(TARGET draco)
+    set(draco_FOUND ON)
+    set(draco_LIBRARIES draco)
+    get_target_property(draco_INCLUDE_DIRS draco INTERFACE_INCLUDE_DIRECTORIES)
+  elseif(draco_FOUND)
+    message(STATUS "Draco package found without draco::draco or draco target; disabling optional Draco sources")
+    set(draco_FOUND OFF)
+  endif()
   if(draco_FOUND)
     message(STATUS "Found Draco")
-    include_directories(${draco_INCLUDE_DIRS})
+    if(draco_INCLUDE_DIRS)
+      include_directories(${draco_INCLUDE_DIRS})
+    endif()
     list(APPEND LVR2_DEFINITIONS -DLVR2_USE_DRACO)
-  endif(draco_FOUND)
-endif(LVR2_WITH_3DTILES)
+  endif()
+endif()
 
 ###############################################################################
 # ADD LVR DEFINITIONS

@@ -3,10 +3,8 @@ if(NOT DEFINED LVR2_SOURCE_DIR)
 endif()
 
 set(_expected_modules
-  FindDraco.cmake
   FindFLANN.cmake
   FindLZ4.cmake
-  FindOpenCL2.cmake
   FindRDB.cmake
 )
 
@@ -30,7 +28,9 @@ if(NOT "${_actual_modules}" STREQUAL "${_expected_modules}")
 endif()
 
 set(_forbidden_modules
+  FindDraco.cmake
   FindGEOTIFF.cmake
+  FindOpenCL2.cmake
   FindOpenNI.cmake
   FindOpenNI2.cmake
   Findembree.cmake
@@ -62,10 +62,8 @@ set(_required_project_cmake_files
   cmake/Lvr3Packaging.cmake
   cmake/Lvr3SanitizerFuzz.cmake
   cmake/Lvr3CudaGccVersion.cmake
-  cmake/modules/FindDraco.cmake
   cmake/modules/FindFLANN.cmake
   cmake/modules/FindLZ4.cmake
-  cmake/modules/FindOpenCL2.cmake
   cmake/modules/FindRDB.cmake
   cmake/modules/README.md
   cmake/lvr2-config.cmake.in
@@ -112,6 +110,44 @@ foreach(_forbidden_root_token IN ITEMS
   string(FIND "${_root_cmake}" "${_forbidden_root_token}" _forbidden_root_token_pos)
   if(_forbidden_root_token_pos GREATER_EQUAL 0)
     message(FATAL_ERROR "Root CMakeLists.txt still owns split responsibility token: ${_forbidden_root_token}")
+  endif()
+endforeach()
+
+file(READ "${LVR2_SOURCE_DIR}/cmake/Lvr3Dependencies.cmake" _dependencies_cmake)
+foreach(_forbidden_dependency_token IN ITEMS
+    "lvr2_find_package(Draco"
+    "lvr2_find_package(OpenCL2")
+  string(FIND "${_dependencies_cmake}" "${_forbidden_dependency_token}" _forbidden_dependency_token_pos)
+  if(_forbidden_dependency_token_pos GREATER_EQUAL 0)
+    message(FATAL_ERROR "Replaceable local finder dependency remains: ${_forbidden_dependency_token}")
+  endif()
+endforeach()
+foreach(_required_dependency_token IN ITEMS
+    "lvr2_find_package(draco CONFIG QUIET)"
+    "lvr2_find_package(OpenCL QUIET)"
+    "set(OpenCL_LIBRARIES OpenCL::OpenCL)")
+  string(FIND "${_dependencies_cmake}" "${_required_dependency_token}" _required_dependency_token_pos)
+  if(_required_dependency_token_pos LESS 0)
+    message(FATAL_ERROR "Expected config/standard dependency lookup is missing: ${_required_dependency_token}")
+  endif()
+endforeach()
+
+file(READ "${LVR2_SOURCE_DIR}/cmake/lvr2-config.cmake.in" _lvr2_config_template)
+foreach(_required_export_dependency_token IN ITEMS
+    "find_dependency(draco CONFIG)"
+    "find_dependency(OpenCL)")
+  string(FIND "${_lvr2_config_template}" "${_required_export_dependency_token}" _required_export_dependency_token_pos)
+  if(_required_export_dependency_token_pos LESS 0)
+    message(FATAL_ERROR "Optional config/standard dependency is missing from installed package config: ${_required_export_dependency_token}")
+  endif()
+endforeach()
+string(FIND "${_lvr2_config_template}" "include(\${CMAKE_CURRENT_LIST_DIR}/lvr2-targets.cmake)" _targets_include_pos)
+foreach(_required_pre_target_dependency_token IN ITEMS
+    "find_dependency(draco CONFIG)"
+    "find_dependency(OpenCL)")
+  string(FIND "${_lvr2_config_template}" "${_required_pre_target_dependency_token}" _pre_target_dependency_pos)
+  if(_targets_include_pos LESS 0 OR _pre_target_dependency_pos GREATER _targets_include_pos)
+    message(FATAL_ERROR "Optional imported-target dependency must be found before lvr2-targets.cmake: ${_required_pre_target_dependency_token}")
   endif()
 endforeach()
 
