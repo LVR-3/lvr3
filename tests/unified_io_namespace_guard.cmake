@@ -50,6 +50,28 @@ foreach(_lvr2_root IN LISTS _lvr2_code_roots)
           message(FATAL_ERROR "Old mesh facade token '${_lvr2_old_mesh}' found in ${_lvr2_relative}")
         endif()
       endforeach()
+
+      # Guard/test files may contain banned legacy namespace names as policy
+      # strings. Live C++ source must not declare or use those namespaces.
+      foreach(_lvr2_old_namespace IN ITEMS
+          "namespace meshio"
+          "namespace scanio"
+          "namespace modelio"
+          "namespace baseio"
+          "namespace lvr2::meshio"
+          "namespace lvr2::scanio"
+          "namespace lvr2::modelio"
+          "namespace lvr2::baseio"
+          "meshio::"
+          "scanio::"
+          "modelio::"
+          "baseio::")
+        string(FIND "${_lvr2_text}" "${_lvr2_old_namespace}" _lvr2_old_namespace_pos)
+        if(_lvr2_old_namespace_pos GREATER_EQUAL 0)
+          file(RELATIVE_PATH _lvr2_relative "${LVR2_SOURCE_DIR}" "${_lvr2_file}")
+          message(FATAL_ERROR "Live legacy I/O namespace token '${_lvr2_old_namespace}' found in ${_lvr2_relative}")
+        endif()
+      endforeach()
     endforeach()
   endif()
 endforeach()
