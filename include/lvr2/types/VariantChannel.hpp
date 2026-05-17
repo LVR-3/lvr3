@@ -118,15 +118,15 @@ protected:
     template<typename U>
     struct DataPtrVisitor : public boost::static_visitor<boost::shared_array<U> >
     {
-        template<typename V,
-                std::enable_if_t<std::is_same<U, V>::value, int> = 0>
+        template<typename V>
+        requires TypedChannel<Channel<V>, U>
         boost::shared_array<U> operator()(const Channel<V>& channel) const
         {
             return channel.dataPtr();
         }
 
-        template<typename V,
-                std::enable_if_t<!std::is_same<U, V>::value, int> = 0>
+        template<typename V>
+        requires (!TypedChannel<Channel<V>, U>)
         boost::shared_array<U> operator()(const Channel<V>& channel) const
         {
             throw std::invalid_argument("tried to get wrong type of channel");

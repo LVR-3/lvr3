@@ -31,6 +31,8 @@
 #define LVR2_TYPES_CHANNEL
 
 #include "ElementProxy.hpp"
+#include <concepts>
+#include <cstddef>
 #include <memory>
 #include <boost/optional.hpp>
 #include <boost/shared_array.hpp>
@@ -80,6 +82,22 @@ protected:
     size_t          m_elementWidth;
     DataPtr         m_data;
 };
+
+template<typename ChannelT, typename ValueT>
+concept TypedChannel = requires(const ChannelT& channel)
+{
+    typename ChannelT::DataType;
+    typename ChannelT::DataPtr;
+    requires std::same_as<typename ChannelT::DataType, ValueT>;
+    { channel.numElements() } -> std::convertible_to<std::size_t>;
+    { channel.width() } -> std::convertible_to<std::size_t>;
+    { channel.dataPtr() } -> std::convertible_to<typename ChannelT::DataPtr>;
+};
+
+static_assert(TypedChannel<Channel<float>, float>,
+              "typed channel concept must match the public Channel contract");
+static_assert(!TypedChannel<Channel<float>, double>,
+              "typed channel concept must reject mismatched value types");
 
 // TODO: 
 // CustomChannel is a flat Channel: Nx1 of CustomType
