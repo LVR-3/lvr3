@@ -54,7 +54,6 @@ set(_LVR2_SYSTEM_PACKAGE_OPTOUTS
   OpenGL
   GLUT
   yaml-cpp
-  fmt
   spdlog
   HighFive
   rply

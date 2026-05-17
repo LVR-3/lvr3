@@ -37,7 +37,6 @@ point clouds.
   <!-- Active packaging lane: ROS 2 Lyrical on Ubuntu Resolute 26.04 with C++20. -->
   <depend>assimp</depend>
   <depend>libexpected-dev</depend>
-  <depend>libfmt-dev</depend>
   <depend>spdlog</depend>
   <depend>tbb</depend>
   <depend>libtiff-dev</depend>

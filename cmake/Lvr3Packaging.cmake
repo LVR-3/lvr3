@@ -46,7 +46,6 @@ set(_LVR2_DEPS
     libassimp-dev
     libeigen3-dev
     libexpected-dev
-    libfmt-dev
     libflann-dev
     libgdal-dev
     libglut-dev

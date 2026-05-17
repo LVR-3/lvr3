@@ -16,7 +16,6 @@
 
 include(CMakeFindDependencyMacro)
 find_dependency(tl-expected CONFIG)
-find_dependency(fmt CONFIG)
 find_dependency(spdlog CONFIG)
 
 # Import from existing lvr2 package install if available in the same prefix.

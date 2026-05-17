@@ -69,38 +69,28 @@ set_tests_properties(lvr2_storage_io_header_compile
     LABELS "cpp;io;scan;storage;header"
 )
 
-if(NOT LVR2_FMT_TARGET)
-  find_package(fmt CONFIG QUIET)
-  if(TARGET fmt::fmt)
-    set(LVR2_FMT_TARGET fmt::fmt)
-  elseif(TARGET fmt::fmt-header-only)
-    set(LVR2_FMT_TARGET fmt::fmt-header-only)
-  endif()
-endif()
-
 if(NOT LVR2_SPDLOG_TARGET)
   find_package(spdlog CONFIG QUIET)
   if(TARGET spdlog::spdlog_header_only)
     set(LVR2_SPDLOG_TARGET spdlog::spdlog_header_only)
-  elseif(TARGET spdlog::spdlog)
-    set(LVR2_SPDLOG_TARGET spdlog::spdlog)
   endif()
 endif()
 
-if(LVR2_FMT_TARGET AND LVR2_SPDLOG_TARGET)
+if(LVR2_SPDLOG_TARGET)
   add_executable(lvr2_logging_facade_header_compile
     test_logging_facade_header_compile.cpp
   )
   target_include_directories(lvr2_logging_facade_header_compile PRIVATE ${PROJECT_SOURCE_DIR}/include)
   target_compile_features(lvr2_logging_facade_header_compile PRIVATE cxx_std_20)
-  target_link_libraries(lvr2_logging_facade_header_compile PRIVATE ${LVR2_FMT_TARGET} ${LVR2_SPDLOG_TARGET})
+  target_compile_definitions(lvr2_logging_facade_header_compile PRIVATE SPDLOG_USE_STD_FORMAT)
+  target_link_libraries(lvr2_logging_facade_header_compile PRIVATE ${LVR2_SPDLOG_TARGET})
   add_test(NAME lvr2_logging_facade_header_compile COMMAND lvr2_logging_facade_header_compile)
   set_tests_properties(lvr2_logging_facade_header_compile
     PROPERTIES
       LABELS "cpp;logging;header"
   )
 else()
-  message(STATUS "fmt/spdlog not found; skipping logging facade header compile test.")
+  message(STATUS "spdlog not found; skipping logging facade header compile test.")
 endif()
 
 add_test(
