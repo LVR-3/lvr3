@@ -35,16 +35,16 @@
 #ifndef OPTIONS_HPP_
 #define OPTIONS_HPP_
 
-#include <boost/program_options.hpp>
+#include "lvr2/config/CommandLine.hpp"
 #include <string>
 #include <vector>
 
 namespace chunking
 {
 
-using boost::program_options::options_description;
-using boost::program_options::positional_options_description;
-using boost::program_options::variables_map;
+using lvr2::cli::options_description;
+using lvr2::cli::positional_options_description;
+using lvr2::cli::variables_map;
 using std::string;
 
 /**

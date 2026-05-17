@@ -39,8 +39,8 @@
 namespace chunking
 {
 
-using boost::program_options::command_line_parser;
-using boost::program_options::value;
+using lvr2::cli::command_line_parser;
+using lvr2::cli::value;
 using std::cout;
 using std::endl;
 

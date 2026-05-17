@@ -54,7 +54,7 @@ namespace std
 
 namespace reconstruct{
 
-using namespace boost::program_options;
+using namespace lvr2::cli;
 
 Options::Options(int argc, char** argv)
     : BaseOption(argc, argv)

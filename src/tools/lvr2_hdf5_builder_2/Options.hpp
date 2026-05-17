@@ -35,7 +35,7 @@
 #ifndef OPTIONS_H_
 #define OPTIONS_H_
 
-#include <boost/program_options.hpp>
+#include "lvr2/config/CommandLine.hpp"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -49,7 +49,7 @@ using std::vector;
 namespace hdf5tool2
 {
 
-using namespace boost::program_options;
+using namespace lvr2::cli;
 
 /**
  * @brief A class to parse the program options for the reconstruction

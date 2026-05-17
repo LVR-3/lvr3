@@ -39,7 +39,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <boost/program_options.hpp>
+#include "lvr2/config/CommandLine.hpp"
 
 using std::ostream;
 using std::cout;
@@ -51,7 +51,7 @@ using std::vector;
 namespace lvr2transform 
 {
 
-  using namespace boost::program_options;
+  using namespace lvr2::cli;
 
   /**
    * @brief A class to parse the program options for the reconstruction

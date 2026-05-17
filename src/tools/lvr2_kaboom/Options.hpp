@@ -38,7 +38,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <boost/program_options.hpp>
+#include "lvr2/config/CommandLine.hpp"
 
 #include "lvr2/config/BaseOption.hpp"
 
@@ -52,7 +52,7 @@ using std::vector;
 namespace kaboom
 {
 
-using namespace boost::program_options;
+using namespace lvr2::cli;
 
 /**
  * @brief A class to parse the program options for the reconstruction

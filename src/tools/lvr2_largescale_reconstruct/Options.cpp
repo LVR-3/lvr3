@@ -40,7 +40,7 @@
 
 namespace lvr2
 {
-// definitions necessary to use custom types with boost::program_options
+// definitions necessary to use custom types with lvr2::cli
 
 std::istream& operator>>(std::istream& in, LSROutput& output)
 {
@@ -57,7 +57,7 @@ std::istream& operator>>(std::istream& in, LSROutput& output)
 #ifdef LVR2_USE_3DTILES
         output = LSROutput::Tiles3d;
 #else
-        throw boost::program_options::error("If you want to use " + token + ", please call cmake with  -DWITH_3DTILES=ON  ");
+        throw lvr2::cli::error("If you want to use " + token + ", please call cmake with  -DWITH_3DTILES=ON  ");
 #endif
     else
         in.setstate(std::ios_base::failbit);
@@ -98,13 +98,13 @@ std::ostream& operator<<(std::ostream &os, const std::vector<T> &vec)
 namespace LargeScaleOptions
 {
 
-using namespace boost::program_options;
+using namespace lvr2::cli;
 
 Options::Options(int argc, char** argv) : BaseOption(argc, argv)
 {
     // Create option descriptions
 
-    // convert output from std::unordered_set to vector for boost::program_options
+    // convert output from std::unordered_set to vector for lvr2::cli
     std::vector<lvr2::LSROutput> output(m_options.output.begin(), m_options.output.end());
 
     bool noExtrude = false;

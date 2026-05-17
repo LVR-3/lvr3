@@ -50,7 +50,7 @@ enum class AllowedMemoryUsage : uint8_t
     Unbounded = 2,
 };
 
-// Operators needed for boost::program_options
+// Operators used by CLI parsing and diagnostics.
 std::istream& operator>>(std::istream& in, lvr2::AllowedMemoryUsage& output);
 std::ostream& operator<<(std::ostream& out, lvr2::AllowedMemoryUsage input);
 

@@ -9,7 +9,7 @@
 #include "lvr2/config/lvropenmp.hpp"
 
 
-using namespace boost::program_options;
+using namespace lvr2::cli;
 namespace dmc_reconstruction{
     Options::Options(int argc, char **argv) : BaseOption(argc, argv) {
         m_descr.add_options()
