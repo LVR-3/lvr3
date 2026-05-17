@@ -5,9 +5,9 @@
 
 #include <concepts>
 #include <cstddef>
-#include <functional>
 #include <map>
 #include <memory>
+#include <span>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -114,11 +114,16 @@ struct MetaValue
     std::string text;
 };
 
-struct FloatArrayView
+template<class T>
+struct TypedArrayView
 {
-    const float* data = nullptr;
+    using value_type = T;
+
+    std::span<const T> values;
     std::vector<std::size_t> dimensions;
 };
+
+using FloatArrayView = TypedArrayView<float>;
 
 struct Hdf5OpenOptions
 {
@@ -149,6 +154,8 @@ public:
     virtual Result<bool> exists(const GroupKey& key) const = 0;
     virtual Result<bool> exists(const DataKey& key) const = 0;
     virtual Result<std::vector<std::string>> list(const GroupKey& key) const = 0;
+    virtual Result<std::size_t> readBytes(const DataKey& key, std::span<std::byte> output) const = 0;
+    virtual Status writeBytes(const DataKey& key, std::span<const std::byte> bytes) = 0;
     virtual Result<MetaValue> readMeta(const MetaKey& key) const = 0;
     virtual Status writeMeta(const MetaKey& key, const MetaValue& value) = 0;
     virtual Result<lvr2::PointBufferPtr> readPointBuffer(const DataKey& key) const = 0;
@@ -156,10 +163,38 @@ public:
     virtual Status writeFloatArray(const DataKey& key, const FloatArrayView& array) = 0;
 };
 
-using StorageFactory = std::function<Result<std::unique_ptr<StorageBackend>>(const OpenRequest&)>;
+using StorageFactory = Result<std::unique_ptr<StorageBackend>> (*)(const OpenRequest&);
+
+template<class View>
+concept TypedDatasetView = requires(const View& view)
+{
+    typename View::value_type;
+    { view.values } -> std::convertible_to<std::span<const typename View::value_type>>;
+    { view.dimensions } -> std::same_as<const std::vector<std::size_t>&>;
+};
 
 template<class Backend>
-concept StorageBackendLike = requires(Backend& backend,
+concept DatasetReader = requires(const Backend& constBackend,
+                                 const DataKey& dataKey,
+                                 std::span<std::byte> outputBytes)
+{
+    { constBackend.readBytes(dataKey, outputBytes) } -> std::same_as<Result<std::size_t>>;
+};
+
+template<class Backend>
+concept DatasetWriter = requires(Backend& backend,
+                                 const DataKey& dataKey,
+                                 std::span<const std::byte> inputBytes,
+                                 const FloatArrayView& floatArray)
+{
+    { backend.writeBytes(dataKey, inputBytes) } -> std::same_as<Status>;
+    { backend.writeFloatArray(dataKey, floatArray) } -> std::same_as<Status>;
+};
+
+template<class Backend>
+concept StorageBackendLike = DatasetReader<Backend> &&
+                             DatasetWriter<Backend> &&
+                             requires(Backend& backend,
                                       const Backend& constBackend,
                                       const GroupKey& groupKey,
                                       const DataKey& dataKey,
@@ -182,21 +217,38 @@ concept StorageBackendLike = requires(Backend& backend,
 template<class Factory>
 concept StorageFactoryLike = requires(Factory factory, const OpenRequest& request)
 {
-    { std::invoke(factory, request) } -> std::same_as<Result<std::unique_ptr<StorageBackend>>>;
+    { factory(request) } -> std::same_as<Result<std::unique_ptr<StorageBackend>>>;
 };
 
+template<class Factory>
+concept RegistryStorageFactory = StorageFactoryLike<Factory> &&
+                                 std::convertible_to<Factory, StorageFactory>;
+
+static_assert(TypedDatasetView<FloatArrayView>,
+              "storage typed array view must expose an element span plus owned dimensions");
 static_assert(StorageBackendLike<StorageBackend>,
               "storage backend concept must match the runtime backend interface");
 static_assert(StorageFactoryLike<StorageFactory>,
               "storage factory concept must match the runtime registry factory interface");
+static_assert(RegistryStorageFactory<StorageFactory>,
+              "registry factories must be stateless function-pointer-compatible callables");
+static_assert(std::is_pointer_v<StorageFactory>,
+              "storage registry stores simple function pointers, not type-erased factory wrappers");
 
 class StorageRegistry final
 {
 public:
-    Status add(StorageKind kind, StorageFactory factory);
+    template<RegistryStorageFactory Factory>
+    Status add(StorageKind kind, Factory factory)
+    {
+        return addFactory(std::move(kind), static_cast<StorageFactory>(factory));
+    }
+
     Result<std::unique_ptr<StorageBackend>> open(const OpenRequest& request) const;
 
 private:
+    Status addFactory(StorageKind kind, StorageFactory factory);
+
     std::map<StorageKind, StorageFactory> factories_;
 };
 
@@ -234,7 +286,7 @@ static_assert(std::is_same_v<Result<lvr2::PointBufferPtr>,
                              tl::expected<lvr2::PointBufferPtr, Error>>,
               "storage result must stay backed by tl::expected");
 static_assert(std::is_default_constructible_v<FloatArrayView>,
-              "storage float-array views must remain simple value options");
+              "storage float-array views must remain simple non-owning value options");
 static_assert(std::is_same_v<Status, tl::expected<void, Error>>,
               "storage status must stay backed by tl::expected");
 static_assert(!std::is_copy_constructible_v<StorageContext>,

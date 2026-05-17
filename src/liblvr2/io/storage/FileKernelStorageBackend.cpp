@@ -122,6 +122,44 @@ public:
         }
     }
 
+    Result<std::size_t> readBytes(const DataKey& key, std::span<std::byte> output) const override
+    {
+        (void)output;
+        if (!kernel_)
+        {
+            return unexpected(makeBackendError(ErrorCode::OpenFailed,
+                                               "storage backend is not open",
+                                               info_,
+                                               key.group,
+                                               key.name));
+        }
+
+        return unexpected(makeBackendError(ErrorCode::Unsupported,
+                                           "generic raw byte dataset reads are not implemented by the kernel backend adapter",
+                                           info_,
+                                           key.group,
+                                           key.name));
+    }
+
+    Status writeBytes(const DataKey& key, std::span<const std::byte> bytes) override
+    {
+        (void)bytes;
+        if (!kernel_)
+        {
+            return unexpected(makeBackendError(ErrorCode::OpenFailed,
+                                               "storage backend is not open",
+                                               info_,
+                                               key.group,
+                                               key.name));
+        }
+
+        return unexpected(makeBackendError(ErrorCode::Unsupported,
+                                           "generic raw byte dataset writes are not implemented by the kernel backend adapter",
+                                           info_,
+                                           key.group,
+                                           key.name));
+    }
+
     Result<MetaValue> readMeta(const MetaKey& key) const override
     {
         if (!kernel_)
@@ -274,7 +312,15 @@ public:
         }
 
         const std::size_t values = elementCount(array.dimensions);
-        if (values > 0 && !array.data)
+        if (values != array.values.size())
+        {
+            return unexpected(makeBackendError(ErrorCode::InvalidArgument,
+                                               "float array element count must match dimensions",
+                                               info_,
+                                               key.group,
+                                               key.name));
+        }
+        if (values > 0 && !array.values.data())
         {
             return unexpected(makeBackendError(ErrorCode::InvalidArgument,
                                                "float array data must not be null",
@@ -288,7 +334,7 @@ public:
             std::shared_ptr<float[]> copy(new float[values]);
             if (values > 0)
             {
-                std::copy(array.data, array.data + values, copy.get());
+                std::copy(array.values.begin(), array.values.end(), copy.get());
             }
             kernel_->saveFloatArray(key.group, key.name, array.dimensions, copy);
         }

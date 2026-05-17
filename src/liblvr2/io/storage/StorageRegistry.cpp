@@ -34,7 +34,7 @@ StorageContext::StorageContext(std::unique_ptr<StorageBackend> backend,
 {
 }
 
-Status StorageRegistry::add(StorageKind kind, StorageFactory factory)
+Status StorageRegistry::addFactory(StorageKind kind, StorageFactory factory)
 {
     if (kind.is_auto())
     {
@@ -47,7 +47,7 @@ Status StorageRegistry::add(StorageKind kind, StorageFactory factory)
                            "storage factory must be callable"});
     }
 
-    const auto inserted = factories_.emplace(std::move(kind), std::move(factory));
+    const auto inserted = factories_.emplace(std::move(kind), factory);
     if (!inserted.second)
     {
         return unexpected({ErrorCode::DuplicateKind,

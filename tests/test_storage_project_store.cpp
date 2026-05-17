@@ -5,11 +5,14 @@
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <cstddef>
 #include <filesystem>
 #include <map>
 #include <memory>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
@@ -113,7 +116,8 @@ public:
 
     lvr2::io::storage::Result<bool> exists(const lvr2::io::storage::DataKey& key) const override
     {
-        return points_.find({key.group, key.name}) != points_.end();
+        const std::pair<std::string, std::string> lookup{key.group, key.name};
+        return points_.find(lookup) != points_.end() || bytes_.find(lookup) != bytes_.end();
     }
 
     lvr2::io::storage::Result<std::vector<std::string>> list(const lvr2::io::storage::GroupKey& key) const override
@@ -126,7 +130,45 @@ public:
                 names.push_back(entry.first.second);
             }
         }
+        for (const auto& entry : bytes_)
+        {
+            if (entry.first.first == key.group)
+            {
+                names.push_back(entry.first.second);
+            }
+        }
         return names;
+    }
+
+    lvr2::io::storage::Result<std::size_t> readBytes(const lvr2::io::storage::DataKey& key,
+                                                     std::span<std::byte> output) const override
+    {
+        const auto found = bytes_.find({key.group, key.name});
+        if (found == bytes_.end())
+        {
+            return lvr2::io::storage::unexpected({lvr2::io::storage::ErrorCode::NotFound,
+                                                  "byte dataset missing",
+                                                  uri_,
+                                                  key.group,
+                                                  key.name});
+        }
+        if (output.size() < found->second.size())
+        {
+            return lvr2::io::storage::unexpected({lvr2::io::storage::ErrorCode::InvalidArgument,
+                                                  "output byte span is too small",
+                                                  uri_,
+                                                  key.group,
+                                                  key.name});
+        }
+        std::copy(found->second.begin(), found->second.end(), output.begin());
+        return found->second.size();
+    }
+
+    lvr2::io::storage::Status writeBytes(const lvr2::io::storage::DataKey& key,
+                                         std::span<const std::byte> bytes) override
+    {
+        bytes_[{key.group, key.name}] = std::vector<std::byte>(bytes.begin(), bytes.end());
+        return {};
     }
 
     lvr2::io::storage::Result<lvr2::io::storage::MetaValue> readMeta(const lvr2::io::storage::MetaKey& key) const override
@@ -199,6 +241,13 @@ private:
                 return true;
             }
         }
+        for (const auto& entry : bytes_)
+        {
+            if (entry.first.first == group || entry.first.first.rfind(group + "/", 0) == 0)
+            {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -207,6 +256,7 @@ private:
     std::string uri_;
     std::map<Key, lvr2::io::storage::MetaValue> metas_;
     std::map<Key, lvr2::PointBufferPtr> points_;
+    std::map<Key, std::vector<std::byte>> bytes_;
 };
 
 lvr2::io::storage::Result<std::unique_ptr<lvr2::io::storage::StorageBackend>> openMemory(

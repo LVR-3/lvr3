@@ -83,6 +83,8 @@ jobs:
           cmake --build --preset build-vcpkg-release --parallel 2
           --target lvr2_mesh_io_facade_header_compile
           lvr2_static_assert_contracts_compile
+          lvr2_storage_io_header_compile
+          lvr2_storage_backend_span_contracts
           lvr2_mapped_file_contracts
           lvr2_cxx20_view_span_contracts
           lvr2_cli_parser_contracts
@@ -90,7 +92,7 @@ jobs:
       - name: Run basic CTest smoke
         run: >-
           ctest --test-dir build-vcpkg-release --output-on-failure
-          -R "lvr2_(mesh_io_facade_header_compile|static_assert_contracts_compile|cxx20_view_span_contracts|cxx20_view_span_policy|cli_parser_contracts|removed_public_mesh_io_headers|no_public_assimp_leakage|required_private_assimp_policy|no_vendored_dependencies|no_boost_cli_parser_dependency|boost_stdlib_replacements|no_boost_dependency|mapped_file_contracts|system_optout_semantics|diagnostic_hooks_policy|packaging_policy|no_bundled_viewer|cmake_module_audit|source_include_root_guard|lvr3_package_identity_smoke|lyrical_cxx20_baseline|pytest_smoke)"
+          -R "lvr2_(mesh_io_facade_header_compile|static_assert_contracts_compile|storage_io_header_compile|storage_backend_span_contracts|storage_io_contract_guard|unified_io_namespace_guard|cxx20_view_span_contracts|cxx20_view_span_policy|cli_parser_contracts|removed_public_mesh_io_headers|no_public_assimp_leakage|required_private_assimp_policy|no_vendored_dependencies|no_boost_cli_parser_dependency|boost_stdlib_replacements|no_boost_dependency|mapped_file_contracts|system_optout_semantics|diagnostic_hooks_policy|packaging_policy|no_bundled_viewer|cmake_module_audit|source_include_root_guard|lvr3_package_identity_smoke|lyrical_cxx20_baseline|pytest_smoke)"
 
       - name: Install/export package smoke
         run: |
@@ -130,6 +132,8 @@ jobs:
           cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/source_include_root_guard.cmake
           cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/lyrical_cxx20_baseline.cmake
           cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/cxx20_view_span_policy.cmake
+          cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/storage_io_contract_guard.cmake
+          cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/unified_io_namespace_guard.cmake
 
   optional-diagnostics:
     name: optional diagnostics (${{ matrix.mode }})

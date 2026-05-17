@@ -38,10 +38,29 @@ foreach(_required_token IN ITEMS
     "class StorageBackend"
     "class StorageRegistry"
     "StorageFactory"
-    "StorageContext")
+    "StorageContext"
+    "#include <span>"
+    "std::span<const std::byte>"
+    "std::span<std::byte>"
+    "TypedArrayView"
+    "TypedDatasetView"
+    "DatasetReader"
+    "DatasetWriter"
+    "StorageBackendLike"
+    "StorageFactoryLike"
+    "RegistryStorageFactory")
   string(FIND "${_storage_header}" "${_required_token}" _token_pos)
   if(_token_pos LESS 0)
     message(FATAL_ERROR "Storage backend replacement is missing token: ${_required_token}")
+  endif()
+endforeach()
+
+foreach(_banned_storage_header_token IN ITEMS
+    "#include <functional>"
+    "std::function")
+  string(FIND "${_storage_header}" "${_banned_storage_header_token}" _banned_storage_header_pos)
+  if(_banned_storage_header_pos GREATER_EQUAL 0)
+    message(FATAL_ERROR "Storage backend header still uses banned factory/storage token: ${_banned_storage_header_token}")
   endif()
 endforeach()
 

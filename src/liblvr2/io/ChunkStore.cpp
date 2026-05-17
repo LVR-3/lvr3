@@ -12,6 +12,7 @@
 #include <functional>
 #include <memory>
 #include <numeric>
+#include <span>
 #include <stdexcept>
 #include <vector>
 
@@ -158,7 +159,9 @@ void ChunkStore::saveAmount(lvr2::BaseVector<std::size_t> amount)
 void ChunkStore::saveChunkSize(float chunkSize)
 {
     const float values[1]{chunkSize};
-    requireStatus(state_->backend->writeFloatArray({kChunksName, kChunkSizeName}, {values, {1, 1}}),
+    requireStatus(state_->backend->writeFloatArray(
+                      {kChunksName, kChunkSizeName},
+                      {std::span<const float>(values), {1, 1}}),
                   "saving chunk size");
 }
 
@@ -170,7 +173,9 @@ void ChunkStore::saveBoundingBox(lvr2::BoundingBox<lvr2::BaseVector<float>> boun
                           boundingBox.getMax()[0],
                           boundingBox.getMax()[1],
                           boundingBox.getMax()[2]};
-    requireStatus(state_->backend->writeFloatArray({kChunksName, kBoundingBoxName}, {values, {2, 3}}),
+    requireStatus(state_->backend->writeFloatArray(
+                      {kChunksName, kBoundingBoxName},
+                      {std::span<const float>(values), {2, 3}}),
                   "saving chunk bounding box");
 }
 

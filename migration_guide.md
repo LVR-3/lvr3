@@ -58,6 +58,28 @@ if (buffer.hasFloatChannel("points")) {
 
 Do not store `std::span` or `std::string_view` in long-lived objects unless a future slice adds an explicit owner/lifetime contract and tests.
 
+## C++20 storage backend span contract
+
+Custom scan-project storage backends still use the single `lvr2::io::storage::StorageRegistry` path used by the built-in Directory and HDF5 backends. The backend contract now uses C++20 non-owning views at dataset boundaries:
+
+```cpp
+class MyBackend : public lvr2::io::storage::StorageBackend {
+public:
+    lvr2::io::storage::Result<std::size_t>
+    readBytes(const DataKey& key, std::span<std::byte> output) const override;
+
+    lvr2::io::storage::Status
+    writeBytes(const DataKey& key, std::span<const std::byte> bytes) override;
+
+    lvr2::io::storage::Status
+    writeFloatArray(const DataKey& key, const FloatArrayView& array) override;
+};
+```
+
+`FloatArrayView` is now `TypedArrayView<float>`: it contains `std::span<const float> values` plus owned dimensions. Incoming spans are non-owning; a backend that needs the data after the call returns must copy it into backend-owned storage. The built-in kernel adapter explicitly reports `Unsupported` for generic raw byte datasets until a future FileKernel byte-dataset slice adds real generic byte I/O; point buffers, metadata, and typed float-array writes continue through the same backend path.
+
+`StorageFactory` is now a stateless function-pointer-compatible factory checked by concepts during `StorageRegistry::add(...)`. Stateful registration should pass per-open state through `OpenRequest` or construct an owning backend from the factory result rather than relying on `std::function` captures. `Result<T>` and `Status` remain backed by `tl::expected`; no C++23 `std::expected` requirement is introduced.
+
 ## lvr3 package identity
 
 `find_package(lvr3)` is now available as a compatibility package identity that reuses the existing `lvr2` install/export.
