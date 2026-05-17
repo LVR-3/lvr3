@@ -397,24 +397,16 @@ endif(LVR2_WITH_FREENECT)
 # USED THIRD PARTY STUFF
 ###############################################################################
 
-# fmt remains only for the pre-std-format logging facade and is removed by the std-format follow-up slice.
-lvr2_find_package(fmt CONFIG REQUIRED)
-if(TARGET fmt::fmt)
-  set(LVR2_FMT_TARGET fmt::fmt)
-elseif(TARGET fmt::fmt-header-only)
-  set(LVR2_FMT_TARGET fmt::fmt-header-only)
-else()
-  message(FATAL_ERROR "fmt package did not provide fmt::fmt or fmt::fmt-header-only")
-endif()
-
-# spdlog is the real logging engine used by the inline detail forwarding layer.
+# spdlog is the real logging engine; LVR configures it for C++20 standard formatting.
+# Use the header-only target so SPDLOG_USE_STD_FORMAT is a compile-time contract
+# for LVR and installed consumers instead of depending on a separately compiled
+# system spdlog library that may have been built against fmt.
 lvr2_find_package(spdlog CONFIG REQUIRED)
+list(APPEND LVR2_DEFINITIONS -DSPDLOG_USE_STD_FORMAT)
 if(TARGET spdlog::spdlog_header_only)
   set(LVR2_SPDLOG_TARGET spdlog::spdlog_header_only)
-elseif(TARGET spdlog::spdlog)
-  set(LVR2_SPDLOG_TARGET spdlog::spdlog)
 else()
-  message(FATAL_ERROR "spdlog package did not provide spdlog::spdlog_header_only or spdlog::spdlog")
+  message(FATAL_ERROR "LVR3 requires spdlog::spdlog_header_only so SPDLOG_USE_STD_FORMAT is consistently applied; rebuild or install spdlog with its CMake header-only target")
 endif()
 
 # HighFive is used by public headers, so the package target is part of the

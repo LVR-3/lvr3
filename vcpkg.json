@@ -23,8 +23,10 @@
     "tiff",
     "opencv4",
     "rply",
-    "fmt",
-    "spdlog",
+    {
+      "name": "spdlog",
+      "default-features": false
+    },
     "tbb",
     "tl-expected",
     "yaml-cpp",

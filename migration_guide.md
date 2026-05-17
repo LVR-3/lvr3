@@ -83,7 +83,7 @@ cmake --preset system-optout-release
 cmake -S . -B build-system -DLVR2_WITH_VCPKG=OFF
 ```
 
-Common package escape hatches follow the `LVR2_USE_SYSTEM_<PKG>` pattern, including `LVR2_USE_SYSTEM_TL_EXPECTED`, `LVR2_USE_SYSTEM_TBB`, `LVR2_USE_SYSTEM_FMT`, `LVR2_USE_SYSTEM_SPDLOG`, `LVR2_USE_SYSTEM_HIGHFIVE`, `LVR2_USE_SYSTEM_RPLY`, `LVR2_USE_SYSTEM_LASLIB`, `LVR2_USE_SYSTEM_OPENCV`, `LVR2_USE_SYSTEM_HDF5`, and `LVR2_USE_SYSTEM_EIGEN3`. `CMakeSettings.json` is still kept for compatibility. Assimp is required privately for mesh I/O and is intentionally not exposed as a package-specific LVR option.
+Common package escape hatches follow the `LVR2_USE_SYSTEM_<PKG>` pattern, including `LVR2_USE_SYSTEM_TL_EXPECTED`, `LVR2_USE_SYSTEM_TBB`, `LVR2_USE_SYSTEM_SPDLOG`, `LVR2_USE_SYSTEM_HIGHFIVE`, `LVR2_USE_SYSTEM_RPLY`, `LVR2_USE_SYSTEM_LASLIB`, `LVR2_USE_SYSTEM_OPENCV`, `LVR2_USE_SYSTEM_HDF5`, and `LVR2_USE_SYSTEM_EIGEN3`. `CMakeSettings.json` is still kept for compatibility. Assimp is required privately for mesh I/O and is intentionally not exposed as a package-specific LVR option.
 
 ## Format-style logging facade
 
@@ -104,9 +104,16 @@ lvr2::log::warning("Skipping scan {}", scan_index);
 lvr2::log::error("Failed to open '{}': {}", path, reason);
 ```
 
-Runtime/user-provided message text should use the explicit runtime APIs, for example `lvr2::log::info_runtime(message)`. The normal formatted path forwards the original format string and arguments to spdlog, including the optional `LVR2_LOG_INFO(...)`/`LVR2_LOG_WARNING(...)`/`LVR2_LOG_ERROR(...)` source-location macros. Types that only support stream insertion need a real formatter, `format_as`, or an explicit cheap summary string; do not add new stream-format logging shortcuts.
+Runtime/user-provided message text should use the explicit runtime APIs, for example `lvr2::log::info_runtime(message)`. Runtime format strings are also explicit, for example `lvr2::log::info_runtime(user_format, value)`. The normal formatted path uses C++20 standard-format strings and forwards the original format string and arguments to spdlog. Source locations use call-style `std::source_location` support instead of macros:
 
-The public logging calls keep LVR-owned signatures and examples: no `fmt::` or `spdlog::` types appear in normal call sites. The installed `lvr2`/`lvr3` CMake configs still declare `fmt` and `spdlog` for the pre-std-format logging facade; the std-format follow-up removes `fmt` and switches spdlog to standard formatting. The ABI fallback remains `lvr2::log::write(Level, std::string_view)`.
+```cpp
+lvr2::log::here().info("Loaded {} points", count);
+lvr2::log::here().warning("Skipping scan {}", scan_index);
+```
+
+Types that only support stream insertion need a `std::formatter` specialization or an explicit cheap summary string; do not add new stream-format logging shortcuts.
+
+The public logging calls keep LVR-owned signatures and examples: no backend formatting types appear in normal call sites. The installed `lvr2`/`lvr3` CMake configs declare `spdlog` for the standard-format logging facade, and the direct LVR `{fmt}` dependency has been removed. System-package builds must provide the `spdlog::spdlog_header_only` CMake target so `SPDLOG_USE_STD_FORMAT` is applied consistently instead of mixing LVR with a separately compiled fmt-backed spdlog binary. The ABI fallback remains `lvr2::log::write(Level, std::string_view)`.
 
 ## CMake file layout and module audit
 
