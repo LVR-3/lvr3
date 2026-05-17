@@ -52,7 +52,7 @@ PointsetGrid<BaseVecT, BoxT>::PointsetGrid(
     // Get indexed point buffer pointer
     auto numPoint = m_surface->pointBuffer()->numPoints();
 
-        lvr2::log::info("{}", fmt::streamed("[PointsetSurface] Creating grid"));
+        lvr2::log::info("{}", "[PointsetSurface] Creating grid");
 
     FloatChannel pts = *(m_surface->pointBuffer()->getFloatChannel("points"));
 

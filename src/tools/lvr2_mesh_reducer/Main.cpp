@@ -101,14 +101,14 @@ int main(int argc, char** argv)
 
     auto mesh = make_hem<Vec>(meshBuffer, options.getHemImplementation());
 
-        lvr2::log::info("{}", fmt::streamed("Computing face normals..."));
+        lvr2::log::info("{}", "Computing face normals...");
 
     // Calculate initial face normals
     auto faceNormals = calcFaceNormals(*mesh);
 
     // Reduce mesh complexity
     const auto reductionRatio = options.getEdgeCollapseReductionRatio();
-        lvr2::log::info("{}", fmt::streamed("Collapsing faces..."));
+        lvr2::log::info("{}", "Collapsing faces...");
 
     if (reductionRatio > 0.0)
     {
@@ -141,7 +141,7 @@ int main(int argc, char** argv)
 
     lvr2::ModelFactory::saveModel(m, "reduced_mesh.ply");
 
-        lvr2::log::info("{}", fmt::streamed("Program end."));
+        lvr2::log::info("{}", "Program end.");
 
     return 0;
 }

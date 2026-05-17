@@ -5,6 +5,7 @@
 #include <yaml-cpp/yaml.h>
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/util/Timestamp.hpp"
+#include "lvr2/util/YAMLUtil.hpp"
 #include <lvr2/util/Logging.hpp>
 #include "lvr2/io/YAML.hpp"
 
@@ -87,7 +88,7 @@ namespace YAML
                 }
                 catch (const YAML::TypedBadConversion<double> &ex)
                 {
-                                        lvr2::log::error("{}{}{}", fmt::streamed("[YAML - Scan - decode] ERROR: Could not decode 'start_time': "), fmt::streamed(parsed_node["start_time"]), fmt::streamed(" as double"));
+                                        lvr2::log::error("{}{}{}", "[YAML - Scan - decode] ERROR: Could not decode 'start_time': ", YAML_UTIL::NodeSummary(parsed_node["start_time"]), " as double");
                     return false;
                 }
                 parsed_node.remove("start_time");
@@ -105,7 +106,7 @@ namespace YAML
                 }
                 catch (const YAML::TypedBadConversion<double> &ex)
                 {
-                                        lvr2::log::error("{}{}{}", fmt::streamed("[YAML - Scan - decode] ERROR: Could not decode 'end_time': "), fmt::streamed(parsed_node["end_time"]), fmt::streamed(" as double"));
+                                        lvr2::log::error("{}{}{}", "[YAML - Scan - decode] ERROR: Could not decode 'end_time': ", YAML_UTIL::NodeSummary(parsed_node["end_time"]), " as double");
                     return false;
                 }
                 parsed_node.remove("end_time");
@@ -123,7 +124,7 @@ namespace YAML
                 }
                 catch (const YAML::TypedBadConversion<unsigned int> &ex)
                 {
-                                        lvr2::log::error("{}{}{}", fmt::streamed("[YAML - Scan - decode] ERROR: Could not decode 'num_points': "), fmt::streamed(parsed_node["num_points"]), fmt::streamed(" as unsigned int"));
+                                        lvr2::log::error("{}{}{}", "[YAML - Scan - decode] ERROR: Could not decode 'num_points': ", YAML_UTIL::NodeSummary(parsed_node["num_points"]), " as unsigned int");
                     return false;
                 }
                 parsed_node.remove("num_points");
@@ -137,7 +138,7 @@ namespace YAML
                 }
                 catch (const YAML::TypedBadConversion<lvr2::Transformd> &ex)
                 {
-                                        lvr2::log::error("{}{}{}", fmt::streamed("[YAML - Scan - decode] ERROR: Could not decode 'pose_estimation': "), fmt::streamed(parsed_node["pose_estimation"]), fmt::streamed(" as Transformd"));
+                                        lvr2::log::error("{}{}{}", "[YAML - Scan - decode] ERROR: Could not decode 'pose_estimation': ", YAML_UTIL::NodeSummary(parsed_node["pose_estimation"]), " as Transformd");
                     return false;
                 }
                 parsed_node.remove("pose_estimation");
@@ -155,7 +156,7 @@ namespace YAML
                 }
                 catch (const YAML::TypedBadConversion<lvr2::Transformd> &ex)
                 {
-                                        lvr2::log::error("{}{}{}", fmt::streamed("[YAML - Scan - decode] ERROR: Could not decode 'transformation': "), fmt::streamed(parsed_node["transformation"]), fmt::streamed(" as Transformd"));
+                                        lvr2::log::error("{}{}{}", "[YAML - Scan - decode] ERROR: Could not decode 'transformation': ", YAML_UTIL::NodeSummary(parsed_node["transformation"]), " as Transformd");
                     return false;
                 }
                 parsed_node.remove("transformation");
@@ -173,7 +174,7 @@ namespace YAML
                 }
                 catch (const YAML::TypedBadConversion<lvr2::SphericalModel> &ex)
                 {
-                                        lvr2::log::error("{}{}{}", fmt::streamed("[YAML - Scan - decode] ERROR: Could not decode 'model': "), fmt::streamed(parsed_node["model"]), fmt::streamed(" as SphericalModel"));
+                                        lvr2::log::error("{}{}{}", "[YAML - Scan - decode] ERROR: Could not decode 'model': ", YAML_UTIL::NodeSummary(parsed_node["model"]), " as SphericalModel");
                     return false;
                 }
                 parsed_node.remove("model");
@@ -187,7 +188,7 @@ namespace YAML
                 }
                 catch (const YAML::TypedBadConversion<lvr2::BoundingBox<lvr2::BaseVector<float>>> &ex)
                 {
-                                        lvr2::log::error("{}{}{}", fmt::streamed("[YAML - Scan - decode] ERROR: Could not decode 'aabb': "), fmt::streamed(parsed_node["aabb"]), fmt::streamed(" as BoundingBox"));
+                                        lvr2::log::error("{}{}{}", "[YAML - Scan - decode] ERROR: Could not decode 'aabb': ", YAML_UTIL::NodeSummary(parsed_node["aabb"]), " as BoundingBox");
                     return false;
                 }
                 parsed_node.remove("aabb");

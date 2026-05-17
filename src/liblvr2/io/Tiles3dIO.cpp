@@ -119,14 +119,14 @@ void writeTileset(Cesium3DTiles::Tileset& tileset, const std::string& outputDir,
     }
 
     std::string tileset_file = outputDir + "tileset.json";
-        lvr2::log::info("{}{}", fmt::streamed("Writing "), fmt::streamed(tileset_file));
+        lvr2::log::info("{}{}", "Writing ", tileset_file);
 
     std::ofstream tileset_out(tileset_file, std::ios::binary);
     tileset_out.write((char*)result.tilesetBytes.data(), result.tilesetBytes.size());
     tileset_out.close();
 
     std::string viewer_file = outputDir + "index.html";
-        lvr2::log::info("{}{}", fmt::streamed("Writing "), fmt::streamed(viewer_file));
+        lvr2::log::info("{}{}", "Writing ", viewer_file);
 
     std::ofstream viewer_out(viewer_file);
     viewer_out << VIEWER_HTML;

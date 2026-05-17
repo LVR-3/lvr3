@@ -190,7 +190,7 @@ struct LSROptions
 #define CHECK_OPTION(option, condition, message) \
                 if (condition) \
                 { \
-                                        lvr2::log::warning("{}{}{}", fmt::streamed("Warning: "), fmt::streamed(message), fmt::streamed(" Reverting to default value.")); \
+                                        lvr2::log::warning("{}{}{}", "Warning: ", message, " Reverting to default value."); \
                     option = defaultOptions.option; \
                 }
 
@@ -198,18 +198,18 @@ struct LSROptions
         {
             if (hasOutput(LSROutput::ChunksPly))
             {
-                                lvr2::log::warning("{}", fmt::streamed("Warning: Output ChunksPly requires partMethod == 1."));
+                                lvr2::log::warning("{}", "Warning: Output ChunksPly requires partMethod == 1.");
                 output.erase(LSROutput::ChunksPly);
             }
             if (hasOutput(LSROutput::ChunksHdf5))
             {
-                                lvr2::log::warning("{}", fmt::streamed("Warning: Output ChunksHdf5 requires partMethod == 1."));
+                                lvr2::log::warning("{}", "Warning: Output ChunksHdf5 requires partMethod == 1.");
                 output.erase(LSROutput::ChunksHdf5);
             }
 #ifdef LVR2_USE_3DTILES
             if (hasOutput(LSROutput::Tiles3d))
             {
-                                lvr2::log::warning("{}", fmt::streamed("Warning: Output Tiles3d requires partMethod == 1."));
+                                lvr2::log::warning("{}", "Warning: Output Tiles3d requires partMethod == 1.");
                 output.erase(LSROutput::Tiles3d);
             }
 #endif
@@ -223,7 +223,7 @@ struct LSROptions
             time_t now = time(0);
             ss << "./" << std::put_time(std::localtime(&now), "%Y-%m-%d_%H-%M-%S") << "/";
             outputDir = ss.str();
-                        lvr2::log::info("{}{}", fmt::streamed("LargeScaleReconstruction: Output directory set to "), fmt::streamed(outputDir));
+                        lvr2::log::info("{}{}", "LargeScaleReconstruction: Output directory set to ", outputDir.string());
         }
         fs::create_directories(outputDir);
         if (tempDir.empty())
@@ -235,7 +235,7 @@ struct LSROptions
 #ifndef GPU_FOUND
         if (useGPU || useGPUDistances)
         {
-                        lvr2::log::warning("{}", fmt::streamed("Warning: No GPU found. Falling back to CPU."));
+                        lvr2::log::warning("{}", "Warning: No GPU found. Falling back to CPU.");
             useGPU = useGPUDistances = false;
         }
 #endif
@@ -251,7 +251,7 @@ struct LSROptions
         auto correctedVoxelSize = std::ceil(bgVoxelSize / voxelSizes[0]) * voxelSizes[0];
         if (correctedVoxelSize != bgVoxelSize)
         {
-                        lvr2::log::warning("{}{}", fmt::streamed("Warning: bgVoxelSize is not a multiple of voxelSizes[0]. Correcting to "), fmt::streamed(correctedVoxelSize));
+                        lvr2::log::warning("{}{}", "Warning: bgVoxelSize is not a multiple of voxelSizes[0]. Correcting to ", correctedVoxelSize);
             bgVoxelSize = correctedVoxelSize;
         }
         auto it = voxelSizes.begin() + 1;
@@ -259,12 +259,12 @@ struct LSROptions
         {
             if (*it <= 0)
             {
-                                lvr2::log::warning("{}{}", fmt::streamed("Warning: voxelSizes cannot be negative. Ignoring "), fmt::streamed(*it));
+                                lvr2::log::warning("{}{}", "Warning: voxelSizes cannot be negative. Ignoring ", *it);
                 it = voxelSizes.erase(it);
             }
             else if (std::abs(bgVoxelSize - std::ceil(bgVoxelSize / *it) * *it) > std::numeric_limits<float>::epsilon())
             {
-                                lvr2::log::warning("{}{}", fmt::streamed("Warning: all voxelSizes have to divide bgVoxelSize. Ignoring "), fmt::streamed(*it));
+                                lvr2::log::warning("{}{}", "Warning: all voxelSizes have to divide bgVoxelSize. Ignoring ", *it);
                 it = voxelSizes.erase(it);
             }
             else
@@ -289,13 +289,13 @@ struct LSROptions
 #ifdef LVR2_USE_3DTILES
         if (tiles3dCompress && !hasOutput(LSROutput::Tiles3d))
         {
-                        lvr2::log::warning("{}", fmt::streamed("Warning: tiles3dCompress is only supported for LSROutput::Tiles3d."));
+                        lvr2::log::warning("{}", "Warning: tiles3dCompress is only supported for LSROutput::Tiles3d.");
             tiles3dCompress = false;
         }
 #else
         if (tiles3dCompress)
         {
-                        lvr2::log::warning("{}", fmt::streamed("Warning: tiles3dCompress is only supported when compiling with 3D Tiles support."));
+                        lvr2::log::warning("{}", "Warning: tiles3dCompress is only supported when compiling with 3D Tiles support.");
             tiles3dCompress = false;
         }
 #endif

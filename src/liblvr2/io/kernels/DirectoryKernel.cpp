@@ -73,7 +73,7 @@ MeshBufferPtr DirectoryKernel::loadMeshBuffer(
     MeshBufferPtr ret;
 
     boost::filesystem::path p = getAbsolutePath(group, container);
-        lvr2::log::info("{}{}", fmt::streamed("Directory Kernel::loadMeshBuffer(): "), fmt::streamed(p.string()));
+        lvr2::log::info("{}{}", "Directory Kernel::loadMeshBuffer(): ", p.string());
     ModelPtr model = ModelFactory::readModel(p.string());
     if (model)
     {

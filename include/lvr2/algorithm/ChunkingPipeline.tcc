@@ -76,19 +76,19 @@ void ChunkingPipeline<BaseVecT>::parseYAMLConfig()
 
         if (config["lvr2_registration"])
         {
-                        lvr2::log::info("{}", fmt::streamed("Found config entry for lvr2_registration."));
+                        lvr2::log::info("{}", "Found config entry for lvr2_registration.");
             m_regOptions = config["lvr2_registration"].as<SLAMOptions>();
         }
 
         if (config["lvr2_largescale_reconstruct"])
         {
-                        lvr2::log::info("{}", fmt::streamed("Found config entry for lvr2_largescale_reconstruct."));
+                        lvr2::log::info("{}", "Found config entry for lvr2_largescale_reconstruct.");
             m_lsrOptions = config["lvr2_largescale_reconstruct"].as<LSROptions>();
         }
 
         if (config["lvr2_practicability_analysis"] && config["lvr2_practicability_analysis"].IsMap())
         {
-                        lvr2::log::info("{}", fmt::streamed("Found config entry for lvr2_practicability_analysis."));
+                        lvr2::log::info("{}", "Found config entry for lvr2_practicability_analysis.");
             YAML::Node practicabilityConfig = config["lvr2_practicability_analysis"];
             if (practicabilityConfig["roughnessRadius"])
             {
@@ -106,7 +106,7 @@ void ChunkingPipeline<BaseVecT>::parseYAMLConfig()
     }
     else
     {
-                lvr2::log::info("{}", fmt::streamed("Config file does not exist or is not a regular file!"));
+                lvr2::log::info("{}", "Config file does not exist or is not a regular file!");
     }
 }
 
@@ -162,7 +162,7 @@ bool ChunkingPipeline<BaseVecT>::getScanProject(const boost::filesystem::path& d
         lvr2::io::scan::LoadOptions::hdf5());
     if (!hdf5Project)
     {
-                lvr2::log::error("{}{}", fmt::streamed("Could not load existing HDF5 scan project: "), fmt::streamed(hdf5Project.error().message));
+                lvr2::log::error("{}{}", "Could not load existing HDF5 scan project: ", hdf5Project.error().message);
         return false;
     }
     ScanProjectPtr scanProjectPtr = hdf5Project.value();
@@ -172,7 +172,7 @@ bool ChunkingPipeline<BaseVecT>::getScanProject(const boost::filesystem::path& d
         lvr2::io::scan::LoadOptions::directory_raw_ply());
     if (!directoryProject)
     {
-                lvr2::log::error("{}{}", fmt::streamed("Could not load directory scan project: "), fmt::streamed(directoryProject.error().message));
+                lvr2::log::error("{}{}", "Could not load directory scan project: ", directoryProject.error().message);
         return false;
     }
     ScanProjectPtr dirScanProject = directoryProject.value();
@@ -186,7 +186,7 @@ bool ChunkingPipeline<BaseVecT>::getScanProject(const boost::filesystem::path& d
     const auto newPositions = directoryPositions > existingPositions
         ? directoryPositions - existingPositions
         : 0;
-        lvr2::log::info("{}{}{}", fmt::streamed("Found "), fmt::streamed(newPositions), fmt::streamed(" new scanPosition(s)"));
+        lvr2::log::info("{}{}{}", "Found ", newPositions, " new scanPosition(s)");
     for (std::size_t i = existingPositions; i < directoryPositions; i++)
     {
         scanProjectPtr->positions.push_back(dirScanProject->positions[i]);
@@ -211,9 +211,9 @@ bool ChunkingPipeline<BaseVecT>::start(const boost::filesystem::path& scanDir)
 
     m_running = true;
 
-        lvr2::log::info("{}", fmt::streamed("Starting chunking pipeline..."));
+        lvr2::log::info("{}", "Starting chunking pipeline...");
 
-        lvr2::log::info("{}", fmt::streamed("Starting import tool..."));
+        lvr2::log::info("{}", "Starting import tool...");
 
     if (!getScanProject(scanDir))
     {
@@ -224,12 +224,12 @@ bool ChunkingPipeline<BaseVecT>::start(const boost::filesystem::path& scanDir)
         return false;
     }
 
-        lvr2::log::info("{}", fmt::streamed("Finished import!"));
+        lvr2::log::info("{}", "Finished import!");
 
-        lvr2::log::info("{}", fmt::streamed("Starting registration..."));
+        lvr2::log::info("{}", "Starting registration...");
     RegistrationPipeline registration(&m_regOptions, m_scanProject);
     registration.doRegistration();
-        lvr2::log::info("{}", fmt::streamed("Finished registration!"));
+        lvr2::log::info("{}", "Finished registration!");
 
     // Save raw data
     auto hdf5Store = lvr2::io::scan::open_hdf5(
@@ -238,7 +238,7 @@ bool ChunkingPipeline<BaseVecT>::start(const boost::filesystem::path& scanDir)
         lvr2::io::storage::LoadMode::Lazy);
     if (!hdf5Store)
     {
-                lvr2::log::error("{}{}", fmt::streamed("Could not open HDF5 output project: "), fmt::streamed(hdf5Store.error().message));
+                lvr2::log::error("{}{}", "Could not open HDF5 output project: ", hdf5Store.error().message);
         m_running = false;
         return false;
     }
@@ -251,7 +251,7 @@ bool ChunkingPipeline<BaseVecT>::start(const boost::filesystem::path& scanDir)
             auto saved = hdf5Store.value().save_position(idx, m_scanProject->project->positions[idx]);
             if (!saved)
             {
-                                lvr2::log::error("{}{}{}{}", fmt::streamed("Could not save changed scan position "), fmt::streamed(idx), fmt::streamed(": "), fmt::streamed(saved.error().message));
+                                lvr2::log::error("{}{}{}{}", "Could not save changed scan position ", idx, ": ", saved.error().message);
                 m_running = false;
                 return false;
             }
@@ -268,47 +268,47 @@ bool ChunkingPipeline<BaseVecT>::start(const boost::filesystem::path& scanDir)
         //pos->hyperspectralCamera.reset(new HyperspectralCamera);
     }
 
-        lvr2::log::info("{}", fmt::streamed("Starting large scale reconstruction..."));
+        lvr2::log::info("{}", "Starting large scale reconstruction...");
     LargeScaleReconstruction<BaseVecT> lsr(m_lsrOptions);
     BoundingBox<BaseVecT> newChunksBB;
     lsr.chunkAndReconstruct(m_scanProject, newChunksBB, m_chunkManager);
-        lvr2::log::info("{}", fmt::streamed("Finished large scale reconstruction!"));
+        lvr2::log::info("{}", "Finished large scale reconstruction!");
 
     for (auto layer : m_lsrOptions.voxelSizes)
     {
         std::string voxelSizeStr = "[Layer " + std::to_string(layer) + "] ";
-                lvr2::log::info("{}{}", fmt::streamed(voxelSizeStr), fmt::streamed("Starting mesh generation..."));
+                lvr2::log::info("{}{}", voxelSizeStr, "Starting mesh generation...");
         HalfEdgeMesh<BaseVecT> hem = lsr.getPartialReconstruct(
                 newChunksBB,
                 m_chunkManager,
                 layer);
-                lvr2::log::info("{}{}", fmt::streamed(voxelSizeStr), fmt::streamed("Finished mesh generation!"));
+                lvr2::log::info("{}{}", voxelSizeStr, "Finished mesh generation!");
 
-                lvr2::log::info("{}{}", fmt::streamed(voxelSizeStr), fmt::streamed("Starting mesh buffer creation..."));
+                lvr2::log::info("{}{}", voxelSizeStr, "Starting mesh buffer creation...");
         lvr2::SimpleFinalizer<BaseVecT> finalize;
         MeshBufferPtr meshBuffer = MeshBufferPtr(finalize.apply(hem));
-                lvr2::log::info("{}{}", fmt::streamed(voxelSizeStr), fmt::streamed("Finished mesh buffer creation!"));
+                lvr2::log::info("{}{}", voxelSizeStr, "Finished mesh buffer creation!");
 
         auto foundIt = std::find(m_practicabilityLayers.begin(), m_practicabilityLayers.end(), layer);
         if (foundIt != m_practicabilityLayers.end())
         {
-                        lvr2::log::info("{}{}", fmt::streamed(voxelSizeStr), fmt::streamed("Starting practicability analysis..."));
+                        lvr2::log::info("{}{}", voxelSizeStr, "Starting practicability analysis...");
             practicabilityAnalysis(hem, meshBuffer);
-                        lvr2::log::info("{}{}", fmt::streamed(voxelSizeStr), fmt::streamed("Finished practicability analysis!"));
+                        lvr2::log::info("{}{}", voxelSizeStr, "Finished practicability analysis!");
         }
         else
         {
-                        lvr2::log::info("{}{}", fmt::streamed(voxelSizeStr), fmt::streamed("Skipping practicability analysis..."));
+                        lvr2::log::info("{}{}", voxelSizeStr, "Skipping practicability analysis...");
         }
 
-                lvr2::log::info("{}{}", fmt::streamed(voxelSizeStr), fmt::streamed("Starting chunking and saving of mesh buffer..."));
+                lvr2::log::info("{}{}", voxelSizeStr, "Starting chunking and saving of mesh buffer...");
         // TODO: get maxChunkOverlap size
         // TODO: savePath is not used in buildChunks (remove it?)
         m_chunkManager->buildChunks(meshBuffer, 0.1f, "", "mesh_" + std::to_string(layer));
-                lvr2::log::info("{}{}", fmt::streamed(voxelSizeStr), fmt::streamed("Finished chunking and saving of mesh buffer!"));
+                lvr2::log::info("{}{}", voxelSizeStr, "Finished chunking and saving of mesh buffer!");
     }
 
-        lvr2::log::info("{}", fmt::streamed("Finished chunking pipeline!"));
+        lvr2::log::info("{}", "Finished chunking pipeline!");
 
     m_running = false;
 

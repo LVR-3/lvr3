@@ -293,11 +293,11 @@ MaterializerResult<BaseVecT> Materializer<BaseVecT>::generateMaterials()
     if (m_texturizers)
     {
 
-                lvr2::log::info("{}{}{}", fmt::streamed("Skipped "), fmt::streamed((numClustersTooSmall+numClustersTooLarge)), fmt::streamed(" clusters while generating textures"));
+                lvr2::log::info("{}{}{}", "Skipped ", (numClustersTooSmall+numClustersTooLarge), " clusters while generating textures");
 
-                lvr2::log::info("{}{}{}{}{}{}{}", fmt::streamed("("), fmt::streamed(numClustersTooSmall), fmt::streamed(" below threshold, "), fmt::streamed(numClustersTooLarge), fmt::streamed(" above limit, "), fmt::streamed(m_cluster.numCluster()), fmt::streamed(" total)"));
+                lvr2::log::info("{}{}{}{}{}{}{}", "(", numClustersTooSmall, " below threshold, ", numClustersTooLarge, " above limit, ", m_cluster.numCluster(), " total)");
 
-                lvr2::log::info("{}{}{}", fmt::streamed("Generated "), fmt::streamed(textureCount), fmt::streamed(" textures"));
+                lvr2::log::info("{}{}{}", "Generated ", textureCount, " textures");
 
         // Holds all textures in the order determined by Texture::m_index
         StableVector<TextureHandle, Texture> combined_textures;

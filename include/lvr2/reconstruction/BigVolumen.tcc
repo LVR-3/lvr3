@@ -54,13 +54,13 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
     float overlapp_size = overlapping_size;
     //First, parse whole file to get BoundingBox and amount of points
     float ix,iy,iz;
-        lvr2::log::info("{}", fmt::streamed(" Starting BV BB"));
+        lvr2::log::info("{}", " Starting BV BB");
 
 
     m_numPoints = 0;
     size_t rsize = 0;
     LineReader lineReader(cloudPath);
-        lvr2::log::info("{}", fmt::streamed("[BigVolumen] INPUT FILE TYPE: "));
+        lvr2::log::info("{}", "[BigVolumen] INPUT FILE TYPE: ");
     if(lineReader.getFileType()==XYZ) cout << "XYZ" << endl;
     if(lineReader.getFileType()==XYZN) cout << "XYZN" << endl;
     if(lineReader.getFileType()==XYZRGB) cout << "XYZRGB" << endl;
@@ -133,7 +133,7 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
         }
     }
 
-        lvr2::log::info("{}", fmt::streamed("[BigVolumen] Finished BoundingBox"));
+        lvr2::log::info("{}", "[BigVolumen] Finished BoundingBox");
 
     //Make box side lenghts be divisible by voxel size
     float longestSide = m_bb.getLongestSide();
@@ -184,7 +184,7 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
     string comment = lvr2::timestamp.getElapsedTime() + "[BigVolumen] Building grid... ";
     lvr2::ProgressBar progress(this->m_numPoints, comment);
 
-        lvr2::log::info("{}", fmt::streamed("[BigVolumen] Starting grid generation..."));
+        lvr2::log::info("{}", "[BigVolumen] Starting grid generation...");
 
     while (lineReader.ok())
     {
@@ -311,7 +311,7 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
         } else if (lineReader.getFileType() == XYZ)
         {
             boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz>(lineReader.getNextPoints(rsize,10000000));
-            if(rsize>0)             lvr2::log::info("{}{}", fmt::streamed("[BigVolumen] RSIZE: "), fmt::streamed(rsize));
+            if(rsize>0)             lvr2::log::info("{}{}", "[BigVolumen] RSIZE: ", rsize);
             else std::cout << "[BigVolumen] rsize :0 " << " lr: " << lineReader.ok() << endl;
 //            std::cout << "RSIZE: " << rsize << endl;
             if (rsize <= 0  && !lineReader.ok())
@@ -445,7 +445,7 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
 
     // wrote everything to files
 
-        lvr2::log::info("{}", fmt::streamed("[BigVolumen] Calculating boundingboxes of cells"));
+        lvr2::log::info("{}", "[BigVolumen] Calculating boundingboxes of cells");
     for(auto it = m_gridNumPoints.begin(); it != m_gridNumPoints.end(); it++)
     {
         float cx  = m_bb.getMin().x + it->second.ix * m_voxelSize;
@@ -915,7 +915,7 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
             }
         }
     }
-        lvr2::log::info("{}", fmt::streamed("[BigVolumen] Finished serialization"));
+        lvr2::log::info("{}", "[BigVolumen] Finished serialization");
     for(auto cell = m_gridNumPoints.begin() ; cell != m_gridNumPoints.end(); cell++)
     {
         if(cell->second.ofs_points.is_open()) cell->second.ofs_points.close();

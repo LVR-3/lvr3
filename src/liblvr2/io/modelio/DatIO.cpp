@@ -85,7 +85,7 @@ ModelPtr DatIO::read(string filename, int n, int reduction)
 	if(reduction != 0 && numPoints > reduction)
 	{
 		mod_filter = (int)(numPoints / reduction);
-				lvr2::log::info("{}{}{}", fmt::streamed("Reduction mode. Reading every "), fmt::streamed(mod_filter), fmt::streamed("th point."));
+				lvr2::log::info("{}{}{}", "Reduction mode. Reading every ", mod_filter, "th point.");
 		numPoints = reduction;
 	}
 	else
@@ -156,7 +156,7 @@ ModelPtr DatIO::read(string filename, int n, int reduction)
 	pointArray = (float*)realloc(pointArray, 3 * d * sizeof(float));
 	colorArray = (unsigned char*)realloc(colorArray, 3 * d * sizeof(unsigned char));
 
-		lvr2::log::info("{}{}{}", fmt::streamed("Creating point buffer with "), fmt::streamed(d), fmt::streamed("points."));
+		lvr2::log::info("{}{}{}", "Creating point buffer with ", d, "points.");
 
 	// Setup model pointer
 	floatArr parr(pointArray);
@@ -191,7 +191,7 @@ void  DatIO::save(string filename)
 			floatArr pointArray = pointBuffer->getPointArray();
 			floatArr intensityArray = pointBuffer->getFloatArray("intensities", numIntensities, w_intensities);
 			float buffer[4];
-						lvr2::log::info("{}{}{}{}", fmt::streamed("Writing "), fmt::streamed(numPoints), fmt::streamed(" to "), fmt::streamed(filename));
+						lvr2::log::info("{}{}{}{}", "Writing ", numPoints, " to ", filename);
 			for(size_t i = 0; i < numPoints; i++)
 			{
 				memset(buffer, 0, 4 * sizeof(float));
@@ -209,7 +209,7 @@ void  DatIO::save(string filename)
 		}
 		else
 		{
-						lvr2::log::error("{}{}{}", fmt::streamed("DatIO: Unable to open file "), fmt::streamed(filename), fmt::streamed(" for writing."));
+						lvr2::log::error("{}{}{}", "DatIO: Unable to open file ", filename, " for writing.");
 		}
 	}
 }

@@ -105,7 +105,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
         }
         else
         {
-                        lvr2::log::error("{}{}{}{}", fmt::streamed("Mesh facade failed to read "), fmt::streamed(filename), fmt::streamed(": "), fmt::streamed(meshResult.error().message));
+                        lvr2::log::error("{}{}{}{}", "Mesh facade failed to read ", filename, ": ", meshResult.error().message);
         }
     }
     else if(extension == ".pts" || extension == ".3d" || extension == ".xyz" || extension == ".txt")
@@ -122,7 +122,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
         }
         else
         {
-                        lvr2::log::error("{}{}{}{}", fmt::streamed("Mesh facade failed to read "), fmt::streamed(filename), fmt::streamed(": "), fmt::streamed(meshResult.error().message));
+                        lvr2::log::error("{}{}{}{}", "Mesh facade failed to read ", filename, ": ", meshResult.error().message);
         }
     }
     else if (extension == ".las")
@@ -192,7 +192,7 @@ ModelPtr ModelFactory::readModel( std::string filename )
         }
         else
         {
-                        lvr2::log::info("{}", fmt::streamed("Given directory does not contain "));
+                        lvr2::log::info("{}", "Given directory does not contain ");
         }
     }
 
@@ -269,7 +269,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
             const auto status = lvr2::io::mesh::save(m->m_mesh, filename, {lvr2::io::mesh::Format::Ply});
             if(!status)
             {
-                                lvr2::log::error("{}{}{}{}", fmt::streamed("Mesh facade failed to save "), fmt::streamed(filename), fmt::streamed(": "), fmt::streamed(status.error().message));
+                                lvr2::log::error("{}{}{}{}", "Mesh facade failed to save ", filename, ": ", status.error().message);
             }
         }
         else
@@ -289,7 +289,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
             const auto status = lvr2::io::mesh::save(m->m_mesh, filename, {lvr2::io::mesh::Format::Obj});
             if(!status)
             {
-                                lvr2::log::error("{}{}{}{}", fmt::streamed("Mesh facade failed to save "), fmt::streamed(filename), fmt::streamed(": "), fmt::streamed(status.error().message));
+                                lvr2::log::error("{}{}{}{}", "Mesh facade failed to save ", filename, ": ", status.error().message);
             }
         }
     }
@@ -301,7 +301,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
             const auto status = lvr2::io::mesh::save(m->m_mesh, filename, {lvr2::io::mesh::Format::Stl});
             if(!status)
             {
-                                lvr2::log::error("{}{}{}{}", fmt::streamed("Mesh facade failed to save "), fmt::streamed(filename), fmt::streamed(": "), fmt::streamed(status.error().message));
+                                lvr2::log::error("{}{}{}{}", "Mesh facade failed to save ", filename, ": ", status.error().message);
             }
         }
     }
@@ -331,7 +331,7 @@ void ModelFactory::saveModel( ModelPtr m, std::string filename)
     }
     else if(!handledByMeshFacade)
     {
-                lvr2::log::info("{}{}{}", fmt::streamed("File format "), fmt::streamed(extension), fmt::streamed(" is currently not supported."));
+                lvr2::log::info("{}{}{}", "File format ", extension, " is currently not supported.");
     }
 
 }

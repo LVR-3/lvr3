@@ -317,7 +317,7 @@ PointBufferPtr PanoramaNormals::computeNormals(int width, int height, bool inter
 //        cout << normals.size() << " " << pts.size() << endl;
 //    }
 
-        lvr2::log::info("{}", fmt::streamed("Finished normal estimation"));
+        lvr2::log::info("{}", "Finished normal estimation");
 
     if(in_buffer->hasColors())
     {

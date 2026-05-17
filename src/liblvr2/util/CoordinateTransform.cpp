@@ -60,12 +60,12 @@ void convert(COORD_SYSTEM from, COORD_SYSTEM to, float* point)
 		}
 		else
 		{
-						lvr2::log::info("{}", fmt::streamed("Target coordinate system not supported."));
+						lvr2::log::info("{}", "Target coordinate system not supported.");
 		}
 	}
 	else
 	{
-				lvr2::log::info("{}", fmt::streamed("Source coordinate system not supported."));
+				lvr2::log::info("{}", "Source coordinate system not supported.");
 	}
 }
 

@@ -39,7 +39,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const dmc_reconstruction::Options& o
     // Parse loaded data
     if (!model)
     {
-                lvr2::log::error("{}{}", fmt::streamed("IO Error: Unable to parse "), fmt::streamed(options.getInputFileName()));
+                lvr2::log::error("{}{}", "IO Error: Unable to parse ", options.getInputFileName());
         return nullptr;
     }
 
@@ -52,7 +52,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const dmc_reconstruction::Options& o
     // Create point set surface object
     if(pcm_name == "PCL")
     {
-                lvr2::log::info("{}", fmt::streamed("Using PCL as point cloud manager is not implemented yet!"));
+                lvr2::log::info("{}", "Using PCL as point cloud manager is not implemented yet!");
         panic_unimplemented("PCL as point cloud manager");
     }
     else if(pcm_name == "FLANN" || pcm_name == "NANOFLANN")
@@ -81,8 +81,8 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(const dmc_reconstruction::Options& o
     }
     else
     {
-                lvr2::log::error("{}", fmt::streamed("Unable to create PointCloudManager."));
-                lvr2::log::info("{}{}{}", fmt::streamed("Unknown option '"), fmt::streamed(pcm_name), fmt::streamed("'."));
+                lvr2::log::error("{}", "Unable to create PointCloudManager.");
+                lvr2::log::info("{}{}{}", "Unknown option '", pcm_name, "'.");
         return nullptr;
     }
 
@@ -156,7 +156,7 @@ int main(int argc, char** argv)
     m = ModelPtr(new Model(meshBuffer));
     ModelFactory::saveModel(m, "deep_mesh.ply");
 
-        lvr2::log::info("{}", fmt::streamed("Finished reconstruction"));
+        lvr2::log::info("{}", "Finished reconstruction");
 
     return 0;
 }

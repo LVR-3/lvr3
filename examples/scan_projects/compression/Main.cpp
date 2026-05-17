@@ -15,7 +15,7 @@ namespace
 
 void reportStorageError(const std::string& action, const lvr2::io::storage::Error& error)
 {
-        lvr2::log::warning("{}{}{}", fmt::streamed(action), fmt::streamed(" failed: "), fmt::streamed(error.message));
+        lvr2::log::warning("{}{}{}", action, " failed: ", error.message);
 }
 
 void hdf5CompressedExample(ScanProjectPtr sp, size_t compressionLevel)
@@ -25,7 +25,7 @@ void hdf5CompressedExample(ScanProjectPtr sp, size_t compressionLevel)
     auto saveOptions = lvr2::io::scan::SaveOptions::hdf5();
     saveOptions.hdf5Options.compressionLevel = static_cast<unsigned int>(compressionLevel);
 
-        lvr2::log::debug("{}{}{}", fmt::streamed("Save complete scan project compressed to '"), fmt::streamed(filename), fmt::streamed("'"));
+        lvr2::log::debug("{}{}{}", "Save complete scan project compressed to '", filename, "'");
     auto saved = lvr2::io::scan::save_project(filename, *sp, saveOptions);
     if (!saved)
     {
@@ -33,7 +33,7 @@ void hdf5CompressedExample(ScanProjectPtr sp, size_t compressionLevel)
         return;
     }
 
-        lvr2::log::debug("{}", fmt::streamed("Load scan project into new buffer"));
+        lvr2::log::debug("{}", "Load scan project into new buffer");
     auto loadOptions = lvr2::io::scan::LoadOptions::hdf5();
     loadOptions.loadMode = lvr2::io::storage::LoadMode::Eager;
     auto loaded = lvr2::io::scan::load_project(filename, loadOptions);
@@ -45,11 +45,11 @@ void hdf5CompressedExample(ScanProjectPtr sp, size_t compressionLevel)
 
     if (equal(sp, loaded.value()))
     {
-                lvr2::log::debug("{}", fmt::streamed("HDF5 ProjectStore saves and loads correctly."));
+                lvr2::log::debug("{}", "HDF5 ProjectStore saves and loads correctly.");
     }
     else
     {
-                lvr2::log::warning("{}", fmt::streamed("Something went wrong. Saved and loaded scan project are not equal"));
+                lvr2::log::warning("{}", "Something went wrong. Saved and loaded scan project are not equal");
     }
 }
 
@@ -59,16 +59,16 @@ int main(int argc, char** argv)
 {
     lvr2::log::set_level(lvr2::log::Level::debug);
 
-        lvr2::log::info("{}", fmt::streamed("ScanProjects Compression"));
+        lvr2::log::info("{}", "ScanProjects Compression");
 
-        lvr2::log::debug("{}", fmt::streamed("Generating dataset, wait."));
+        lvr2::log::debug("{}", "Generating dataset, wait.");
     ScanProjectPtr sp = dummyScanProjectStorage();
 
-        lvr2::log::info("{}", fmt::streamed("Writing dummy scan project with different HDF5 compression levels"));
+        lvr2::log::info("{}", "Writing dummy scan project with different HDF5 compression levels");
 
     for (size_t i = 0; i < 10; i++)
     {
-                lvr2::log::info("{}{}", fmt::streamed("Compression Level: "), fmt::streamed(i));
+                lvr2::log::info("{}{}", "Compression Level: ", i);
         hdf5CompressedExample(sp, i);
     }
 

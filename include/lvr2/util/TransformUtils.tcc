@@ -201,8 +201,8 @@ void transformAndReducePointCloud(
             }
             else
             {
-                                lvr2::log::debug("{}{}{}{}", fmt::streamed("[TransformAndReducePointCloud] Cntr: "), fmt::streamed((cntr * 3)), fmt::streamed(" targetSize: "), fmt::streamed(targetSize));
-                                lvr2::log::info("{}{}{}{}", fmt::streamed("TransformAndReducePointCloud] nip : "), fmt::streamed(n_ip), fmt::streamed(" modulo "), fmt::streamed(modulo));
+                                lvr2::log::debug("{}{}{}{}", "[TransformAndReducePointCloud] Cntr: ", (cntr * 3), " targetSize: ", targetSize);
+                                lvr2::log::info("{}{}{}{}", "TransformAndReducePointCloud] nip : ", n_ip, " modulo ", modulo);
                 break;
             }
 
@@ -231,7 +231,7 @@ void transformAndReducePointCloud(
 template<typename T>
 void transformPointCloud(ModelPtr model, const Transform<T>& transformation)
 {
-        lvr2::log::info("{}", fmt::streamed("Transforming points..."));
+        lvr2::log::info("{}", "Transforming points...");
 
     size_t numPoints = model->m_pointCloud->numPoints();
     floatArr arr = model->m_pointCloud->getPointArray();
@@ -312,7 +312,7 @@ void transformModel(ModelPtr model, const Transform<T> &transformation)
     {
         PointBufferPtr p_buffer = model->m_pointCloud;
 
-                lvr2::log::info("{}", fmt::streamed("[TransformModel] Transforming points"));
+                lvr2::log::info("{}", "[TransformModel] Transforming points");
         FloatChannelOptional points = p_buffer->getFloatChannel("points");
 
         #pragma omp parallel for
@@ -327,7 +327,7 @@ void transformModel(ModelPtr model, const Transform<T> &transformation)
 
         if (normals)
         {
-                        lvr2::log::info("{}", fmt::streamed("[TransformModel] Transforming normals..."));
+                        lvr2::log::info("{}", "[TransformModel] Transforming normals...");
             Eigen::Matrix<T, 3, 3> rotation = transformation.template block<3, 3>(0, 0);
 
             #pragma omp parallel for
@@ -350,7 +350,7 @@ void transformModel(ModelPtr model, const Transform<T> &transformation)
     // Get mesh buffer
     if (model->m_mesh)
     {
-                lvr2::log::info("{}", fmt::streamed("[TransformModel] Transforming vertices..."));
+                lvr2::log::info("{}", "[TransformModel] Transforming vertices...");
 
         MeshBufferPtr m_buffer = model->m_mesh;
         FloatChannelOptional points = m_buffer->getFloatChannel("vertices");

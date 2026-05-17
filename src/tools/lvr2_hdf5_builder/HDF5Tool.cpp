@@ -163,17 +163,17 @@ int main( int argc, char ** argv )
         {
             // Read transformation
             path matrix_file = dataDir/path("scan_" + number + "_transformation.txt");
-                        lvr2::log::info("{}{}", fmt::streamed("Reading transformation: "), fmt::streamed(matrix_file.string()));
+                        lvr2::log::info("{}{}", "Reading transformation: ", matrix_file.string());
             Transformd transformation = loadFromFile<double>(matrix_file.string());
 
             // Read scan data
-                        lvr2::log::info("{}{}", fmt::streamed("Reading scan data: "), fmt::streamed(it));
+                        lvr2::log::info("{}{}", "Reading scan data: ", it.string());
             ModelPtr model = ModelFactory::readModel(it.string());
 
             // Compute bounding box
             PointBufferPtr pointCloud = model->m_pointCloud;
 
-                        lvr2::log::info("{}", fmt::streamed("Calculating bounding box..."));
+                        lvr2::log::info("{}", "Calculating bounding box...");
             BoundingBox<BaseVector<float> > bBox;
             floatArr points = pointCloud->getPointArray();
             for(int i = 0; i < pointCloud->numPoints(); i++)
@@ -190,7 +190,7 @@ int main( int argc, char ** argv )
             data->m_boundingBox = bBox;
             data->m_registration = transformation;
 
-                        lvr2::log::info("{}", fmt::streamed(" Adding raw scan data"));
+                        lvr2::log::info("{}", " Adding raw scan data");
             // Add objects to hdf5 file
             hdf5.addRawScan(scanNr, data);
 
@@ -224,7 +224,7 @@ int main( int argc, char ** argv )
                 {options.getHSPChunk0(), options.getHSPChunk1(), options.getHSPChunk2()};
 
             sprintf(groupName, "/raw/spectral/position_%05d", scanNr);
-                        lvr2::log::info("{}{}{}{}{}{}{}{}", fmt::streamed("Adding spectral dataset to "), fmt::streamed(groupName), fmt::streamed(" with dims "), fmt::streamed(options.getHSPChunk0()), fmt::streamed(" "), fmt::streamed(options.getHSPChunk1()), fmt::streamed(" "), fmt::streamed(options.getHSPChunk2()));
+                        lvr2::log::info("{}{}{}{}{}{}{}{}", "Adding spectral dataset to ", groupName, " with dims ", options.getHSPChunk0(), " ", options.getHSPChunk1(), " ", options.getHSPChunk2());
 
             hdf5.addArray(groupName, "spectral", dim, chunks, ucharArr(cube));
 
@@ -233,7 +233,7 @@ int main( int argc, char ** argv )
         }
         else
         {
-                        lvr2::log::info("{}{}{}", fmt::streamed("Will not add data from "), fmt::streamed(ply_file_name), fmt::streamed(". Spectral data is not consistent."));
+                        lvr2::log::info("{}{}{}", "Will not add data from ", ply_file_name, ". Spectral data is not consistent.");
         }
     }
 

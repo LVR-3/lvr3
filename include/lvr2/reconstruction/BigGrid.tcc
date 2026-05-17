@@ -44,9 +44,24 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 
 namespace lvr2
 {
+
+namespace detail
+{
+
+template<typename T>
+std::string bigGridDebugSummary(const T& value)
+{
+    // Local adapter for stream-only grid diagnostics such as Eigen indices.
+    std::ostringstream stream;
+    stream << value;
+    return stream.str();
+}
+
+} // namespace detail
 
 template <typename BaseVecT>
 BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
@@ -64,7 +79,7 @@ BigGrid<BaseVecT>::BigGrid(std::vector<std::string> cloudPath,
 
     // First, parse whole file to get BoundingBox and amount of points
     float ix, iy, iz;
-        lvr2::log::info("{}", fmt::streamed("[BigGrid] Computing Bounding Box..."));
+        lvr2::log::info("{}", "[BigGrid] Computing Bounding Box...");
     m_numPoints = 0;
 
     LineReader lineReader(cloudPath);
@@ -212,7 +227,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
 {
     if (project->changed.size() <= 0)
     {
-                lvr2::log::warning("{}", fmt::streamed("[BigGrid] No new scans to be added!"));
+                lvr2::log::warning("{}", "[BigGrid] No new scans to be added!");
         return;
     }
 
@@ -234,7 +249,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
         ScanPositionPtr pos = project->project->positions.at(i);
         if (!pos || pos->lidars.empty())
         {
-                        lvr2::log::warning("{}{}{}", fmt::streamed("[BigGrid] Scan position "), fmt::streamed(i), fmt::streamed(" is empty"));
+                        lvr2::log::warning("{}{}{}", "[BigGrid] Scan position ", i, " is empty");
             ignoredOrInvalid[i] = true;
             ++progressLoading;
             continue;
@@ -243,7 +258,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
         LIDARPtr lidar = pos->lidars[0];
         if (lidar->scans.empty() || !lidar->scans[0])
         {
-                        lvr2::log::info("{}", fmt::streamed("[BigGrid] Loading points with ProjectStore"));
+                        lvr2::log::info("{}", "[BigGrid] Loading points with ProjectStore");
             ScanPtr scan;
             if (project->kernel)
             {
@@ -262,7 +277,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
             }
             if (!scan)
             {
-                                lvr2::log::error("{}{}", fmt::streamed("[BigGrid] Unable to get data for scan position "), fmt::streamed(i));
+                                lvr2::log::error("{}{}", "[BigGrid] Unable to get data for scan position ", i);
                 ignoredOrInvalid[i] = true;
                 ++progressLoading;
                 continue;
@@ -342,7 +357,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
         }
         if (!project->changed[i] && m_partialbb.isValid() && !m_partialbb.overlap(scanBoxes[i]))
         {
-                        lvr2::log::warning("{}{}{}", fmt::streamed("[BigGrid] Scan No. "), fmt::streamed(i), fmt::streamed(" ignored!"));
+                        lvr2::log::warning("{}{}{}", "[BigGrid] Scan No. ", i, " ignored!");
             ignoredOrInvalid[i] = true;
             continue;
         }
@@ -386,9 +401,9 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
     }
     if (erased > 0)
     {
-                lvr2::log::info("{}{}{}{}{}", fmt::streamed("[BigGrid] Removed "), fmt::streamed(erased), fmt::streamed(" points from "), fmt::streamed((oldSize - m_cells.size())), fmt::streamed(" tiny cells."));
+                lvr2::log::info("{}{}{}{}{}", "[BigGrid] Removed ", erased, " points from ", (oldSize - m_cells.size()), " tiny cells.");
 
-                lvr2::log::info("{}{}{}{}{}", fmt::streamed("[BigGrid] "), fmt::streamed(m_numPoints), fmt::streamed(" in "), fmt::streamed(m_cells.size()), fmt::streamed(" cells remaining"));
+                lvr2::log::info("{}{}{}{}{}", "[BigGrid] ", m_numPoints, " in ", m_cells.size(), " cells remaining");
     }
 
     boost::iostreams::mapped_file_params mmfparam;
@@ -456,7 +471,7 @@ BigGrid<BaseVecT>::BigGrid(float voxelsize, ScanProjectEditMarkPtr project, cons
         {
             if (cell.inserted != cell.size)
             {
-                                lvr2::log::info("{}{}{}{}{}{}", fmt::streamed("[BigGrid] Cell "), fmt::streamed(index.transpose()), fmt::streamed(": "), fmt::streamed(cell.inserted), fmt::streamed("/"), fmt::streamed(cell.size));
+                                lvr2::log::info("{}{}{}{}{}{}", "[BigGrid] Cell ", detail::bigGridDebugSummary(index.transpose()), ": ", cell.inserted, "/", cell.size);
                 failed = true;
             }
         }
@@ -497,15 +512,15 @@ BigGrid<BaseVecT>::BigGrid(std::string path)
     size_t gridSize;
     fread(ifs, gridSize);
 
-        lvr2::log::info("{}", fmt::streamed("[BigGrid] Loading Exisiting Grid: "));
-        lvr2::log::info("{}{}", fmt::streamed("[BigGrid] m_numPoints: \t\t\t"), fmt::streamed(m_numPoints));
-        lvr2::log::info("{}{}", fmt::streamed("[BigGrid] m_pointBufferSize: \t\t\t"), fmt::streamed(m_pointBufferSize));
-        lvr2::log::info("{}{}", fmt::streamed("[BigGrid] m_voxelSize: \t\t\t"), fmt::streamed(m_voxelSize));
-        lvr2::log::info("{}{}", fmt::streamed("[BigGrid] m_extrude: \t\t\t"), fmt::streamed(m_extrude));
-        lvr2::log::info("{}{}", fmt::streamed("[BigGrid] m_hasNormal: \t\t\t"), fmt::streamed(m_hasNormal));
-        lvr2::log::info("{}{}", fmt::streamed("[BigGrid] m_scale: \t\t\t"), fmt::streamed(m_scale));
-        lvr2::log::info("{}{}", fmt::streamed("[BigGrid] m_bb: \t\t\t"), fmt::streamed(m_bb));
-        lvr2::log::info("{}{}", fmt::streamed("[BigGrid] GridSize: \t\t\t"), fmt::streamed(gridSize));
+        lvr2::log::info("{}", "[BigGrid] Loading Exisiting Grid: ");
+        lvr2::log::info("{}{}", "[BigGrid] m_numPoints: \t\t\t", m_numPoints);
+        lvr2::log::info("{}{}", "[BigGrid] m_pointBufferSize: \t\t\t", m_pointBufferSize);
+        lvr2::log::info("{}{}", "[BigGrid] m_voxelSize: \t\t\t", m_voxelSize);
+        lvr2::log::info("{}{}", "[BigGrid] m_extrude: \t\t\t", m_extrude);
+        lvr2::log::info("{}{}", "[BigGrid] m_hasNormal: \t\t\t", m_hasNormal);
+        lvr2::log::info("{}{}", "[BigGrid] m_scale: \t\t\t", m_scale);
+        lvr2::log::info("{}{}", "[BigGrid] m_bb: \t\t\t", detail::bigGridDebugSummary(m_bb));
+        lvr2::log::info("{}{}", "[BigGrid] GridSize: \t\t\t", detail::bigGridDebugSummary(gridSize));
 
     for (size_t i = 0; i < gridSize; i++)
     {

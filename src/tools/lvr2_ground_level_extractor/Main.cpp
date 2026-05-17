@@ -31,7 +31,7 @@ PointsetSurfacePtr<BaseVecT> loadPointCloud(string data)
     ModelPtr baseModel = ModelFactory::readModel(data);
     if (!baseModel)
     {
-                lvr2::log::error("{}{}{}", fmt::streamed(timestamp.getElapsedTime()), fmt::streamed("IO Error: Unable to parse "), fmt::streamed(data));
+                lvr2::log::error("{}{}{}", timestamp.getElapsedTime(), "IO Error: Unable to parse ", data);
         return nullptr;
     }
 
@@ -265,7 +265,7 @@ int main(int argc, char* argv[])
     auto surface = loadPointCloud<Vec>(options.getInputFileName());
     if(surface == nullptr)
     {
-                lvr2::log::error("{}{}{}", fmt::streamed(timestamp.getElapsedTime()), fmt::streamed("IO Error: Unable to interpret "), fmt::streamed(options.getInputFileName()));
+                lvr2::log::error("{}{}{}", timestamp.getElapsedTime(), "IO Error: Unable to interpret ", options.getInputFileName());
         return 0;
     }
     PointBufferPtr baseBuffer = surface->pointBuffer();
@@ -294,7 +294,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-                lvr2::log::error("{}{}{}", fmt::streamed(timestamp.getElapsedTime()), fmt::streamed("IO Error: Unable to interpret "), fmt::streamed(options.getExtractionMethod()));
+                lvr2::log::error("{}{}{}", timestamp.getElapsedTime(), "IO Error: Unable to interpret ", options.getExtractionMethod());
         return 0;
     }
 
@@ -315,7 +315,7 @@ int main(int argc, char* argv[])
         input.open(options.getInputReferencePairs());
         if(input.fail())
         {
-                        lvr2::log::error("{}{}{}", fmt::streamed(timestamp.getElapsedTime()), fmt::streamed("IO Error: Unable to read "), fmt::streamed(options.getInputReferencePairs()));
+                        lvr2::log::error("{}{}{}", timestamp.getElapsedTime(), "IO Error: Unable to read ", options.getInputReferencePairs());
             return 0;
         }
         std::getline(input, currenSystem);
@@ -351,7 +351,7 @@ int main(int argc, char* argv[])
                 GDALDatasetH src = GDALOpen(options.getInputGeoTIFF().c_str(),GA_ReadOnly);
                 if(src == NULL)
                 {
-                                        lvr2::log::error("{}{}{}", fmt::streamed(timestamp.getElapsedTime()), fmt::streamed("IO Error: Unable to read "), fmt::streamed(options.getInputGeoTIFF()));
+                                        lvr2::log::error("{}{}{}", timestamp.getElapsedTime(), "IO Error: Unable to read ", options.getInputGeoTIFF());
                 }
                 else
                 {
@@ -402,7 +402,7 @@ int main(int argc, char* argv[])
     // =======================================================================
     // Extract ground from the point cloud
     // =======================================================================
-        lvr2::log::info("{}{}", fmt::streamed(timestamp.getElapsedTime()), fmt::streamed("Start"));
+        lvr2::log::info("{}{}", timestamp.getElapsedTime(), "Start");
     if(mode == 0)
     {
         std::cout << "Moving Average" << std::endl;
@@ -420,7 +420,7 @@ int main(int argc, char* argv[])
         thresholdMethod<VecD,double>(mesh,usedArr,usedSurface,options.getResolution(),tree,options.getSWSize(),options.getSWThreshold(),options.getLWSize(),options.getLWThreshold(),
             options.getSlopeThreshold(),affineMatrix);
     }
-        lvr2::log::info("{}{}", fmt::streamed(timestamp.getElapsedTime()), fmt::streamed("End"));
+        lvr2::log::info("{}{}", timestamp.getElapsedTime(), "End");
 
     // =======================================================================
     // Setup LVR_2 Function to allow the export of the Mesh as obj/ply
@@ -452,16 +452,16 @@ int main(int argc, char* argv[])
     auto buffer = finalize.apply(mesh);
     buffer->addIntAtomic(1, "mesh_save_textures");
     buffer->addIntAtomic(1, "mesh_texture_image_extension");
-        lvr2::log::info("{}{}", fmt::streamed(timestamp.getElapsedTime()), fmt::streamed("Setting Model"));
+        lvr2::log::info("{}{}", timestamp.getElapsedTime(), "Setting Model");
     auto m = ModelPtr(new Model(buffer));
 
     // =======================================================================
     // Export Files as PLY and OBJ with a JPEG as Texture
     // =======================================================================
-        lvr2::log::info("{}{}", fmt::streamed(timestamp.getElapsedTime()), fmt::streamed("Saving Model as ply"));
+        lvr2::log::info("{}{}", timestamp.getElapsedTime(), "Saving Model as ply");
     ModelFactory::saveModel(m,options.getOutputFileName() + ".ply");
 
-        lvr2::log::info("{}{}", fmt::streamed(timestamp.getElapsedTime()), fmt::streamed("Saving Model as obj"));
+        lvr2::log::info("{}{}", timestamp.getElapsedTime(), "Saving Model as obj");
     ModelFactory::saveModel(m,options.getOutputFileName() + ".obj");
 
     if(!options.getInputReferencePairs().empty())
@@ -474,7 +474,7 @@ int main(int argc, char* argv[])
         }
         else
         {
-                        lvr2::log::info("{}{}{}", fmt::streamed(timestamp.getElapsedTime()), fmt::streamed("Transformation cannot be applied without destroying the model. Full Transformation can be found in "), fmt::streamed(options.getOutputFileName() + "_transformmatrix.txt"));
+                        lvr2::log::info("{}{}{}", timestamp.getElapsedTime(), "Transformation cannot be applied without destroying the model. Full Transformation can be found in ", options.getOutputFileName() + "_transformmatrix.txt");
             file << "Full Transformation\n" << fullAffineMatrix;
         }
         file.close();

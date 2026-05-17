@@ -65,7 +65,7 @@ int main(int argc, char** argv)
 
     if(numPoints <= 0)
     {
-                lvr2::log::info("{}", fmt::streamed("File contains no points. Exiting."));
+                lvr2::log::info("{}", "File contains no points. Exiting.");
     }
 
     // Check color and intensity options
@@ -79,9 +79,9 @@ int main(int argc, char** argv)
     bool convert = options.convertRemission();
 
     // Print stats
-        lvr2::log::info("{}{}", fmt::streamed("Read colors\t\t: "), fmt::streamed(readColor));
-        lvr2::log::info("{}{}", fmt::streamed("Read intensities\t\t: "), fmt::streamed(readIntensity));
-        lvr2::log::info("{}{}", fmt::streamed("Convert intensities\t: "), fmt::streamed(convert));
+        lvr2::log::info("{}{}", "Read colors\t\t: ", readColor);
+        lvr2::log::info("{}{}", "Read intensities\t\t: ", readIntensity);
+        lvr2::log::info("{}{}", "Convert intensities\t: ", convert);
 
     // Alloc buffers
     floatArr points(new float[3 * numPoints]);

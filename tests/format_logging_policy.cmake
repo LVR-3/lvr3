@@ -24,6 +24,8 @@ set(_logging_policy_banned_patterns
   "lvr2::Logger\\b"
   "\\bLogger[ \t\r\n]*&"
   "lvr2::endl\\b"
+  "fmt::streamed[ \t\r\n]*\\("
+  "#[ \t]*include[ \t]*[<\"]fmt/ostream\\.h[>\"]"
   "\\bLOG[ \t\r\n]*\\."
   "LOG[ \t\r\n]*\\([ \t\r\n]*Logger::"
   "std::cout[ \t\r\n]*<<[ \t\r\n]*(lvr2::)?timestamp\\b"

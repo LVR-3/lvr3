@@ -80,9 +80,9 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
     if(!this->m_searchTree)
     {
        this->m_searchTree = getSearchTree<BaseVecT>("flann", buffer);
-              lvr2::log::warning("{}{}{}", fmt::streamed("[AdaptiveKSearchSurface] No valid search tree specified ("), fmt::streamed(searchTreeName), fmt::streamed(")."));
-              lvr2::log::warning("{}", fmt::streamed("[AdaptiveKSearchSurface] Maybe you did not install the required library."));
-              lvr2::log::warning("{}", fmt::streamed("[AdaptiveKSearchSurface] Defaulting to flann."));
+              lvr2::log::warning("{}{}{}", "[AdaptiveKSearchSurface] No valid search tree specified (", searchTreeName, ").");
+              lvr2::log::warning("{}", "[AdaptiveKSearchSurface] Maybe you did not install the required library.");
+              lvr2::log::warning("{}", "[AdaptiveKSearchSurface] Defaulting to flann.");
     }
 
     if(posefile != "")
@@ -96,11 +96,11 @@ AdaptiveKSearchSurface<BaseVecT>::AdaptiveKSearchSurface(
 template<typename BaseVecT>
 void AdaptiveKSearchSurface<BaseVecT>::parseScanPoses(string posefile)
 {
-        lvr2::log::info("{}", fmt::streamed("[AdaptiveKSearchSurface] Parsing scan poses."));
+        lvr2::log::info("{}", "[AdaptiveKSearchSurface] Parsing scan poses.");
     std::ifstream in(posefile.c_str());
     if (!in.good())
     {
-            lvr2::log::warning("{}{}", fmt::streamed("[AdaptiveKSearchSurface] Unable to open scan pose file "), fmt::streamed(posefile));
+            lvr2::log::warning("{}{}", "[AdaptiveKSearchSurface] Unable to open scan pose file ", posefile);
       return;
     }
 
@@ -126,14 +126,14 @@ void AdaptiveKSearchSurface<BaseVecT>::parseScanPoses(string posefile)
         loader->setPointArray(points, m_scanPoses.size());
         size_t n = m_scanPoses.size();
 
-                lvr2::log::info("{}{}{}{}{}", fmt::streamed("[AdaptiveKSearchSurface]  Creating pose search tree("), fmt::streamed(m_searchTreeName), fmt::streamed(") with "), fmt::streamed(n), fmt::streamed(" poses."));
+                lvr2::log::info("{}{}{}{}{}", "[AdaptiveKSearchSurface]  Creating pose search tree(", m_searchTreeName, ") with ", n, " poses.");
 
         this->m_poseTree = getSearchTree<BaseVecT>(m_searchTreeName, loader);
 
         if( !this->m_poseTree )
         {
-                        lvr2::log::warning("{}", fmt::streamed("[AdaptiveKSearchSurface] No Valid Searchtree class specified!"));
-                        lvr2::log::warning("{}{}", fmt::streamed("[AdaptiveKSearchSurface] Class: "), fmt::streamed(m_searchTreeName));
+                        lvr2::log::warning("{}", "[AdaptiveKSearchSurface] No Valid Searchtree class specified!");
+                        lvr2::log::warning("{}{}", "[AdaptiveKSearchSurface] Class: ", m_searchTreeName);
         }
     }
 }
@@ -141,11 +141,11 @@ void AdaptiveKSearchSurface<BaseVecT>::parseScanPoses(string posefile)
 template<typename BaseVecT>
 void AdaptiveKSearchSurface<BaseVecT>::init()
 {
-        lvr2::log::info("{}", fmt::streamed("[AdaptiveKSearchSurface] Dataset statistics: "));
-        lvr2::log::info("{}{}", fmt::streamed("[AdaptiveKSearchSurface] Num points: "), fmt::streamed(m_points.numElements()));
-        lvr2::log::info("{}{}{}{}{}{}", fmt::streamed("[AdaptiveKSearchSurface] kn, ki, kd: "), fmt::streamed(this->m_kn), fmt::streamed(", "), fmt::streamed(this->m_ki), fmt::streamed(", "), fmt::streamed(this->m_kd));
+        lvr2::log::info("{}", "[AdaptiveKSearchSurface] Dataset statistics: ");
+        lvr2::log::info("{}{}", "[AdaptiveKSearchSurface] Num points: ", m_points.numElements());
+        lvr2::log::info("{}{}{}{}{}{}", "[AdaptiveKSearchSurface] kn, ki, kd: ", this->m_kn, ", ", this->m_ki, ", ", this->m_kd);
     const auto& min = this->m_boundingBox.getMin(), max = this->m_boundingBox.getMax();
-        lvr2::log::info("{}{}{}{}{}{}{}{}{}{}{}{}{}", fmt::streamed("[AdaptiveKSearchSurface] BB of points: ["), fmt::streamed(min.x), fmt::streamed(", "), fmt::streamed(min.y), fmt::streamed(", "), fmt::streamed(min.z), fmt::streamed("] - ["), fmt::streamed(max.x), fmt::streamed(", "), fmt::streamed(max.y), fmt::streamed(", "), fmt::streamed(max.z), fmt::streamed("]"));
+        lvr2::log::info("{}{}{}{}{}{}{}{}{}{}{}{}{}", "[AdaptiveKSearchSurface] BB of points: [", min.x, ", ", min.y, ", ", min.z, "] - [", max.x, ", ", max.y, ", ", max.z, "]");
 
     this->m_flipPoint = this->m_boundingBox.getCentroid();
 }
@@ -156,7 +156,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
     int k_0 = this->m_kn;
     const size_t numPoints = m_points.numElements();
 
-        lvr2::log::info("{}", fmt::streamed("[AdaptiveKSearchSurface] Initializing normal array..."));
+        lvr2::log::info("{}", "[AdaptiveKSearchSurface] Initializing normal array...");
 
     floatArr normals = floatArr(new float[numPoints * 3]);
     this->m_pointBuffer->setNormalArray(normals, numPoints);
@@ -164,7 +164,7 @@ void AdaptiveKSearchSurface<BaseVecT>::calculateSurfaceNormals()
     const int max_threads = omp_get_max_threads();
     const int normal_estimation_threads = max_threads;
 
-        lvr2::log::info("{}{}{}{}{}", fmt::streamed("[AdaptiveKSearchSurface] Estimating "), fmt::streamed(numPoints), fmt::streamed(" Surface Normals using "), fmt::streamed(normal_estimation_threads), fmt::streamed(" threads ..."));
+        lvr2::log::info("{}{}{}{}{}", "[AdaptiveKSearchSurface] Estimating ", numPoints, " Surface Normals using ", normal_estimation_threads, " threads ...");
     // Create a monitor counter
     lvr2::Monitor monitor(lvr2::LogLevel::info, "[AdaptiveKSearchSurface] Estimating Normals", numPoints);
 
@@ -299,7 +299,7 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
     const int max_threads = omp_get_max_threads();
     const int normal_interpolation_threads = max_threads;
 
-        lvr2::log::info("{}{}{}{}{}", fmt::streamed("[AdaptiveKSearchSurface] Interpolating "), fmt::streamed(numPoints), fmt::streamed(" Surface Normals using "), fmt::streamed(normal_interpolation_threads), fmt::streamed(" threads ..."));
+        lvr2::log::info("{}{}{}{}{}", "[AdaptiveKSearchSurface] Interpolating ", numPoints, " Surface Normals using ", normal_interpolation_threads, " threads ...");
     // Create monitor output
     lvr2::Monitor monitor(lvr2::LogLevel::info, "[AdaptiveKSearchSurface] Interpolating normals", numPoints);
 
@@ -393,7 +393,7 @@ void AdaptiveKSearchSurface<BaseVecT>::interpolateSurfaceNormals()
     monitor.terminate();
     // std::cout << std::endl;
 
-        lvr2::log::info("{}", fmt::streamed("[AdaptiveKSearchSurface] Copying normals..."));
+        lvr2::log::info("{}", "[AdaptiveKSearchSurface] Copying normals...");
     for(size_t i = 0; i < numPoints; i++){
         normals[i] = tmp[i];
     }

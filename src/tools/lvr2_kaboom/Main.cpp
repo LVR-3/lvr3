@@ -55,15 +55,15 @@ int main(int argc, char** argv) {
 
     if (options.getTargetSize() && options.getVoxelSize())
     {
-                lvr2::log::warning("{}", fmt::streamed("Warning: Octree reduction and random reduction requested."));
-                lvr2::log::info("{}", fmt::streamed("Please chose set either octree voxel size with -v or target "));
-                lvr2::log::info("{}", fmt::streamed("size with random reduction using --targetSize."));
+                lvr2::log::warning("{}", "Warning: Octree reduction and random reduction requested.");
+                lvr2::log::info("{}", "Please chose set either octree voxel size with -v or target ");
+                lvr2::log::info("{}", "size with random reduction using --targetSize.");
         return 0;
     }
 
     if(options.getInputFile() != "")
     {
-                lvr2::log::info("{}{}{}", fmt::streamed("Reading '"), fmt::streamed(options.getInputFile()), fmt::streamed("."));
+                lvr2::log::info("{}{}{}", "Reading '", options.getInputFile(), ".");
         ModelPtr model = ModelFactory::readModel(options.getInputFile());
         if(model)
         {
@@ -73,12 +73,12 @@ int main(int argc, char** argv) {
             // Reduce if requested using the specified technique
             if(options.getTargetSize())
             {
-                                lvr2::log::info("{}{}{}", fmt::streamed("Random sampling "), fmt::streamed(options.getTargetSize()), fmt::streamed(" points."));
+                                lvr2::log::info("{}{}{}", "Random sampling ", options.getTargetSize(), " points.");
                 result = subSamplePointBuffer(buffer, options.getTargetSize());
             }
             else if(options.getVoxelSize())
             {
-                                lvr2::log::info("{}{}", fmt::streamed("Octree reduction with voxel size "), fmt::streamed(options.getVoxelSize()));
+                                lvr2::log::info("{}{}", "Octree reduction with voxel size ", options.getVoxelSize());
                 RandomSampleOctreeReduction oct(buffer, options.getVoxelSize(), 5);
                 result = oct.getReducedPoints();
             }
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
             // Convert coordinates of result buffer is nessessary
             if(options.convertToLVR())
             {
-                                lvr2::log::info("{}", fmt::streamed("Converting from SLAM6D to LVR coordinates"));
+                                lvr2::log::info("{}", "Converting from SLAM6D to LVR coordinates");
                 slamToLVRInPlace(result);
             }
 
@@ -100,12 +100,12 @@ int main(int argc, char** argv) {
                 targetFileName = options.getOutputFile();
             }
 
-                        lvr2::log::info("{}{}{}", fmt::streamed("Saving '"), fmt::streamed(targetFileName), fmt::streamed("'"));
+                        lvr2::log::info("{}{}{}", "Saving '", targetFileName, "'");
             ModelFactory::saveModel(ModelPtr(new Model(result)), targetFileName);
         }
         else
         {
-                        lvr2::log::error("{}{}{}", fmt::streamed("Error: Could not load '"), fmt::streamed(options.getInputFile()), fmt::streamed("'."));
+                        lvr2::log::error("{}{}{}", "Error: Could not load '", options.getInputFile(), "'.");
         }
 
     }

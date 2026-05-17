@@ -344,7 +344,7 @@ void HLODTree<BaseVecT>::finalize(AllowedMemoryUsage allowedMemUsage, float redu
         lvr2::Monitor progress(lvr2::LogLevel::info, "Generating LOD", total);
         size_t fullySimplified = finalizeRecursive(reductionFactor, normalDeviation, progress);
         progress.terminate();
-                lvr2::log::info("{}{}{}{}{}", fmt::streamed("LOD: "), fmt::streamed(fullySimplified), fmt::streamed(" / "), fmt::streamed(total), fmt::streamed(" meshes reached simplification limit"));
+                lvr2::log::info("{}{}{}{}{}", "LOD: ", fullySimplified, " / ", total, " meshes reached simplification limit");
         return;
     }
 
@@ -371,11 +371,11 @@ void HLODTree<BaseVecT>::finalize(AllowedMemoryUsage allowedMemUsage, float redu
 
         progress.terminate();
 
-                lvr2::log::info("{}{}{}{}{}", fmt::streamed("LOD: "), fmt::streamed(fullySimplified), fmt::streamed(" / "), fmt::streamed(canBeSimplified.size()), fmt::streamed(" meshes reached simplification limit"));
+                lvr2::log::info("{}{}{}{}{}", "LOD: ", fullySimplified, " / ", canBeSimplified.size(), " meshes reached simplification limit");
 
         canBeSimplified.clear();
     }
-        lvr2::log::info("{}", fmt::streamed("Finished generating LOD"));
+        lvr2::log::info("{}", "Finished generating LOD");
 }
 
 template<typename BaseVecT>

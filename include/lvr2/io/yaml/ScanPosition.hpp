@@ -69,7 +69,7 @@ namespace YAML
                 }
                 catch (const YAML::TypedBadConversion<double> &ex)
                 {
-                                        lvr2::log::error("{}{}{}", fmt::streamed("[YAML - ScanPosition - decode] ERROR: Could not decode 'orginal_name': "), fmt::streamed(node["original_name"]), fmt::streamed(" as double"));
+                                        lvr2::log::error("{}{}{}", "[YAML - ScanPosition - decode] ERROR: Could not decode 'orginal_name': ", YAML_UTIL::NodeSummary(node["original_name"]), " as double");
                     return false;
                 }
             }
@@ -87,7 +87,7 @@ namespace YAML
                 }
                 catch (const YAML::TypedBadConversion<lvr2::Transformd> &ex)
                 {
-                                        lvr2::log::error("{}{}{}", fmt::streamed("[YAML - ScanPosition - decode] ERROR: Could not decode 'pose_estimation': "), fmt::streamed(node["pose_estimation"]), fmt::streamed(" as Transformd"));
+                                        lvr2::log::error("{}{}{}", "[YAML - ScanPosition - decode] ERROR: Could not decode 'pose_estimation': ", YAML_UTIL::NodeSummary(node["pose_estimation"]), " as Transformd");
                     return false;
                 }
             }
@@ -104,7 +104,7 @@ namespace YAML
                 }
                 catch (const YAML::TypedBadConversion<lvr2::Transformd> &ex)
                 {
-                                        lvr2::log::error("{}{}{}", fmt::streamed("[YAML - ScanPosition - decode] ERROR: Could not decode 'transformation': "), fmt::streamed(node["transformation"]), fmt::streamed(" as Transformd"));
+                                        lvr2::log::error("{}{}{}", "[YAML - ScanPosition - decode] ERROR: Could not decode 'transformation': ", YAML_UTIL::NodeSummary(node["transformation"]), " as Transformd");
                     return false;
                 }
             }
@@ -121,7 +121,7 @@ namespace YAML
                 }
                 catch (const YAML::TypedBadConversion<double> &ex)
                 {
-                                        lvr2::log::error("{}{}{}", fmt::streamed("[YAML - ScanPosition - decode] ERROR: Could not decode 'timestamp': "), fmt::streamed(node["timestamp"]), fmt::streamed(" as double"));
+                                        lvr2::log::error("{}{}{}", "[YAML - ScanPosition - decode] ERROR: Could not decode 'timestamp': ", YAML_UTIL::NodeSummary(node["timestamp"]), " as double");
                     return false;
                 }
             }
@@ -138,7 +138,7 @@ namespace YAML
                 }
                 catch (const YAML::TypedBadConversion<lvr2::BoundingBox<lvr2::BaseVector<float>>> &ex)
                 {
-                                        lvr2::log::error("{}{}{}", fmt::streamed("[YAML - ScanPosition - decode] ERROR: Could not decode 'aabb': "), fmt::streamed(node["aabb"]), fmt::streamed(" as BoundingBox"));
+                                        lvr2::log::error("{}{}{}", "[YAML - ScanPosition - decode] ERROR: Could not decode 'aabb': ", YAML_UTIL::NodeSummary(node["aabb"]), " as BoundingBox");
                     return false;
                 }
             }

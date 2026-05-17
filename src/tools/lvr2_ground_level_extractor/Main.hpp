@@ -1088,7 +1088,7 @@ Eigen::MatrixXd affineMatrix, string colorScale)
     // =======================================================================
     // Iterate over all faces + calculate which Texel they are represented by
     // =======================================================================
-        lvr2::log::info("{}", fmt::streamed(timestamp.getElapsedTime() + "Generating Height Difference Texture"));
+        lvr2::log::info("{}", timestamp.getElapsedTime() + "Generating Height Difference Texture");
     ProgressBar progressDistance(mesh.numFaces(), timestamp.getElapsedTime() + "Calculating Distance from Point Cloud to Model");
 
     for (size_t i = 0; i < mesh.numFaces(); i++)

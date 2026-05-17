@@ -15,7 +15,7 @@ namespace
 
 void reportStorageError(const std::string& action, const lvr2::io::storage::Error& error)
 {
-        lvr2::log::warning("{}{}{}", fmt::streamed(action), fmt::streamed(" failed: "), fmt::streamed(error.message));
+        lvr2::log::warning("{}{}{}", action, " failed: ", error.message);
 }
 
 void useDirectoryRawPlySchema(ScanProjectPtr sp)
@@ -49,7 +49,7 @@ void useDirectoryRawPlySchema(ScanProjectPtr sp)
 
     if (!equal(sp, loaded.value()))
     {
-                lvr2::log::warning("{}", fmt::streamed("Something went wrong. Saved and loaded scan project are not equal"));
+                lvr2::log::warning("{}", "Something went wrong. Saved and loaded scan project are not equal");
     }
 }
 
@@ -78,7 +78,7 @@ void useDirectoryOneShotHelpers(ScanProjectPtr sp)
 
     if (!equal(sp, loaded.value()))
     {
-                lvr2::log::warning("{}", fmt::streamed("Something went wrong. Saved and loaded scan project are not equal"));
+                lvr2::log::warning("{}", "Something went wrong. Saved and loaded scan project are not equal");
     }
 }
 
@@ -113,7 +113,7 @@ void useHdf5Schema(ScanProjectPtr sp)
 
     if (!equal(sp, loaded.value()))
     {
-                lvr2::log::warning("{}", fmt::streamed("Something went wrong. Saved and loaded scan project are not equal"));
+                lvr2::log::warning("{}", "Something went wrong. Saved and loaded scan project are not equal");
     }
 }
 
@@ -123,18 +123,18 @@ int main(int argc, char** argv)
 {
     lvr2::log::set_level(lvr2::log::Level::debug);
 
-        lvr2::log::info("{}", fmt::streamed("ScanProjects Schema"));
+        lvr2::log::info("{}", "ScanProjects Schema");
 
-        lvr2::log::debug("{}", fmt::streamed("Generating dataset, wait."));
+        lvr2::log::debug("{}", "Generating dataset, wait.");
     ScanProjectPtr sp = dummyScanProjectStorage();
 
-        lvr2::log::info("{}", fmt::streamed("1. Example: raw-PLY directory schema"));
+        lvr2::log::info("{}", "1. Example: raw-PLY directory schema");
     useDirectoryRawPlySchema(sp);
 
-        lvr2::log::info("{}", fmt::streamed("2. Example: one-shot raw-PLY helpers"));
+        lvr2::log::info("{}", "2. Example: one-shot raw-PLY helpers");
     useDirectoryOneShotHelpers(sp);
 
-        lvr2::log::info("{}", fmt::streamed("3. Example: HDF5 schema"));
+        lvr2::log::info("{}", "3. Example: HDF5 schema");
     useHdf5Schema(sp);
 
     return 0;

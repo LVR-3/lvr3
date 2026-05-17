@@ -2,6 +2,7 @@
 #define LVR2_IO_YAML_LIDAR_HPP
 
 #include "lvr2/io/YAML.hpp"
+#include "lvr2/util/YAMLUtil.hpp"
 #include <lvr2/util/Logging.hpp>
 
 using lvr2::timestamp;
@@ -52,7 +53,7 @@ struct convert<lvr2::LIDAR>
             }
             catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex)
             {
-                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - LIDAR - decode] ERROR: Could not decode 'transformation': "), fmt::streamed(node["transformation"]), fmt::streamed(" as Transformd"));
+                                lvr2::log::error("{}{}{}", "[YAML - LIDAR - decode] ERROR: Could not decode 'transformation': ", YAML_UTIL::NodeSummary(node["transformation"]), " as Transformd");
                 return false;
             }
         }
@@ -69,7 +70,7 @@ struct convert<lvr2::LIDAR>
             }
             catch(const YAML::TypedBadConversion<std::string>& ex)
             {
-                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - LIDAR - decode] ERROR: Could not decode 'name': "), fmt::streamed(node["name"]), fmt::streamed(" as string"));
+                                lvr2::log::error("{}{}{}", "[YAML - LIDAR - decode] ERROR: Could not decode 'name': ", YAML_UTIL::NodeSummary(node["name"]), " as string");
                 return false;
             }
         }
@@ -82,7 +83,7 @@ struct convert<lvr2::LIDAR>
             }
             catch(const YAML::TypedBadConversion<lvr2::SphericalModel>& ex)
             {
-                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - LIDAR - decode] ERROR: Could not decode 'model': "), fmt::streamed(node["model"]), fmt::streamed(" as SphericalModel"));
+                                lvr2::log::error("{}{}{}", "[YAML - LIDAR - decode] ERROR: Could not decode 'model': ", YAML_UTIL::NodeSummary(node["model"]), " as SphericalModel");
                 return false;
             }
         }
@@ -99,7 +100,7 @@ struct convert<lvr2::LIDAR>
             }
             catch(const YAML::TypedBadConversion<lvr2::BoundingBox<lvr2::BaseVector<float> > >& ex)
             {
-                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - LIDAR - decode] ERROR: Could not decode 'aabb': "), fmt::streamed(node["aabb"]), fmt::streamed(" as BoundingBox"));
+                                lvr2::log::error("{}{}{}", "[YAML - LIDAR - decode] ERROR: Could not decode 'aabb': ", YAML_UTIL::NodeSummary(node["aabb"]), " as BoundingBox");
                 return false;
             }
         }

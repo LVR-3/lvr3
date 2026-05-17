@@ -180,7 +180,7 @@ DenseVertexMap<Normal<typename BaseVecT::CoordType>> calcVertexNormals(
         }
         catch (...)
         {
-                        lvr2::log::warning("{}", fmt::streamed("Warning: Loop detected. Using default normal"));
+                        lvr2::log::warning("{}", "Warning: Loop detected. Using default normal");
             normalMap.insert(vH, Normal<typename BaseVecT::CoordType>(0, 0, 1));
         }
     }

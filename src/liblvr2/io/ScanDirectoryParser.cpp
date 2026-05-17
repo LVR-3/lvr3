@@ -13,6 +13,18 @@ using namespace boost::filesystem;
 namespace lvr2
 {
 
+namespace
+{
+
+std::string transformSummary(const Transformd& value)
+{
+    std::ostringstream stream;
+    stream << value;
+    return stream.str();
+}
+
+} // namespace
+
 ScanDirectoryParser::~ScanDirectoryParser()
 {
     // Delete scan descriptions
@@ -28,7 +40,7 @@ ScanDirectoryParser::ScanDirectoryParser(const std::string& directory) noexcept
     Path dir(directory);
     if(!exists(directory))
     {
-                lvr2::log::info("{}{}{}", fmt::streamed("Directory "), fmt::streamed(directory), fmt::streamed(" does not exist."));
+                lvr2::log::info("{}{}{}", "Directory ", directory, " does not exist.");
     }
     else
     {
@@ -90,19 +102,19 @@ PointBufferPtr ScanDirectoryParser::octreeSubSample(const double& voxelSize, con
 
     for(auto i : m_scans)
     {
-                lvr2::log::info("{}{}", fmt::streamed("Reading "), fmt::streamed(i->m_filename));
+                lvr2::log::info("{}{}", "Reading ", i->m_filename);
         ModelPtr model = ModelFactory::readModel(i->m_filename);
         if(model)
         {
             PointBufferPtr buffer = model->m_pointCloud;
             if(buffer)
             {
-                                lvr2::log::info("{}{}{}{}", fmt::streamed("Building octree with voxel size "), fmt::streamed(voxelSize), fmt::streamed(" from "), fmt::streamed(i->m_filename));
+                                lvr2::log::info("{}{}{}{}", "Building octree with voxel size ", voxelSize, " from ", i->m_filename);
                 RandomSampleOctreeReduction oct(buffer, voxelSize, 5);
                 PointBufferPtr reduced = oct.getReducedPoints();
 
                 // Apply transformation
-                                lvr2::log::info("{}", fmt::streamed("Transforming reduced point cloud"));
+                                lvr2::log::info("{}", "Transforming reduced point cloud");
                 out_model->m_pointCloud = reduced;
                 transformPointCloud<double>(out_model, i->m_pose);
 
@@ -110,10 +122,10 @@ PointBufferPtr ScanDirectoryParser::octreeSubSample(const double& voxelSize, con
                 std::stringstream name_stream;
                 Path p(i->m_filename);
                 name_stream << p.stem().string() << "_reduced" << ".ply";
-                                lvr2::log::info("{}{}", fmt::streamed("Saving data to "), fmt::streamed(name_stream.str()));
+                                lvr2::log::info("{}{}", "Saving data to ", name_stream.str());
                 ModelFactory::saveModel(out_model, name_stream.str());
 
-                                lvr2::log::info("{}{}", fmt::streamed("Points written: "), fmt::streamed(reduced->numPoints()));
+                                lvr2::log::info("{}{}", "Points written: ", reduced->numPoints());
             }
         }
     }
@@ -125,7 +137,7 @@ PointBufferPtr ScanDirectoryParser::transform()
     for(auto i : m_scans)
     {
         // Apply transformation
-                lvr2::log::info("{}{}", fmt::streamed("Transforming "), fmt::streamed(i->m_filename));
+                lvr2::log::info("{}{}", "Transforming ", i->m_filename);
         ModelPtr model = ModelFactory::readModel(i->m_filename);
         transformPointCloud<double>(model, i->m_pose);
 
@@ -133,7 +145,7 @@ PointBufferPtr ScanDirectoryParser::transform()
         std::stringstream name_stream;
         Path p(i->m_filename);
         name_stream << p.stem().string() << "_transformed" << ".ply";
-                lvr2::log::info("{}{}", fmt::streamed("Saving data to "), fmt::streamed(name_stream.str()));
+                lvr2::log::info("{}{}", "Saving data to ", name_stream.str());
         ModelFactory::saveModel(model, name_stream.str());
     }
     return PointBufferPtr(new PointBuffer);
@@ -164,20 +176,20 @@ PointBufferPtr ScanDirectoryParser::randomSubSample(const size_t& tz)
 
 
                     target_size = (int)(target_ratio + 0.5);
-                                        lvr2::log::info("{}{}{}{}", fmt::streamed("Sampling "), fmt::streamed(target_size), fmt::streamed(" points from "), fmt::streamed(i->m_filename));
+                                        lvr2::log::info("{}{}{}{}", "Sampling ", target_size, " points from ", i->m_filename);
 
                     // Sub-sample buffer
                     reduced = subSamplePointBuffer(buffer, target_size);
                 }
                 else
                 {
-                                        lvr2::log::info("{}{}", fmt::streamed("Using orignal points from "), fmt::streamed(i->m_filename));
+                                        lvr2::log::info("{}{}", "Using orignal points from ", i->m_filename);
                     reduced = buffer;
                     target_size = buffer->numPoints();
                 }
 
                 // Apply transformation
-                                lvr2::log::info("{}", fmt::streamed("Transforming point cloud"));
+                                lvr2::log::info("{}", "Transforming point cloud");
                 out_model->m_pointCloud = reduced;
                 transformPointCloud<double>(out_model, i->m_pose);
 
@@ -185,11 +197,11 @@ PointBufferPtr ScanDirectoryParser::randomSubSample(const size_t& tz)
                 std::stringstream name_stream;
                 Path p(i->m_filename);
                 name_stream << p.stem().string() << "_reduced" << ".ply";
-                                lvr2::log::info("{}{}", fmt::streamed("Saving data to "), fmt::streamed(name_stream.str()));
+                                lvr2::log::info("{}{}", "Saving data to ", name_stream.str());
                 ModelFactory::saveModel(out_model, name_stream.str());
 
                 actual_points += target_size;
-                                lvr2::log::info("{}{}{}{}", fmt::streamed("Points written: "), fmt::streamed(actual_points), fmt::streamed(" / "), fmt::streamed(tz));
+                                lvr2::log::info("{}{}{}{}", "Points written: ", actual_points, " / ", tz);
             }
         }
     }
@@ -198,9 +210,9 @@ PointBufferPtr ScanDirectoryParser::randomSubSample(const size_t& tz)
 
 void ScanDirectoryParser::parseDirectory()
 {
-        lvr2::log::info("{}{}", fmt::streamed("Parsing directory"), fmt::streamed(m_directory));
-        lvr2::log::info("{}{}{}{}", fmt::streamed("Point prefix and extension: "), fmt::streamed(m_pointPrefix), fmt::streamed(" "), fmt::streamed(m_pointExtension));
-        lvr2::log::info("{}{}{}{}", fmt::streamed("Pose prefix and extension: "), fmt::streamed(m_posePrefix), fmt::streamed(" "), fmt::streamed(m_poseExtension));
+        lvr2::log::info("{}{}", "Parsing directory", m_directory);
+        lvr2::log::info("{}{}{}{}", "Point prefix and extension: ", m_pointPrefix, " ", m_pointExtension);
+        lvr2::log::info("{}{}{}{}", "Pose prefix and extension: ", m_posePrefix, " ", m_poseExtension);
 
     m_numPoints = 0;
     for(size_t i = m_start; i <= m_end; i++)
@@ -221,7 +233,7 @@ void ScanDirectoryParser::parseDirectory()
         size_t n = 0;
         if(exists(pointPath))
         {
-                        lvr2::log::info("{}{}", fmt::streamed("Counting points in file "), fmt::streamed(pointPath));
+                        lvr2::log::info("{}{}", "Counting points in file ", pointPath.string());
             if(pointPath.extension() == ".3d" || pointPath.extension() == ".txt" || pointPath.extension() == ".pts")
             {
                 n = examineASCII(pointPath.string());
@@ -234,7 +246,7 @@ void ScanDirectoryParser::parseDirectory()
         }
         else
         {
-                        lvr2::log::info("{}{}{}", fmt::streamed("Point cloud file "), fmt::streamed(pointPath), fmt::streamed(" does not exist."));
+                        lvr2::log::info("{}{}{}", "Point cloud file ", pointPath.string(), " does not exist.");
         }
 
         // Check for pose information file
@@ -243,11 +255,11 @@ void ScanDirectoryParser::parseDirectory()
         if(exists(posePath))
         {
             matrix = getTransformationFromFile<double>(posePath.string());
-                        lvr2::log::info("{}{}{}{}{}", fmt::streamed("Found transformation: "), fmt::streamed(posePath), fmt::streamed(" @ "), fmt::streamed("\n"), fmt::streamed(matrix));
+                        lvr2::log::info("{}{}{}{}{}", "Found transformation: ", posePath.string(), " @ ", "\n", transformSummary(matrix));
         }
         else
         {
-                        lvr2::log::info("{}{}{}", fmt::streamed("Scan pose file "), fmt::streamed(posePath), fmt::streamed("does not exist. Will not transfrom."));
+                        lvr2::log::info("{}{}{}", "Scan pose file ", posePath.string(), "does not exist. Will not transfrom.");
         }
 
 
@@ -259,7 +271,7 @@ void ScanDirectoryParser::parseDirectory()
 
         m_scans.push_back(info);
     }
-        lvr2::log::info("{}{}{}{}{}", fmt::streamed("Finished parsing. Directory contains "), fmt::streamed(m_scans.size()), fmt::streamed(" scans with "), fmt::streamed(m_numPoints), fmt::streamed(" points."));
+        lvr2::log::info("{}{}{}{}{}", "Finished parsing. Directory contains ", m_scans.size(), " scans with ", m_numPoints, " points.");
 }
 
 

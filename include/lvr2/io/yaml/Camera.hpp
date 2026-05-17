@@ -55,7 +55,7 @@ struct convert<lvr2::Camera>
             try {
                 camera.name = node["name"].as<std::string>();
             } catch(const YAML::TypedBadConversion<std::string>& ex) {
-                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - Camera - decode] ERROR: Could not decode 'name': "), fmt::streamed(node["name"]), fmt::streamed(" as string"));
+                                lvr2::log::error("{}{}{}", "[YAML - Camera - decode] ERROR: Could not decode 'name': ", YAML_UTIL::NodeSummary(node["name"]), " as string");
                 return false;
             }
         }
@@ -72,7 +72,7 @@ struct convert<lvr2::Camera>
             }
             catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex)
             {
-                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - Camera - decode] ERROR: Could not decode 'transformation': "), fmt::streamed(node["transformation"]), fmt::streamed(" as Transformd"));
+                                lvr2::log::error("{}{}{}", "[YAML - Camera - decode] ERROR: Could not decode 'transformation': ", YAML_UTIL::NodeSummary(node["transformation"]), " as Transformd");
                 return false;
             }
         }
@@ -85,7 +85,7 @@ struct convert<lvr2::Camera>
             }
             catch(const YAML::TypedBadConversion<decltype(camera.model)>& ex)
             {
-                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - Camera - decode] ERROR: Could not decode 'model': "), fmt::streamed(node["model"]), fmt::streamed(" as CameraModel"));
+                                lvr2::log::error("{}{}{}", "[YAML - Camera - decode] ERROR: Could not decode 'model': ", YAML_UTIL::NodeSummary(node["model"]), " as CameraModel");
                 return false;
             }
         }

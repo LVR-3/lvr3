@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cctype>
+#include <sstream>
 
 namespace lvr2
 {
@@ -132,9 +133,78 @@ lvr2::io::storage::Result<lvr2::io::scan::SaveOptions> saveOptionsForScanProject
     return options;
 }
 
+template<typename T>
+std::string scanProjectStreamSummary(const T& value)
+{
+    // Local adapter for legacy ScanTypes.hpp structural summaries only.
+    std::ostringstream stream;
+    stream << value;
+    return stream.str();
+}
+
+std::string boundingBoxSummary(const BoundingBox<BaseVector<float>>& value)
+{
+    return scanProjectStreamSummary(value);
+}
+
+std::string transformSummary(const Transformd& value)
+{
+    return scanProjectStreamSummary(value);
+}
+
+std::string scanProjectStructureSummary(const ScanProjectPtr& value)
+{
+    return scanProjectStreamSummary(value);
+}
+
+std::string scanProjectStructureSummary(const ScanPositionPtr& value)
+{
+    return scanProjectStreamSummary(value);
+}
+
+std::string scanProjectStructureSummary(const ScanPtr& value)
+{
+    return scanProjectStreamSummary(value);
+}
+
+std::string scanProjectStructureSummary(const LIDARPtr& value)
+{
+    return scanProjectStreamSummary(value);
+}
+
+std::string scanProjectStructureSummary(const CameraPtr& value)
+{
+    return scanProjectStreamSummary(value);
+}
+
+std::string scanProjectStructureSummary(const CameraImagePtr& value)
+{
+    return scanProjectStreamSummary(value);
+}
+
+std::string scanProjectStructureSummary(const CameraImageGroupPtr& value)
+{
+    return scanProjectStreamSummary(value);
+}
+
+std::string scanProjectStructureSummary(const HyperspectralPanoramaChannelPtr& value)
+{
+    return scanProjectStreamSummary(value);
+}
+
+std::string scanProjectStructureSummary(const HyperspectralPanoramaPtr& value)
+{
+    return scanProjectStreamSummary(value);
+}
+
+std::string scanProjectStructureSummary(const HyperspectralCameraPtr& value)
+{
+    return scanProjectStreamSummary(value);
+}
+
 void logStorageError(const std::string& action, const lvr2::io::storage::Error& error)
 {
-        lvr2::log::error("{}{}{}", fmt::streamed(action), fmt::streamed(": "), fmt::streamed(error.message));
+        lvr2::log::error("{}{}{}", action, ": ", error.message);
 }
 
 } // namespace
@@ -184,7 +254,7 @@ ScanProjectPtr scanProjectFromHDF5(std::string file, const std::string& schemaNa
 
 ScanProjectPtr scanProjectFromFile(const std::string& file)
 {
-        lvr2::log::info("{}{}", fmt::streamed("[Load Scan Project from File] Creating scan project from single file: "), fmt::streamed(file));
+        lvr2::log::info("{}{}", "[Load Scan Project from File] Creating scan project from single file: ", file);
     ScanProjectPtr project(new ScanProject);
     ModelPtr model = ModelFactory::readModel(file);
 
@@ -211,14 +281,14 @@ ScanProjectPtr scanProjectFromFile(const std::string& file)
     }
     else
     {
-                lvr2::log::error("{}{}{}", fmt::streamed("[Load Scan Project from file] Unable to open file '"), fmt::streamed(file), fmt::streamed("' for reading-"));
+                lvr2::log::error("{}{}{}", "[Load Scan Project from file] Unable to open file '", file, "' for reading-");
     }
     return nullptr;
 }
 
 ScanProjectPtr scanProjectFromPLYFiles(const std::string &dir)
 {
-        lvr2::log::info("{}", fmt::streamed("[Load Scan Project from PLY] Creating scan project from a directory of .ply files..."));
+        lvr2::log::info("{}", "[Load Scan Project from PLY] Creating scan project from a directory of .ply files...");
     ScanProjectPtr scanProject(new ScanProject);
     boost::filesystem::directory_iterator it{dir};
     while (it != boost::filesystem::directory_iterator{})
@@ -251,7 +321,7 @@ ScanProjectPtr scanProjectFromPLYFiles(const std::string &dir)
     }
     else
     {
-                lvr2::log::warning("{}", fmt::streamed("[Load Scan Project from PLY] Warning: scan project is empty."));
+                lvr2::log::warning("{}", "[Load Scan Project from PLY] Warning: scan project is empty.");
         return nullptr;
     }
 }
@@ -261,7 +331,7 @@ ScanProjectPtr loadScanProject(const std::string& schema, const std::string& sou
     boost::filesystem::path sourcePath(source);
     if (!boost::filesystem::is_directory(sourcePath) && !isHdf5Path(sourcePath))
     {
-                lvr2::log::error("{}{}", fmt::streamed("[Load Scan Project] Source is neither a directory nor an HDF5 file: "), fmt::streamed(source));
+                lvr2::log::error("{}{}", "[Load Scan Project] Source is neither a directory nor an HDF5 file: ", source);
         return nullptr;
     }
 
@@ -269,8 +339,8 @@ ScanProjectPtr loadScanProject(const std::string& schema, const std::string& sou
     if (!options)
     {
         logStorageError("[Load Scan Project] Unsupported scan-project options", options.error());
-                lvr2::log::error("{}{}", fmt::streamed("[Load Scan Project] Schema name: "), fmt::streamed(schema));
-                lvr2::log::error("{}{}", fmt::streamed("[Load Scan Project] Source: "), fmt::streamed(source));
+                lvr2::log::error("{}{}", "[Load Scan Project] Schema name: ", schema);
+                lvr2::log::error("{}{}", "[Load Scan Project] Source: ", source);
         return nullptr;
     }
 
@@ -278,8 +348,8 @@ ScanProjectPtr loadScanProject(const std::string& schema, const std::string& sou
     if (!loaded)
     {
         logStorageError("[Load Scan Project] Unable to load scan project", loaded.error());
-                lvr2::log::error("{}{}", fmt::streamed("[Load Scan Project] Schema name: "), fmt::streamed(schema));
-                lvr2::log::error("{}{}", fmt::streamed("[Load Scan Project] Source: "), fmt::streamed(source));
+                lvr2::log::error("{}{}", "[Load Scan Project] Schema name: ", schema);
+                lvr2::log::error("{}{}", "[Load Scan Project] Source: ", source);
         return nullptr;
     }
 
@@ -306,12 +376,12 @@ ScanProjectPtr getSubProject(ScanProjectPtr project, std::vector<size_t> positio
         }
         else
         {
-                        lvr2::log::warning("{}{}{}{}", fmt::streamed("[GetSubProject] Warning: Index"), fmt::streamed(i), fmt::streamed(" out of range, size is "), fmt::streamed(project->positions.size()));
+                        lvr2::log::warning("{}{}{}{}", "[GetSubProject] Warning: Index", i, " out of range, size is ", project->positions.size());
         }
     }
 
     // Correct bounding box
-        lvr2::log::debug("{}", fmt::streamed("[GetSubProject] Correcting bounding box"));
+        lvr2::log::debug("{}", "[GetSubProject] Correcting bounding box");
 
     BoundingBox<BaseVector<float>> bb;
     for(ScanPositionPtr p : tmp->positions)
@@ -322,7 +392,7 @@ ScanProjectPtr getSubProject(ScanProjectPtr project, std::vector<size_t> positio
         }
     }
 
-        lvr2::log::info("{}{}", fmt::streamed("[GetSubProject] New bounding box is: "), fmt::streamed(bb));
+        lvr2::log::info("{}{}", "[GetSubProject] New bounding box is: ", boundingBoxSummary(bb));
 
     return tmp;
 }
@@ -349,8 +419,8 @@ void saveScanProject(ScanProjectPtr& project, const std::string& schema, const s
         if (!options)
         {
             logStorageError("[Save Scan Project] Unsupported scan-project options", options.error());
-                        lvr2::log::error("{}{}", fmt::streamed("[Save Scan Project] Schema name: "), fmt::streamed(schema));
-                        lvr2::log::error("{}{}", fmt::streamed("[Save Scan Project] Target: "), fmt::streamed(target));
+                        lvr2::log::error("{}{}", "[Save Scan Project] Schema name: ", schema);
+                        lvr2::log::error("{}{}", "[Save Scan Project] Target: ", target);
             return;
         }
 
@@ -358,38 +428,38 @@ void saveScanProject(ScanProjectPtr& project, const std::string& schema, const s
         if (!saved)
         {
             logStorageError("[Save Scan Project] Unable to save scan project", saved.error());
-                        lvr2::log::error("{}{}", fmt::streamed("[Save Scan Project] Schema name: "), fmt::streamed(schema));
-                        lvr2::log::error("{}{}", fmt::streamed("[Save Scan Project] Target: "), fmt::streamed(target));
+                        lvr2::log::error("{}{}", "[Save Scan Project] Schema name: ", schema);
+                        lvr2::log::error("{}{}", "[Save Scan Project] Target: ", target);
         }
     }
     else
     {
-                lvr2::log::error("{}", fmt::streamed("[Save Scan Project] Cannot save scan project from null pointer"));
+                lvr2::log::error("{}", "[Save Scan Project] Cannot save scan project from null pointer");
     }
 }
 
 void printScanProjectStructure(const ScanProjectPtr project)
 {
-        lvr2::log::info("{}", fmt::streamed(project));
+        lvr2::log::info("{}", scanProjectStructureSummary(project));
 
     for(size_t i = 0; i < project->positions.size(); i++)
     {
-                lvr2::log::info("{}{}{}{}", fmt::streamed("[Scan Project] Position"), fmt::streamed(i), fmt::streamed(" / "), fmt::streamed(project->positions.size()));
+                lvr2::log::info("{}{}{}{}", "[Scan Project] Position", i, " / ", project->positions.size());
         printScanPositionStructure(project->positions[i]);
     }
 }
 
 void printScanPositionStructure(const ScanPositionPtr p)
 {
-        lvr2::log::info("{}", fmt::streamed(p));
+        lvr2::log::info("{}", scanProjectStructureSummary(p));
     for(size_t i = 0; i < p->lidars.size(); i++)
     {
-                lvr2::log::info("{}{}{}{}", fmt::streamed("[Scan Position] LiDAR "), fmt::streamed(i), fmt::streamed(" / "), fmt::streamed(p->lidars.size()));
+                lvr2::log::info("{}{}{}{}", "[Scan Position] LiDAR ", i, " / ", p->lidars.size());
         printLIDARStructure(p->lidars[i]);
     }
     for(size_t i = 0; i < p->cameras.size(); i++)
     {
-                lvr2::log::info("{}{}{}{}", fmt::streamed("[Scan Position] Camera "), fmt::streamed(i), fmt::streamed(" / "), fmt::streamed(p->cameras.size()));
+                lvr2::log::info("{}{}{}{}", "[Scan Position] Camera ", i, " / ", p->cameras.size());
         printCameraStructure(p->cameras[i]);
     }
     for(size_t i = 0; i < p->hyperspectral_cameras.size(); i++)
@@ -401,67 +471,67 @@ void printScanPositionStructure(const ScanPositionPtr p)
 
 void printScanStructure(const ScanPtr p)
 {
-        lvr2::log::info("{}", fmt::streamed(p));
+        lvr2::log::info("{}", scanProjectStructureSummary(p));
     // TODO: Implement output for point buffer
 }
 
 void printLIDARStructure(const LIDARPtr p)
 {
-        lvr2::log::info("{}", fmt::streamed(p));
+        lvr2::log::info("{}", scanProjectStructureSummary(p));
     for(size_t i = 0; i < p->scans.size(); i++)
     {
-                lvr2::log::info("{}{}{}{}", fmt::streamed("[LiDAR] Scan "), fmt::streamed(i), fmt::streamed(" / "), fmt::streamed(p->scans.size()));
+                lvr2::log::info("{}{}{}{}", "[LiDAR] Scan ", i, " / ", p->scans.size());
         printScanStructure(p->scans[i]);
     }
 }
 
 void printCameraStructure(const CameraPtr p)
 {
-        lvr2::log::info("{}", fmt::streamed(p));
+        lvr2::log::info("{}", scanProjectStructureSummary(p));
 
     for(size_t i = 0; i < p->groups.size(); i++)
     {
-                lvr2::log::info("{}{}{}{}", fmt::streamed("[Camera] Camera group "), fmt::streamed(i), fmt::streamed(" / "), fmt::streamed(p->groups.size()));
+                lvr2::log::info("{}{}{}{}", "[Camera] Camera group ", i, " / ", p->groups.size());
         CameraImageGroupPtr g = p->groups[i];
-                lvr2::log::info("{}{}", fmt::streamed("[Camera] Transformation: "), fmt::streamed(g->transformation));
-                lvr2::log::info("{}{}", fmt::streamed("[Camera] Type: "), fmt::streamed(g->type));
-                lvr2::log::info("{}{}", fmt::streamed("[Camera] Number of images: "), fmt::streamed(g->images.size()));
+                lvr2::log::info("{}{}", "[Camera] Transformation: ", transformSummary(g->transformation));
+                lvr2::log::info("{}{}", "[Camera] Type: ", g->type);
+                lvr2::log::info("{}{}", "[Camera] Number of images: ", g->images.size());
     }
 }
 
 void printCameraImageGroupStructure(const CameraImageGroupPtr p)
 {
-        lvr2::log::info("{}", fmt::streamed(p));
+        lvr2::log::info("{}", scanProjectStructureSummary(p));
     for(size_t i = 0; i < p->images.size(); i++)
     {
-                lvr2::log::info("{}{}{}{}", fmt::streamed("[Image Group] Image "), fmt::streamed(i), fmt::streamed(" / "), fmt::streamed(p->images.size()));
-                lvr2::log::info("{}", fmt::streamed(p->images[i]));
+                lvr2::log::info("{}{}{}{}", "[Image Group] Image ", i, " / ", p->images.size());
+                lvr2::log::info("{}", scanProjectStructureSummary(p->images[i]));
     }
 }
 
 void printHyperspectralCameraStructure(const HyperspectralCameraPtr p)
 {
-        lvr2::log::info("{}", fmt::streamed(p));
+        lvr2::log::info("{}", scanProjectStructureSummary(p));
     for(size_t i = 0; i < p->panoramas.size(); i++)
     {
-                lvr2::log::info("{}{}{}{}", fmt::streamed("[Hyperspectral Camera] Panorama "), fmt::streamed(i), fmt::streamed(" / "), fmt::streamed(p->panoramas.size()));
+                lvr2::log::info("{}{}{}{}", "[Hyperspectral Camera] Panorama ", i, " / ", p->panoramas.size());
         printHyperspectralPanoramaStructure(p->panoramas[i]);
     }
 }
 
 void printHyperspectralPanoramaStructure(const HyperspectralPanoramaPtr p)
 {
-        lvr2::log::info("{}", fmt::streamed(p));
+        lvr2::log::info("{}", scanProjectStructureSummary(p));
     for(size_t i = 0; i < p->channels.size(); i++)
     {
-              lvr2::log::info("{}{}{}{}", fmt::streamed("[Panorama Structure] Channel "), fmt::streamed(i), fmt::streamed(" / "), fmt::streamed(p->channels.size()));
-              lvr2::log::info("{}", fmt::streamed(p->channels[i]));
+              lvr2::log::info("{}{}{}{}", "[Panorama Structure] Channel ", i, " / ", p->channels.size());
+              lvr2::log::info("{}", scanProjectStructureSummary(p->channels[i]));
     }
 }
 
 void printCameraImageStructure(const CameraImagePtr p)
 {
-        lvr2::log::info("{}", fmt::streamed(p));
+        lvr2::log::info("{}", scanProjectStructureSummary(p));
 }
 
 void estimateProjectNormals(ScanProjectPtr p, size_t kn, size_t ki)
@@ -481,7 +551,7 @@ void estimateProjectNormals(ScanProjectPtr p, size_t kn, size_t ki)
                         ScanPtr scan = lidar->scans[scanNr];
                         if(scan)
                         {
-                                                        lvr2::log::info("{}{}{}{}{}{}", fmt::streamed("[Project Normal Estimation]: Loading scan "), fmt::streamed(scanNr), fmt::streamed(" from lidar "), fmt::streamed(lidarNr), fmt::streamed(" of scan position "), fmt::streamed(positionNr));
+                                                        lvr2::log::info("{}{}{}{}{}{}", "[Project Normal Estimation]: Loading scan ", scanNr, " from lidar ", lidarNr, " of scan position ", positionNr);
 
                             scan->load();
                             PointBufferPtr ptBuffer = scan->points;
@@ -490,8 +560,8 @@ void estimateProjectNormals(ScanProjectPtr p, size_t kn, size_t ki)
                                 size_t n = ptBuffer->numPoints();
                                 if(n)
                                 {
-                                                                        lvr2::log::info("{}{}{}", fmt::streamed("[Project Normal Estimation]: Loaded "), fmt::streamed(n), fmt::streamed(" points"));
-                                                                        lvr2::log::info("{}", fmt::streamed("[Project Normal Estimation]: Building search tree..."));
+                                                                        lvr2::log::info("{}{}{}", "[Project Normal Estimation]: Loaded ", n, " points");
+                                                                        lvr2::log::info("{}", "[Project Normal Estimation]: Building search tree...");
 
                                     AdaptiveKSearchSurfacePtr<BaseVector<float>> surface(new AdaptiveKSearchSurface<BaseVector<float>>(ptBuffer, "flann", kn, ki));
                                     surface->setFlipPoint(BaseVector<float>(0, 0, 0));
@@ -506,30 +576,30 @@ void estimateProjectNormals(ScanProjectPtr p, size_t kn, size_t ki)
                                 }
                                 else
                                 {
-                                                                        lvr2::log::warning("{}", fmt::streamed("[Project Normal Estimation]: No points in scan"));
+                                                                        lvr2::log::warning("{}", "[Project Normal Estimation]: No points in scan");
                                 }
 
                             }
                             else
                             {
-                                                                lvr2::log::warning("{}", fmt::streamed("[Project Normal Estimation]:Unable to load point cloud data."));
+                                                                lvr2::log::warning("{}", "[Project Normal Estimation]:Unable to load point cloud data.");
                             }
                         }
                         else
                         {
-                                                        lvr2::log::warning("{}{}{}{}{}{}", fmt::streamed("[Project Normal Estimation]: "), fmt::streamed("Unable to load scan "), fmt::streamed(scanNr), fmt::streamed(" of "), fmt::streamed("lidar "), fmt::streamed(lidarNr));
+                                                        lvr2::log::warning("{}{}{}{}{}{}", "[Project Normal Estimation]: ", "Unable to load scan ", scanNr, " of ", "lidar ", lidarNr);
                         }
                     }
                 }
                 else
                 {
-                                        lvr2::log::warning("{}{}{}{}", fmt::streamed("[Project Normal Estimation]: Unable to load lidar "), fmt::streamed(lidarNr), fmt::streamed(" of scan position "), fmt::streamed(positionNr));
+                                        lvr2::log::warning("{}{}{}{}", "[Project Normal Estimation]: Unable to load lidar ", lidarNr, " of scan position ", positionNr);
                 }
             }
         }
         else
         {
-                        lvr2::log::warning("{}{}", fmt::streamed("[Project Normal Estimation]: Unable to load scan position "), fmt::streamed(positionNr));
+                        lvr2::log::warning("{}{}", "[Project Normal Estimation]: Unable to load scan position ", positionNr);
         }
     }
 }
@@ -542,7 +612,7 @@ ScanProjectPtr loadScanPositionsExplicitly(
     boost::filesystem::path targetPath(root);
     if (!boost::filesystem::is_directory(targetPath) && !isHdf5Path(targetPath))
     {
-                lvr2::log::error("{}{}", fmt::streamed("[Load Positions Explicitly] : Root is neither a directory nor an HDF5 file: "), fmt::streamed(root));
+                lvr2::log::error("{}{}", "[Load Positions Explicitly] : Root is neither a directory nor an HDF5 file: ", root);
         return nullptr;
     }
 
@@ -581,12 +651,12 @@ ScanProjectPtr loadScanPositionsExplicitly(
 
         if (pos)
         {
-                        lvr2::log::info("{}{}", fmt::streamed("[Load Positions Explicitly] : Loading scan position "), fmt::streamed(i));
+                        lvr2::log::info("{}{}", "[Load Positions Explicitly] : Loading scan position ", i);
             selected->positions.push_back(pos);
         }
         else
         {
-                        lvr2::log::warning("{}{}{}", fmt::streamed("[Load Positions Explicitly] : Position with index "), fmt::streamed(i), fmt::streamed(" cannot be loaded."));
+                        lvr2::log::warning("{}{}{}", "[Load Positions Explicitly] : Position with index ", i, " cannot be loaded.");
         }
     }
 
@@ -627,7 +697,7 @@ void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, b
 
     if(!outfile.good())
     {
-                lvr2::log::warning("{}{}{}", fmt::streamed("[WriteScanProjectToPLY]: Unable to open file '"), fmt::streamed(plyFile), fmt::streamed("' for writing."));
+                lvr2::log::warning("{}{}{}", "[WriteScanProjectToPLY]: Unable to open file '", plyFile, "' for writing.");
     }
 
 
@@ -688,12 +758,12 @@ void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, b
                     // Load payload data
                     if(red)
                     {
-                                                lvr2::log::info("{}", fmt::streamed("[WriteScanProjectToPLY] Loading reduced points"));
+                                                lvr2::log::info("{}", "[WriteScanProjectToPLY] Loading reduced points");
                         scan->load(red);
                     }
                     else
                     {
-                                                lvr2::log::info("{}", fmt::streamed("[WriteScanProjectToPLY] Loading all points"));
+                                                lvr2::log::info("{}", "[WriteScanProjectToPLY] Loading all points");
                         scan->load();
                     }
 
@@ -705,7 +775,7 @@ void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, b
                     Transformd transformation = transformRegistration(positionPose, lidarPose);
 
                     transformPointBuffer(points, transformation);
-                                        lvr2::log::info("{}", fmt::streamed("[WriteScanProjectToPLY] Writing tmp chunks..."));
+                                        lvr2::log::info("{}", "[WriteScanProjectToPLY] Writing tmp chunks...");
                     if(points)
                     {
                         totalScans++;
@@ -763,9 +833,9 @@ void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, b
             }
         }
     }
-        lvr2::log::info("{}{}{}", fmt::streamed("[WriteScanProjectToPLY]: Scan project has "), fmt::streamed(numPointsInProject), fmt::streamed(" points."));
-        lvr2::log::info("{}{}{}", fmt::streamed("[WriteScanProjectToPLY]: Found "), fmt::streamed(scansWithNormals), fmt::streamed(" scans with normals."));
-        lvr2::log::info("{}{}{}", fmt::streamed("[WriteScanProjectToPLY]: Found "), fmt::streamed(scansWithColors), fmt::streamed(" scans with colors."));
+        lvr2::log::info("{}{}{}", "[WriteScanProjectToPLY]: Scan project has ", numPointsInProject, " points.");
+        lvr2::log::info("{}{}{}", "[WriteScanProjectToPLY]: Found ", scansWithNormals, " scans with normals.");
+        lvr2::log::info("{}{}{}", "[WriteScanProjectToPLY]: Found ", scansWithColors, " scans with colors.");
 
     // Check color / normal consistency
     bool exportColors = (scansWithColors == totalScans);
@@ -773,12 +843,12 @@ void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, b
 
     if(exportNormals)
     {
-                lvr2::log::info("{}", fmt::streamed("[WriteScanProjectToPLY]: Exporting normals."));
+                lvr2::log::info("{}", "[WriteScanProjectToPLY]: Exporting normals.");
     }
 
     if(exportColors)
     {
-                lvr2::log::info("{}", fmt::streamed("[WriteScanProjectToPLY]: Exporting colors."));
+                lvr2::log::info("{}", "[WriteScanProjectToPLY]: Exporting colors.");
     }
 
     // Step 2: Write PLY header

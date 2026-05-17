@@ -123,31 +123,31 @@ int main(int argc, char** argv){
     {
         num_points = model->m_pointCloud->numPoints();
         points = model->m_pointCloud->getPointArray();
-                lvr2::log::info("{}{}{}{}", fmt::streamed("Read "), fmt::streamed(num_points), fmt::streamed(" points from "), fmt::streamed(argv[1]));
+                lvr2::log::info("{}{}{}{}", "Read ", num_points, " points from ", argv[1]);
     }
     else
     {
-                lvr2::log::warning("{}{}", fmt::streamed("Warning: No point cloud data found in "), fmt::streamed(argv[1]));
+                lvr2::log::warning("{}{}", "Warning: No point cloud data found in ", argv[1]);
         return 0;
     }
 
     lvr2::uintArr inlier = lvr2::uintArr(new unsigned int[num_points]);
 
-        lvr2::log::info("{}", fmt::streamed("Constructing kd-tree..."));
+        lvr2::log::info("{}", "Constructing kd-tree...");
     ClSOR sor(points, num_points, 40);
-        lvr2::log::info("{}", fmt::streamed("Finished kd-tree construction."));
+        lvr2::log::info("{}", "Finished kd-tree construction.");
 
 
     sor.calcDistances();
-        lvr2::log::info("{}", fmt::streamed("Got Nearest Neighbors"));
+        lvr2::log::info("{}", "Got Nearest Neighbors");
     sor.calcStatistics();
-        lvr2::log::info("{}", fmt::streamed("Got Statistics"));
+        lvr2::log::info("{}", "Got Statistics");
     sor.setMult(1.5);
 
     int j  = sor.getInliers(inlier);
 
-        lvr2::log::info("{}{}", fmt::streamed("outliers "), fmt::streamed(num_points - j));
-        lvr2::log::info("{}{}", fmt::streamed("inliers "), fmt::streamed(j));
+        lvr2::log::info("{}{}", "outliers ", num_points - j);
+        lvr2::log::info("{}{}", "inliers ", j);
 
     filter(model->m_pointCloud, inlier, j);
 

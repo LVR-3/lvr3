@@ -387,7 +387,7 @@ void DMCReconstruction<BaseVecT, BoxT>::buildTree(
         // end of visiting all cells of the octree
         }
 
-                lvr2::log::info("{}{}{}{}", fmt::streamed("[BigVolumen] LevelCellCounter of "), fmt::streamed(cellCounter), fmt::streamed(" cells at level "), fmt::streamed(cur_Level));
+                lvr2::log::info("{}{}{}{}", "[BigVolumen] LevelCellCounter of ", cellCounter, " cells at level ", cur_Level);
 
     // end of visiting the current level
     }

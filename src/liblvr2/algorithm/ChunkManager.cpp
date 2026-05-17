@@ -89,7 +89,7 @@ ChunkManager::ChunkManager(std::vector<MeshBufferPtr> meshes,
     setChunkSize(chunksize);
     if (meshes.size() != layers.size())
     {
-                lvr2::log::error("{}{}{}{}{}{}", fmt::streamed("Number of meshes and layers do not match: \n"), fmt::streamed("Num meshes: "), fmt::streamed(meshes.size()), fmt::streamed("\n"), fmt::streamed("Num layers: "), fmt::streamed(layers.size()));
+                lvr2::log::error("{}{}{}{}{}{}", "Number of meshes and layers do not match: \n", "Num meshes: ", meshes.size(), "\n", "Num layers: ", layers.size());
 
         return;
     }

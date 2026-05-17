@@ -475,7 +475,7 @@ ClusterBiMap<FaceHandle> iterativePlanarClusterGrowing(
     // Iterate numIterations times
     for (int i = 0; i < numIterations; ++i)
     {
-                lvr2::log::info("{}{}{}{}", fmt::streamed("Optimizing planes. Iterations "), fmt::streamed(i), fmt::streamed(" / "), fmt::streamed(numIterations));
+                lvr2::log::info("{}{}{}{}", "Optimizing planes. Iterations ", i, " / ", numIterations);
         // Generate clusters
         clusters = planarClusterGrowing(mesh, normals, minSinAngle);
 
@@ -509,7 +509,7 @@ ClusterBiMap<FaceHandle> iterativePlanarClusterGrowingRANSAC(
     // Iterate numIterations times
     for (int i = 0; i < numIterations; ++i)
     {
-                lvr2::log::info("{}{}{}{}", fmt::streamed("Optimizing planes. Iterations "), fmt::streamed((i + 1)), fmt::streamed(" / "), fmt::streamed(numIterations));
+                lvr2::log::info("{}{}{}{}", "Optimizing planes. Iterations ", (i + 1), " / ", numIterations);
         // Generate clusters
         clusters = planarClusterGrowing(mesh, normals, minSinAngle);
 

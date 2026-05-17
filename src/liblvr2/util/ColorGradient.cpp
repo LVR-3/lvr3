@@ -242,7 +242,7 @@ ColorGradient::GradientType ColorGradient::gradientFromString(const std::string&
     }
     else
     {
-                lvr2::log::warning("{}{}{}", fmt::streamed("Unknown color graditent type: '"), fmt::streamed(s), fmt::streamed("'"));
+                lvr2::log::warning("{}{}{}", "Unknown color graditent type: '", s, "'");
         return GREY;
     }
 }

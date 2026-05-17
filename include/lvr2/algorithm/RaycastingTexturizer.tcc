@@ -141,7 +141,7 @@ void RaycastingTexturizer<BaseVecT>::setScanProject(const ScanProjectPtr project
         }
     }
 
-        lvr2::log::info("{}{}{}", fmt::streamed("[RaycastingTexturizer] Loaded "), fmt::streamed(m_images.size()), fmt::streamed(" images"));
+        lvr2::log::info("{}{}{}", "[RaycastingTexturizer] Loaded ", m_images.size(), " images");
 }
 
 template <typename BaseVecT>
@@ -232,7 +232,7 @@ TextureHandle RaycastingTexturizer<BaseVecT>::generateTexture(
 
     if (m_images.size() == 0)
     {
-                lvr2::log::info("{}", fmt::streamed("[RaycastingTexturizer] No images set, cannot texturize cluster"));
+                lvr2::log::info("{}", "[RaycastingTexturizer] No images set, cannot texturize cluster");
         return texH;
     }
 

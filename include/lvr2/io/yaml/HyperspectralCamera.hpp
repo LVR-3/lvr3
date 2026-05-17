@@ -48,11 +48,11 @@ struct convert<lvr2::HyperspectralCamera>
         /*** Check for deprecated Tags and print warnings ***/
         if(node["kind"])
         {
-                        lvr2::log::warning("{}{}{}", fmt::streamed("[YAML::convert<HyperspectralCamera> - decode] "), fmt::streamed("WARNING: 'kind' Tag is no longer supported! "), fmt::streamed("Please update your dataset to use 'entity' and 'type' Tags."));
+                        lvr2::log::warning("{}{}{}", "[YAML::convert<HyperspectralCamera> - decode] ", "WARNING: 'kind' Tag is no longer supported! ", "Please update your dataset to use 'entity' and 'type' Tags.");
         }
         if(node["sensor_type"])
         {
-                        lvr2::log::warning("{}{}{}", fmt::streamed("[YAML::convert<HyperspectralCamera> - decode] "), fmt::streamed("Warning: 'sensor_type' Tag is no longer supported! "), fmt::streamed("Please update your dataset to use 'entity' and 'type' Tags."));
+                        lvr2::log::warning("{}{}{}", "[YAML::convert<HyperspectralCamera> - decode] ", "Warning: 'sensor_type' Tag is no longer supported! ", "Please update your dataset to use 'entity' and 'type' Tags.");
         }
         /*** Continue parsing in case these Tags were redundant ***/
 
@@ -73,7 +73,7 @@ struct convert<lvr2::HyperspectralCamera>
             }
             catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex)
             {
-                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - HyperspectralCamera - decode] ERROR: Could not decode 'transformation': "), fmt::streamed(node["transformation"]), fmt::streamed(" as Transformd"));
+                                lvr2::log::error("{}{}{}", "[YAML - HyperspectralCamera - decode] ERROR: Could not decode 'transformation': ", YAML_UTIL::NodeSummary(node["transformation"]), " as Transformd");
                 return false;
             }
         }
@@ -86,7 +86,7 @@ struct convert<lvr2::HyperspectralCamera>
             }
             catch(const YAML::TypedBadConversion<std::string>& ex)
             {
-                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - HyperspectralCamera - decode] ERROR: Could not decode 'name': "), fmt::streamed(node["name"]), fmt::streamed(" as string"));
+                                lvr2::log::error("{}{}{}", "[YAML - HyperspectralCamera - decode] ERROR: Could not decode 'name': ", YAML_UTIL::NodeSummary(node["name"]), " as string");
                 return false;
             }
         }
@@ -99,13 +99,13 @@ struct convert<lvr2::HyperspectralCamera>
             }
             catch(const YAML::TypedBadConversion<decltype(camera.model)>& ex)
             {
-                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - HyperspectralCamera - decode] ERROR: Could not decode 'model': "), fmt::streamed(node["model"]), fmt::streamed(" as CameraModel"));
+                                lvr2::log::error("{}{}{}", "[YAML - HyperspectralCamera - decode] ERROR: Could not decode 'model': ", YAML_UTIL::NodeSummary(node["model"]), " as CameraModel");
                 return false;
             }
         }
         else
         {
-                        lvr2::log::warning("{}{}", fmt::streamed("[YAML::convert<HyperspectralCamera> - decode] "), fmt::streamed("WARNING: Hyperspectral camera has no sensor model in meta file."));
+                        lvr2::log::warning("{}{}", "[YAML::convert<HyperspectralCamera> - decode] ", "WARNING: Hyperspectral camera has no sensor model in meta file.");
         }
 
         return true;

@@ -59,7 +59,7 @@ struct convert<lvr2::CameraImage>
                 scanImage.transformation = parsed_node["transformation"].as<lvr2::Transformd>();
             } catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex)
             {
-                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - CameraImage - decode] ERROR: Could not decode 'transformation': "), fmt::streamed(parsed_node["transformation"]), fmt::streamed(" as Transformd"));
+                                lvr2::log::error("{}{}{}", "[YAML - CameraImage - decode] ERROR: Could not decode 'transformation': ", YAML_UTIL::NodeSummary(parsed_node["transformation"]), " as Transformd");
                 return false;
             }
             parsed_node.remove("transformation");
@@ -78,7 +78,7 @@ struct convert<lvr2::CameraImage>
             }
             catch(const YAML::TypedBadConversion<lvr2::Extrinsicsd>& ex)
             {
-                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - CameraImage - decode] ERROR: Could not decode 'pose_estimation': "), fmt::streamed(parsed_node["pose_estimation"]), fmt::streamed(" as Extrinsicsd"));
+                                lvr2::log::error("{}{}{}", "[YAML - CameraImage - decode] ERROR: Could not decode 'pose_estimation': ", YAML_UTIL::NodeSummary(parsed_node["pose_estimation"]), " as Extrinsicsd");
                 return false;
             }
             parsed_node.remove("pose_estimation");
@@ -96,7 +96,7 @@ struct convert<lvr2::CameraImage>
             }
             catch(const YAML::TypedBadConversion<double>& ex)
             {
-                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - CameraImage - decode] ERROR: Could not decode 'timestamp': "), fmt::streamed(node["timestamp"]), fmt::streamed(" as double"));
+                                lvr2::log::error("{}{}{}", "[YAML - CameraImage - decode] ERROR: Could not decode 'timestamp': ", YAML_UTIL::NodeSummary(node["timestamp"]), " as double");
                 return false;
             }
             parsed_node.remove("timestamp");
@@ -146,7 +146,7 @@ struct convert<lvr2::CameraImageGroup>
             }
             catch(const YAML::TypedBadConversion<lvr2::Transformd>& ex)
             {
-                                lvr2::log::error("{}{}{}", fmt::streamed("[YAML - CameraImageGroup - decode] ERROR: Could not decode 'transformation': "), fmt::streamed(node["transformation"]), fmt::streamed(" as Transformd"));
+                                lvr2::log::error("{}{}{}", "[YAML - CameraImageGroup - decode] ERROR: Could not decode 'transformation': ", YAML_UTIL::NodeSummary(node["transformation"]), " as Transformd");
                 return false;
             }
         }

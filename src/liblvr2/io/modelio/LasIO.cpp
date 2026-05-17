@@ -99,7 +99,7 @@ ModelPtr LasIO::read(string filename )
     }
     else
     {
-                lvr2::log::error("{}{}", fmt::streamed("LasIO::read(): Unable to open file "), fmt::streamed(filename));
+                lvr2::log::error("{}{}", "LasIO::read(): Unable to open file ", filename);
         return ModelPtr();
     }
 }

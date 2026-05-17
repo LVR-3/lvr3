@@ -83,7 +83,7 @@ HalfEdgeMesh<BaseVecT>::HalfEdgeMesh(MeshBufferPtr ptr)
         }
         catch(PanicException exception)
         {
-                        lvr2::log::error("{}{}{}{}{}{}", fmt::streamed("Warning loop detected. Omitting face "), fmt::streamed(v1.idx()), fmt::streamed(" "), fmt::streamed(v2.idx()), fmt::streamed(" "), fmt::streamed(v3.idx()));
+                        lvr2::log::error("{}{}{}{}{}{}", "Warning loop detected. Omitting face ", v1.idx(), " ", v2.idx(), " ", v3.idx());
         }
     }
 }
@@ -1809,7 +1809,7 @@ void HalfEdgeMesh<BaseVecT>::fillHoles(size_t maxSize)
         contours.push_back(currContour);
     }
 
-        lvr2::log::info("{}{}{}", fmt::streamed("Found "), fmt::streamed(contours.size()), fmt::streamed(" holes"));
+        lvr2::log::info("{}{}{}", "Found ", contours.size(), " holes");
 
     string comment = timestamp.getElapsedTime() + "Removing holes";
     ProgressBar progress(contours.size(), comment);

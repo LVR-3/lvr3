@@ -68,7 +68,7 @@ namespace YAML
                 }
                 catch (const YAML::TypedBadConversion<lvr2::Transformd> &ex)
                 {
-                                        lvr2::log::error("{}{}{}", fmt::streamed("[YAML - ScanProject - decode] ERROR: Could not decode 'transformation': "), fmt::streamed(node["transformation"]), fmt::streamed(" as Transformd"));
+                                        lvr2::log::error("{}{}{}", "[YAML - ScanProject - decode] ERROR: Could not decode 'transformation': ", YAML_UTIL::NodeSummary(node["transformation"]), " as Transformd");
                     return false;
                 }
             }
@@ -84,7 +84,7 @@ namespace YAML
                 }
                 catch (const YAML::TypedBadConversion<std::string> &ex)
                 {
-                                        lvr2::log::error("{}{}{}", fmt::streamed("[YAML - ScanProject - decode] ERROR: Could not decode 'crs': "), fmt::streamed(node["crs"]), fmt::streamed(" as string"));
+                                        lvr2::log::error("{}{}{}", "[YAML - ScanProject - decode] ERROR: Could not decode 'crs': ", YAML_UTIL::NodeSummary(node["crs"]), " as string");
                     return false;
                 }
             }
@@ -97,7 +97,7 @@ namespace YAML
                 }
                 catch (const YAML::TypedBadConversion<std::string> &ex)
                 {
-                                        lvr2::log::error("{}{}{}", fmt::streamed("[YAML - ScanProject - decode] ERROR: Could not decode 'coordinate_system': "), fmt::streamed(node["coordinate_system"]), fmt::streamed(" as string"));
+                                        lvr2::log::error("{}{}{}", "[YAML - ScanProject - decode] ERROR: Could not decode 'coordinate_system': ", YAML_UTIL::NodeSummary(node["coordinate_system"]), " as string");
                     return false;
                 }
             }
@@ -110,7 +110,7 @@ namespace YAML
                 }
                 catch (const YAML::TypedBadConversion<std::string> &ex)
                 {
-                                        lvr2::log::error("{}{}{}", fmt::streamed("[YAML - ScanProject - decode] ERROR: Could not decode 'unit': "), fmt::streamed(node["unit"]), fmt::streamed(" as string"));
+                                        lvr2::log::error("{}{}{}", "[YAML - ScanProject - decode] ERROR: Could not decode 'unit': ", YAML_UTIL::NodeSummary(node["unit"]), " as string");
                     return false;
                 }
             }
@@ -123,7 +123,7 @@ namespace YAML
                 }
                 catch (const YAML::TypedBadConversion<std::string> &ex)
                 {
-                                        lvr2::log::error("{}{}{}", fmt::streamed("[YAML - ScanProject - decode] ERROR: Could not decode 'name': "), fmt::streamed(node["name"]), fmt::streamed(" as string"));
+                                        lvr2::log::error("{}{}{}", "[YAML - ScanProject - decode] ERROR: Could not decode 'name': ", YAML_UTIL::NodeSummary(node["name"]), " as string");
                     return false;
                 }
             }
@@ -136,7 +136,7 @@ namespace YAML
                 }
                 catch (const YAML::TypedBadConversion<lvr2::BoundingBox<lvr2::BaseVector<float>>> &ex)
                 {
-                                        lvr2::log::error("{}{}{}", fmt::streamed("[YAML - ScanProject - decode] ERROR: Could not decode 'aabb': "), fmt::streamed(node["aabb"]), fmt::streamed(" as BoundingBox"));
+                                        lvr2::log::error("{}{}{}", "[YAML - ScanProject - decode] ERROR: Could not decode 'aabb': ", YAML_UTIL::NodeSummary(node["aabb"]), " as BoundingBox");
                     return false;
                 }
             }

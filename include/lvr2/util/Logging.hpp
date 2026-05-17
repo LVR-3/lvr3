@@ -10,7 +10,6 @@
 #include <utility>
 
 #include <fmt/format.h>
-#include <fmt/ostream.h>
 #include <spdlog/spdlog.h>
 
 namespace lvr2

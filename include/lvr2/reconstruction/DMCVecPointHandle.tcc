@@ -49,7 +49,7 @@ vector<coord<float>*> DMCVecPointHandle<BaseVecT>::getContainedPoints(int index)
     if((index - 7) > (containedPoints.size() - 1))
     {
         return vector<coord<float>*>();
-                lvr2::log::info("{}", fmt::streamed("[DMCVecPointHandle] No points for current cell"));
+                lvr2::log::info("{}", "[DMCVecPointHandle] No points for current cell");
     }
     return containedPoints[index - 7];
 }

@@ -69,8 +69,8 @@ PCLFiltering::PCLFiltering( PointBufferPtr loader )
 
 
     // Parse to PCL point cloud
-        lvr2::log::info("{}", fmt::streamed("Creating PCL point cloud for filtering"));
-        lvr2::log::info("{}{}{}", fmt::streamed("Point cloud has "), fmt::streamed(numPoints), fmt::streamed(" points"));
+        lvr2::log::info("{}", "Creating PCL point cloud for filtering");
+        lvr2::log::info("{}{}{}", "Point cloud has ", numPoints, " points");
     m_pointCloud->resize(numPoints);
     float x, y, z;
     for(size_t i = 0; i < numPoints; i++)
@@ -118,13 +118,13 @@ void PCLFiltering::applyMLSProjection(float searchRadius)
     mls.setSearchMethod(m_kdTree);
     mls.setSearchRadius(searchRadius);
 
-        lvr2::log::info("{}", fmt::streamed("Applying MSL projection"));
+        lvr2::log::info("{}", "Applying MSL projection");
 
     // Reconstruct
     mls.process(mls_points);
 
-        lvr2::log::info("{}{}{}", fmt::streamed("Filtered cloud has "), fmt::streamed(mls_points.size()), fmt::streamed(" points"));
-        lvr2::log::info("{}", fmt::streamed("Saving result"));
+        lvr2::log::info("{}{}{}", "Filtered cloud has ", mls_points.size(), " points");
+        lvr2::log::info("{}", "Saving result");
 
     // Save filtered points
     m_pointCloud->resize(mls_points.size());
@@ -145,7 +145,7 @@ void PCLFiltering::applyOutlierRemoval(int meank, float thresh)
 {
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZRGB>);
 
-        lvr2::log::info("{}", fmt::streamed("Applying outlier removal"));
+        lvr2::log::info("{}", "Applying outlier removal");
 
     // Create the filtering object
     pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
@@ -154,8 +154,8 @@ void PCLFiltering::applyOutlierRemoval(int meank, float thresh)
     sor.setStddevMulThresh (thresh);
     sor.filter (*cloud_filtered);
 
-        lvr2::log::info("{}{}{}", fmt::streamed("Filtered cloud has "), fmt::streamed(cloud_filtered->size()), fmt::streamed(" points"));
-        lvr2::log::info("{}", fmt::streamed("Saving result"));
+        lvr2::log::info("{}{}{}", "Filtered cloud has ", cloud_filtered->size(), " points");
+        lvr2::log::info("{}", "Saving result");
 
     m_pointCloud->width = cloud_filtered->width;
     m_pointCloud->height = cloud_filtered->height;
