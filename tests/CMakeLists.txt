@@ -78,20 +78,29 @@ if(NOT LVR2_FMT_TARGET)
   endif()
 endif()
 
-if(LVR2_FMT_TARGET)
+if(NOT LVR2_SPDLOG_TARGET)
+  find_package(spdlog CONFIG QUIET)
+  if(TARGET spdlog::spdlog_header_only)
+    set(LVR2_SPDLOG_TARGET spdlog::spdlog_header_only)
+  elseif(TARGET spdlog::spdlog)
+    set(LVR2_SPDLOG_TARGET spdlog::spdlog)
+  endif()
+endif()
+
+if(LVR2_FMT_TARGET AND LVR2_SPDLOG_TARGET)
   add_executable(lvr2_logging_facade_header_compile
     test_logging_facade_header_compile.cpp
   )
   target_include_directories(lvr2_logging_facade_header_compile PRIVATE ${PROJECT_SOURCE_DIR}/include)
   target_compile_features(lvr2_logging_facade_header_compile PRIVATE cxx_std_17)
-  target_link_libraries(lvr2_logging_facade_header_compile PRIVATE ${LVR2_FMT_TARGET})
+  target_link_libraries(lvr2_logging_facade_header_compile PRIVATE ${LVR2_FMT_TARGET} ${LVR2_SPDLOG_TARGET})
   add_test(NAME lvr2_logging_facade_header_compile COMMAND lvr2_logging_facade_header_compile)
   set_tests_properties(lvr2_logging_facade_header_compile
     PROPERTIES
       LABELS "cpp;logging;header"
   )
 else()
-  message(STATUS "fmt not found; skipping logging facade header compile test.")
+  message(STATUS "fmt/spdlog not found; skipping logging facade header compile test.")
 endif()
 
 add_test(

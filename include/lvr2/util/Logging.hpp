@@ -6,10 +6,12 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 
 #include <fmt/format.h>
 #include <fmt/ostream.h>
+#include <spdlog/spdlog.h>
 
 namespace lvr2
 {
@@ -28,9 +30,94 @@ enum class Level : std::uint8_t
     error
 };
 
+struct SourceLocation
+{
+    const char* file = "";
+    int line = 0;
+    const char* function = "";
+};
+
 void set_level(Level level);
 void flush();
 void write(Level level, std::string_view message);
+
+namespace detail
+{
+
+void* logger_handle();
+
+inline spdlog::logger& logger()
+{
+    return *static_cast<spdlog::logger*>(logger_handle());
+}
+
+inline spdlog::level::level_enum to_spdlog_level(Level level) noexcept
+{
+    switch(level)
+    {
+        case Level::trace: return spdlog::level::trace;
+        case Level::debug: return spdlog::level::debug;
+        case Level::info: return spdlog::level::info;
+        case Level::warning: return spdlog::level::warn;
+        case Level::error: return spdlog::level::err;
+    }
+
+    return spdlog::level::info;
+}
+
+inline spdlog::source_loc to_spdlog_source_location(SourceLocation location) noexcept
+{
+    return spdlog::source_loc{
+        location.file ? location.file : "",
+        location.line,
+        location.function ? location.function : ""};
+}
+
+inline fmt::string_view to_fmt_string_view(std::string_view value) noexcept
+{
+    return fmt::string_view(value.data(), value.size());
+}
+
+template<typename... Args>
+void write_at(Level level, SourceLocation location, std::string_view format, Args&&... args)
+{
+    logger().log(to_spdlog_source_location(location),
+                 to_spdlog_level(level),
+                 fmt::runtime(to_fmt_string_view(format)),
+                 std::forward<Args>(args)...);
+}
+
+template<typename... Args>
+void trace_at(SourceLocation location, std::string_view format, Args&&... args)
+{
+    write_at(Level::trace, location, format, std::forward<Args>(args)...);
+}
+
+template<typename... Args>
+void debug_at(SourceLocation location, std::string_view format, Args&&... args)
+{
+    write_at(Level::debug, location, format, std::forward<Args>(args)...);
+}
+
+template<typename... Args>
+void info_at(SourceLocation location, std::string_view format, Args&&... args)
+{
+    write_at(Level::info, location, format, std::forward<Args>(args)...);
+}
+
+template<typename... Args>
+void warning_at(SourceLocation location, std::string_view format, Args&&... args)
+{
+    write_at(Level::warning, location, format, std::forward<Args>(args)...);
+}
+
+template<typename... Args>
+void error_at(SourceLocation location, std::string_view format, Args&&... args)
+{
+    write_at(Level::error, location, format, std::forward<Args>(args)...);
+}
+
+} // namespace detail
 
 inline void write_runtime(Level level, std::string_view message)
 {
@@ -38,43 +125,43 @@ inline void write_runtime(Level level, std::string_view message)
 }
 
 template<typename... Args>
-void write(Level level, fmt::format_string<Args...> format, Args&&... args)
+void write(Level level, std::string_view format, Args&&... args)
 {
-    write(level, fmt::format(format, std::forward<Args>(args)...));
+    detail::write_at(level, SourceLocation{}, format, std::forward<Args>(args)...);
 }
 
 template<typename... Args>
-void trace(fmt::format_string<Args...> format, Args&&... args)
+void trace(std::string_view format, Args&&... args)
 {
     write(Level::trace, format, std::forward<Args>(args)...);
 }
 
 template<typename... Args>
-void debug(fmt::format_string<Args...> format, Args&&... args)
+void debug(std::string_view format, Args&&... args)
 {
     write(Level::debug, format, std::forward<Args>(args)...);
 }
 
 template<typename... Args>
-void info(fmt::format_string<Args...> format, Args&&... args)
+void info(std::string_view format, Args&&... args)
 {
     write(Level::info, format, std::forward<Args>(args)...);
 }
 
 template<typename... Args>
-void warning(fmt::format_string<Args...> format, Args&&... args)
+void warning(std::string_view format, Args&&... args)
 {
     write(Level::warning, format, std::forward<Args>(args)...);
 }
 
 template<typename... Args>
-void warn(fmt::format_string<Args...> format, Args&&... args)
+void warn(std::string_view format, Args&&... args)
 {
     warning(format, std::forward<Args>(args)...);
 }
 
 template<typename... Args>
-void error(fmt::format_string<Args...> format, Args&&... args)
+void error(std::string_view format, Args&&... args)
 {
     write(Level::error, format, std::forward<Args>(args)...);
 }
@@ -111,12 +198,38 @@ inline void error_runtime(std::string_view message)
 
 } // namespace log
 
+#ifndef LVR2_LOG_TRACE
+#define LVR2_LOG_TRACE(...) \
+    ::lvr2::log::detail::trace_at(::lvr2::log::SourceLocation{__FILE__, __LINE__, __func__}, __VA_ARGS__)
+#endif
+#ifndef LVR2_LOG_DEBUG
+#define LVR2_LOG_DEBUG(...) \
+    ::lvr2::log::detail::debug_at(::lvr2::log::SourceLocation{__FILE__, __LINE__, __func__}, __VA_ARGS__)
+#endif
+#ifndef LVR2_LOG_INFO
+#define LVR2_LOG_INFO(...) \
+    ::lvr2::log::detail::info_at(::lvr2::log::SourceLocation{__FILE__, __LINE__, __func__}, __VA_ARGS__)
+#endif
+#ifndef LVR2_LOG_WARNING
+#define LVR2_LOG_WARNING(...) \
+    ::lvr2::log::detail::warning_at(::lvr2::log::SourceLocation{__FILE__, __LINE__, __func__}, __VA_ARGS__)
+#endif
+#ifndef LVR2_LOG_WARN
+#define LVR2_LOG_WARN(...) LVR2_LOG_WARNING(__VA_ARGS__)
+#endif
+#ifndef LVR2_LOG_ERROR
+#define LVR2_LOG_ERROR(...) \
+    ::lvr2::log::detail::error_at(::lvr2::log::SourceLocation{__FILE__, __LINE__, __func__}, __VA_ARGS__)
+#endif
+
 using LogLevel = log::Level;
 
 static_assert(sizeof(log::Level) == sizeof(std::uint8_t),
               "logging level remains a compact public enum");
 static_assert(static_cast<std::uint8_t>(log::Level::error) == 4,
               "logging level ordering is part of the sink mapping contract");
+static_assert(std::is_trivially_copyable<log::SourceLocation>::value,
+              "source-location bridge remains cheap to pass by value");
 
 /**
  * @brief A class to monitor progress.

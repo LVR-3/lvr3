@@ -5,24 +5,33 @@
 #include <type_traits>
 #include <utility>
 
+#include <spdlog/spdlog.h>
+
 namespace lvr2::log
 {
 void set_level(Level) {}
 void flush() {}
 void write(Level, std::string_view) {}
+namespace detail
+{
+void* logger_handle()
+{
+    return spdlog::default_logger_raw();
+}
+} // namespace detail
 } // namespace lvr2::log
 
 template<typename... Args>
 using info_expression = decltype(
-    lvr2::log::info(std::declval<fmt::format_string<Args...>>(), std::declval<Args>()...));
+    lvr2::log::info(std::declval<std::string_view>(), std::declval<Args>()...));
 
 template<typename... Args>
 using warning_expression = decltype(
-    lvr2::log::warning(std::declval<fmt::format_string<Args...>>(), std::declval<Args>()...));
+    lvr2::log::warning(std::declval<std::string_view>(), std::declval<Args>()...));
 
 template<typename... Args>
 using error_expression = decltype(
-    lvr2::log::error(std::declval<fmt::format_string<Args...>>(), std::declval<Args>()...));
+    lvr2::log::error(std::declval<std::string_view>(), std::declval<Args>()...));
 
 int main()
 {
@@ -44,6 +53,7 @@ int main()
     lvr2::log::info("Loaded {} vertices", 12);
     lvr2::log::warning("Skipping '{}'", "channel");
     lvr2::log::error("Failed with code {}", 7);
+    LVR2_LOG_INFO("Source-location bridge keeps {} formatting", "spdlog");
     lvr2::log::info_runtime("preformatted runtime message");
     lvr2::log::flush();
     return 0;
