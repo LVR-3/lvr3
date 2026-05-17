@@ -28,8 +28,8 @@ endforeach()
 set(_REMOVED_PRIVATE_MESH_FILES
   "${LVR2_SOURCE_DIR}/src/liblvr2/io/modelio/ObjIO.cpp"
   "${LVR2_SOURCE_DIR}/src/liblvr2/io/modelio/STLIO.cpp"
-  "${LVR2_SOURCE_DIR}/src/liblvr2/include/lvr2/io/modelio/ObjIO.hpp"
-  "${LVR2_SOURCE_DIR}/src/liblvr2/include/lvr2/io/modelio/STLIO.hpp"
+  "${LVR2_SOURCE_DIR}/src/liblvr2/private/lvr2/io/modelio/ObjIO.hpp"
+  "${LVR2_SOURCE_DIR}/src/liblvr2/private/lvr2/io/modelio/STLIO.hpp"
 )
 foreach(_FILE IN LISTS _REMOVED_PRIVATE_MESH_FILES)
   if(EXISTS "${_FILE}")

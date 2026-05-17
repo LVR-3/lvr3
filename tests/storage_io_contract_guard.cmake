@@ -21,7 +21,7 @@ foreach(_required_path IN ITEMS
     "include/lvr2/io/storage/StorageBackend.hpp"
     "include/lvr2/io/storage/ChunkStore.hpp"
     "include/lvr2/io/scan/ProjectStore.hpp"
-    "src/liblvr2/include/lvr2/io/MeshStores.hpp"
+    "src/liblvr2/private/lvr2/io/MeshStores.hpp"
     "src/liblvr2/io/storage/StorageRegistry.cpp"
     "src/liblvr2/io/storage/FileKernelStorageBackend.cpp"
     "src/liblvr2/io/scan/ProjectStore.cpp"
