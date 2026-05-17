@@ -193,11 +193,10 @@ else()
 endif()
 
 #####################################################################################
-# Set c++0x flags for gcc compilers (needed for boctree io)
+# Source-level compile tweaks
 #####################################################################################
 
 if(UNIX)
-  SET_SOURCE_FILES_PROPERTIES(io/BoctreeIO.cpp PROPERTIES COMPILE_FLAGS "-std=c++14")
   SET_SOURCE_FILES_PROPERTIES(util/Logging.cpp PROPERTIES COMPILE_FLAGS "-fvisibility=hidden")
 endif(UNIX)
 
@@ -223,6 +222,7 @@ if(LVR2_BUILD_STATIC_LIBS)
         ${LVR2_FMT_TARGET}
         ${LVR2_HIGHFIVE_TARGET}
     )
+    target_compile_features(lvr2core PRIVATE cxx_std_20)
 
     add_library(lvr2_static STATIC $<TARGET_OBJECTS:lvr2core>)
     target_include_directories(lvr2_static PUBLIC
@@ -239,6 +239,7 @@ if(LVR2_BUILD_STATIC_LIBS)
         ${LVR2_INTERNAL_DEPENDENCIES_STATIC}
         ${LVR2_LIB_DEPENDENCIES}
     )
+    target_compile_features(lvr2_static PUBLIC cxx_std_20)
     target_compile_definitions(lvr2_static
         PUBLIC
         ${LVR2_DEFINITIONS}
@@ -246,7 +247,6 @@ if(LVR2_BUILD_STATIC_LIBS)
     set_target_properties(lvr2_static
         PROPERTIES
         EXPORT_NAME ${_LVR2_STATIC_EXPORT_NAME}
-        CXX_STANDARD 17
     )
 
     list(APPEND _LVR2_LIBRARY_TARGETS lvr2_static)
@@ -271,6 +271,7 @@ if(BUILD_SHARED_LIBS)
         ${LVR2_INTERNAL_DEPENDENCIES_SHARED}
         ${LVR2_LIB_DEPENDENCIES}
     )
+    target_compile_features(lvr2 PUBLIC cxx_std_20)
     if(LVR2_MESH_IO_ASSIMP_AVAILABLE)
         target_sources(lvr2 PRIVATE io/AssimpMeshAdapter.cpp)
         if(LVR2_ASSIMP_TARGET)
@@ -291,7 +292,6 @@ if(BUILD_SHARED_LIBS)
         EXPORT_NAME lvr2
         SOVERSION ${lvr2_VERSION_MAJOR}
         VERSION ${lvr2_VERSION}
-        CXX_STANDARD 17
         VISIBILITY_INLINES_HIDDEN ON
     )
 
@@ -331,6 +331,7 @@ if(_LVR2_COMPONENT_AGGREGATE_TARGET)
     foreach(_LVR2_COMPONENT IN LISTS _LVR2_COMPONENTS)
         set(_LVR2_COMPONENT_TARGET "lvr2_${_LVR2_COMPONENT}")
         add_library(${_LVR2_COMPONENT_TARGET} INTERFACE)
+        target_compile_features(${_LVR2_COMPONENT_TARGET} INTERFACE cxx_std_20)
         target_link_libraries(${_LVR2_COMPONENT_TARGET} INTERFACE ${_LVR2_COMPONENT_AGGREGATE_TARGET})
         set_target_properties(${_LVR2_COMPONENT_TARGET}
             PROPERTIES

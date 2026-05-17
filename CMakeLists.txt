@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 4.2)
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/Lvr3DependencyProvider.cmake")
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/Lvr3DependencyPolicy.cmake")

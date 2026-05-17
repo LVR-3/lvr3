@@ -66,7 +66,8 @@ if(NOT TARGET lvr2::lvr2)
   add_library(lvr2::lvr2 STATIC IMPORTED)
   set_target_properties(lvr2::lvr2 PROPERTIES
     IMPORTED_LOCATION \"${_prefix}/lib/liblvr2.a\"
-    INTERFACE_LINK_LIBRARIES \"tl::expected;fmt::fmt;spdlog::spdlog\")
+    INTERFACE_LINK_LIBRARIES \"tl::expected;fmt::fmt;spdlog::spdlog\"
+    INTERFACE_COMPILE_FEATURES \"cxx_std_20\")
 endif()
 ")
   elseif(_shape STREQUAL "dual")
@@ -76,13 +77,15 @@ if(NOT TARGET lvr2::lvr2)
   add_library(lvr2::lvr2 SHARED IMPORTED)
   set_target_properties(lvr2::lvr2 PROPERTIES
     IMPORTED_LOCATION \"${_prefix}/lib/liblvr2${CMAKE_SHARED_LIBRARY_SUFFIX}\"
-    INTERFACE_LINK_LIBRARIES \"tl::expected;fmt::fmt;spdlog::spdlog\")
+    INTERFACE_LINK_LIBRARIES \"tl::expected;fmt::fmt;spdlog::spdlog\"
+    INTERFACE_COMPILE_FEATURES \"cxx_std_20\")
 endif()
 if(NOT TARGET lvr2::lvr2_static)
   add_library(lvr2::lvr2_static STATIC IMPORTED)
   set_target_properties(lvr2::lvr2_static PROPERTIES
     IMPORTED_LOCATION \"${_prefix}/lib/liblvr2.a\"
-    INTERFACE_LINK_LIBRARIES \"tl::expected;fmt::fmt;spdlog::spdlog\")
+    INTERFACE_LINK_LIBRARIES \"tl::expected;fmt::fmt;spdlog::spdlog\"
+    INTERFACE_COMPILE_FEATURES \"cxx_std_20\")
 endif()
 ")
   elseif(_shape STREQUAL "shared-only")
@@ -92,7 +95,8 @@ if(NOT TARGET lvr2::lvr2)
   add_library(lvr2::lvr2 SHARED IMPORTED)
   set_target_properties(lvr2::lvr2 PROPERTIES
     IMPORTED_LOCATION \"${_prefix}/lib/liblvr2${CMAKE_SHARED_LIBRARY_SUFFIX}\"
-    INTERFACE_LINK_LIBRARIES \"tl::expected;fmt::fmt;spdlog::spdlog\")
+    INTERFACE_LINK_LIBRARIES \"tl::expected;fmt::fmt;spdlog::spdlog\"
+    INTERFACE_COMPILE_FEATURES \"cxx_std_20\")
 endif()
 ")
   else()
@@ -102,7 +106,7 @@ endif()
   set(_COMPONENT_TARGETS_CONTENT "")
   foreach(_component IN ITEMS geometry io reconstruction texture registration display)
     string(APPEND _COMPONENT_TARGETS_CONTENT
-"if(NOT TARGET lvr2::${_component})\n  add_library(lvr2::${_component} INTERFACE IMPORTED)\n  set_target_properties(lvr2::${_component} PROPERTIES\n    INTERFACE_LINK_LIBRARIES \"lvr2::lvr2\")\nendif()\n")
+"if(NOT TARGET lvr2::${_component})\n  add_library(lvr2::${_component} INTERFACE IMPORTED)\n  set_target_properties(lvr2::${_component} PROPERTIES\n    INTERFACE_LINK_LIBRARIES \"lvr2::lvr2\"\n    INTERFACE_COMPILE_FEATURES \"cxx_std_20\")\nendif()\n")
   endforeach()
   string(APPEND _TARGETS_CONTENT "${_COMPONENT_TARGETS_CONTENT}")
 

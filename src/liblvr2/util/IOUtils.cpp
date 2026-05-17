@@ -455,7 +455,7 @@ PointBufferPtr subSamplePointBuffer(PointBufferPtr src, const size_t& n)
         }
 
         // Copy indices into vector for faster access and []-operator support
-        //.In c++14 this is the fastest way. In C++17 a better alternative
+        //.This legacy byte-swap path predates the C++20 baseline; a future cleanup can use <bit> helpers.
         // would be to use extract().
         vector<size_t> indices;
         indices.insert(indices.end(), index_set.begin(), index_set.end());

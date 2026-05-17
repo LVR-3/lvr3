@@ -42,11 +42,11 @@ int main()
     static_assert(std::is_same<decltype(lvr2::log::Level::warning), lvr2::log::Level>::value,
                   "warning level is exposed through lvr2::log");
     static_assert(std::is_same<info_expression<int>, void>::value,
-                  "format-style info calls compile for the C++17 facade");
+                  "format-style info calls compile for the C++20 baseline facade");
     static_assert(std::is_same<warning_expression<const char*>, void>::value,
-                  "format-style warning calls compile for the C++17 facade");
+                  "format-style warning calls compile for the C++20 baseline facade");
     static_assert(std::is_same<error_expression<int, const char*>, void>::value,
-                  "format-style error calls compile for the C++17 facade");
+                  "format-style error calls compile for the C++20 baseline facade");
     static_assert(std::is_same<decltype(lvr2::log::info_runtime("runtime message")), void>::value,
                   "runtime message API remains explicit");
 

@@ -385,7 +385,7 @@ endif(LVR2_WITH_FREENECT)
 # USED THIRD PARTY STUFF
 ###############################################################################
 
-# fmt is used by the public logging convenience header for the C++17 baseline.
+# fmt remains only for the pre-std-format logging facade and is removed by the std-format follow-up slice.
 lvr2_find_package(fmt CONFIG REQUIRED)
 if(TARGET fmt::fmt)
   set(LVR2_FMT_TARGET fmt::fmt)

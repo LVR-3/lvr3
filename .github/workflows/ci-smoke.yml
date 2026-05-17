@@ -43,12 +43,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - ros_distro: humble
-            runner: ubuntu-22.04
-            container: ros:humble-ros-base-jammy
-          - ros_distro: jazzy
-            runner: ubuntu-24.04
-            container: ros:jazzy-ros-base-noble
+          - ros_distro: lyrical
+            runner: ubuntu-26.04
+            container: ros:lyrical-ros-base-resolute
     steps:
       - name: Install CI tools
         run: |
@@ -90,7 +87,7 @@ jobs:
       - name: Run basic CTest smoke
         run: >-
           ctest --test-dir build-vcpkg-release --output-on-failure
-          -R "lvr2_(mesh_io_facade_header_compile|static_assert_contracts_compile|removed_public_mesh_io_headers|no_public_assimp_leakage|required_private_assimp_policy|no_vendored_dependencies|system_optout_semantics|diagnostic_hooks_policy|packaging_policy|no_bundled_viewer|cmake_module_audit|lvr3_package_identity_smoke|pytest_smoke)"
+          -R "lvr2_(mesh_io_facade_header_compile|static_assert_contracts_compile|removed_public_mesh_io_headers|no_public_assimp_leakage|required_private_assimp_policy|no_vendored_dependencies|system_optout_semantics|diagnostic_hooks_policy|packaging_policy|no_bundled_viewer|cmake_module_audit|lvr3_package_identity_smoke|lyrical_cxx20_baseline|pytest_smoke)"
 
       - name: Install/export package smoke
         run: |
@@ -104,7 +101,7 @@ jobs:
 
   system-optout-policy:
     name: system opt-out policy smoke
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -127,13 +124,14 @@ jobs:
           cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/packaging_policy.cmake
           cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/no_bundled_viewer.cmake
           cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/cmake_module_audit.cmake
+          cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/lyrical_cxx20_baseline.cmake
 
   optional-diagnostics:
     name: optional diagnostics (${{ matrix.mode }})
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_optional_diagnostics }}
     continue-on-error: true
-    runs-on: ubuntu-24.04
-    container: ros:jazzy-ros-base-noble
+    runs-on: ubuntu-26.04
+    container: ros:lyrical-ros-base-resolute
     strategy:
       fail-fast: false
       matrix:
