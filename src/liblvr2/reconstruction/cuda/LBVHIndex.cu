@@ -807,7 +807,7 @@ void LBVHIndex::getPtxFromCuString(
     std::vector<const char*> options = {
         kernel_includes.c_str(),
         cuda_include.c_str(),
-        "-std=c++17",
+        "-std=c++20",
         K_str.c_str()
     };
 

@@ -1,8 +1,9 @@
 # Migration Guide
 
-## Static-first CMake baseline
+## ROS 2 Lyrical / C++20 CMake baseline
 
-CMake minimum for this branch is now **3.22**.
+The primary target is ROS 2 Lyrical on Ubuntu Resolute 26.04. CMake minimum for this branch is now **4.2**, matching the Resolute toolchain lane, and public LVR targets export `cxx_std_20`. Consumers must compile code that includes LVR public headers as C++20 or newer.
+
 Default library output is **static** (`LVR2_BUILD_STATIC_LIBS=ON`) while shared
 libraries are opt-in (`BUILD_SHARED_LIBS=OFF` by default). Shared mode can be
 enabled with `-DBUILD_SHARED_LIBS=ON`; static output can be disabled with
@@ -93,7 +94,7 @@ The stream-style logging API has been removed. Code such as this no longer compi
 lvr2::logout::get() << lvr2::info << "Loaded " << count << " points" << lvr2::endl;
 ```
 
-Use the C++17 format-style facade instead:
+Use the format-style facade instead:
 
 ```cpp
 #include <lvr2/util/Logging.hpp>
@@ -105,7 +106,7 @@ lvr2::log::error("Failed to open '{}': {}", path, reason);
 
 Runtime/user-provided message text should use the explicit runtime APIs, for example `lvr2::log::info_runtime(message)`. The normal formatted path forwards the original format string and arguments to spdlog, including the optional `LVR2_LOG_INFO(...)`/`LVR2_LOG_WARNING(...)`/`LVR2_LOG_ERROR(...)` source-location macros. Types that only support stream insertion need a real formatter, `format_as`, or an explicit cheap summary string; do not add new stream-format logging shortcuts.
 
-The public logging calls keep LVR-owned signatures and examples: no `fmt::` or `spdlog::` types appear in normal call sites. The installed `lvr2`/`lvr3` CMake configs declare `fmt` and `spdlog` because the C++17 convenience header uses them in an inline detail layer, while the ABI fallback remains `lvr2::log::write(Level, std::string_view)`.
+The public logging calls keep LVR-owned signatures and examples: no `fmt::` or `spdlog::` types appear in normal call sites. The installed `lvr2`/`lvr3` CMake configs still declare `fmt` and `spdlog` for the pre-std-format logging facade; the std-format follow-up removes `fmt` and switches spdlog to standard formatting. The ABI fallback remains `lvr2::log::write(Level, std::string_view)`.
 
 ## CMake file layout and module audit
 
@@ -127,7 +128,7 @@ Debian packaging uses the distributor/system-package escape hatch instead of the
 
 The shared-only flags are required because mesh asset I/O uses a required private Assimp backend that must not leak through exported static target interfaces. Development packages no longer install static archives or vendored HighFive artifacts.
 
-Verified ROS/Debian dependency names were added for package-backed dependencies introduced by the modernization work, including Assimp, tl-expected (`libexpected-dev`), spdlog, TBB, TIFF, GDAL, HDF5, OpenCV, Eigen, Boost, YAML-CPP, OpenGL/GLUT, and OpenCL. HighFive, rply, and LASlib/LAStools remain required by the package-backed system build, but verified Jammy/Noble Debian package names and rosdep keys are not recorded yet; distributors may need local packages or rosdep rules for those dependencies before full system-package Debian builds pass.
+Verified ROS/Debian dependency names were added for package-backed dependencies introduced by the modernization work, including Assimp, tl-expected (`libexpected-dev`), spdlog, TBB, TIFF, GDAL, HDF5, OpenCV, Eigen, Boost, YAML-CPP, OpenGL/GLUT, and OpenCL. HighFive, rply, and LASlib/LAStools remain required by the package-backed system build, but verified Lyrical/Resolute Debian package names and rosdep keys are not recorded yet; distributors may need local packages or rosdep rules for those dependencies before full system-package Debian builds pass.
 
 ## Opt-in sanitizer, fuzz, and performance baseline hooks
 

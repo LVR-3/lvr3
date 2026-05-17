@@ -24,11 +24,11 @@ robotic applications such as autonomous navigation and localization in complex e
 
 https://github.com/uos/lvr2 - develop
 
-## Linux (Ubuntu 18.04, 20.04, 22.04, 24.04)
+## Linux (Ubuntu Resolute 26.04 / ROS 2 Lyrical)
 
 ### Step 1: Install build tools and vcpkg dependencies
 
-A C++17 compiler and CMake 3.22 or newer are required. Dependencies are resolved primarily through the `vcpkg.json` manifest:
+A C++20 compiler and CMake 4.2 or newer are required for the primary ROS 2 Lyrical / Ubuntu Resolute 26.04 target. Dependencies are resolved primarily through the `vcpkg.json` manifest:
 
 ```bash
 git clone https://github.com/microsoft/vcpkg.git ~/vcpkg
@@ -352,6 +352,4 @@ Please reference the following papers when using the lvr2 library in your scient
 
 ## ROS 2 build
 
-You can simply download this library and compile it inside your ROS 2 workspace. The following ROS 2 distributions are supported:
-
-[![humble](https://github.com/uos/lvr2/actions/workflows/ros-humble.yml/badge.svg)](https://github.com/uos/lvr2/actions/workflows/ros-humble.yml) [![iron](https://github.com/uos/lvr2/actions/workflows/ros-iron.yml/badge.svg)](https://github.com/uos/lvr2/actions/workflows/ros-iron.yml) [![jazzy](https://github.com/uos/lvr2/actions/workflows/ros-jazzy.yml/badge.svg)](https://github.com/uos/lvr2/actions/workflows/ros-jazzy.yml)
+The primary supported ROS workspace target is ROS 2 Lyrical on Ubuntu Resolute 26.04. Older ROS distro lanes are historical and are not preserved by the active modernization policy unless a future ADR reintroduces them.

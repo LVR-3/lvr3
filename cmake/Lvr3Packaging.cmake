@@ -66,7 +66,7 @@ set(_LVR2_DEPS
 )
 
 # HighFive, rply, and LASlib/LAStools are still required by the system-package
-# CMake build, but Jammy/Noble Debian package names are not verified here yet.
+# CMake build, but Lyrical/Resolute Debian package names are not verified here yet.
 # Do not guess dependency names in generated DEB metadata until those packages
 # are provided by distro packaging or local distributor rules.
 

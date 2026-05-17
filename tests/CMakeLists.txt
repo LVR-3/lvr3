@@ -37,7 +37,7 @@ add_executable(lvr2_mesh_io_facade_header_compile
   test_mesh_io_facade_header_compile.cpp
 )
 target_include_directories(lvr2_mesh_io_facade_header_compile PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_compile_features(lvr2_mesh_io_facade_header_compile PRIVATE cxx_std_17)
+target_compile_features(lvr2_mesh_io_facade_header_compile PRIVATE cxx_std_20)
 target_link_libraries(lvr2_mesh_io_facade_header_compile PRIVATE tl::expected)
 add_test(NAME lvr2_mesh_io_facade_header_compile COMMAND lvr2_mesh_io_facade_header_compile)
 set_tests_properties(lvr2_mesh_io_facade_header_compile
@@ -49,7 +49,7 @@ add_executable(lvr2_static_assert_contracts_compile
   test_static_assert_contracts.cpp
 )
 target_include_directories(lvr2_static_assert_contracts_compile PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_compile_features(lvr2_static_assert_contracts_compile PRIVATE cxx_std_17)
+target_compile_features(lvr2_static_assert_contracts_compile PRIVATE cxx_std_20)
 target_link_libraries(lvr2_static_assert_contracts_compile PRIVATE Eigen3::Eigen tl::expected)
 add_test(NAME lvr2_static_assert_contracts_compile COMMAND lvr2_static_assert_contracts_compile)
 set_tests_properties(lvr2_static_assert_contracts_compile
@@ -61,7 +61,7 @@ add_executable(lvr2_storage_io_header_compile
   test_storage_io_header_compile.cpp
 )
 target_include_directories(lvr2_storage_io_header_compile PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_compile_features(lvr2_storage_io_header_compile PRIVATE cxx_std_17)
+target_compile_features(lvr2_storage_io_header_compile PRIVATE cxx_std_20)
 target_link_libraries(lvr2_storage_io_header_compile PRIVATE tl::expected)
 add_test(NAME lvr2_storage_io_header_compile COMMAND lvr2_storage_io_header_compile)
 set_tests_properties(lvr2_storage_io_header_compile
@@ -92,7 +92,7 @@ if(LVR2_FMT_TARGET AND LVR2_SPDLOG_TARGET)
     test_logging_facade_header_compile.cpp
   )
   target_include_directories(lvr2_logging_facade_header_compile PRIVATE ${PROJECT_SOURCE_DIR}/include)
-  target_compile_features(lvr2_logging_facade_header_compile PRIVATE cxx_std_17)
+  target_compile_features(lvr2_logging_facade_header_compile PRIVATE cxx_std_20)
   target_link_libraries(lvr2_logging_facade_header_compile PRIVATE ${LVR2_FMT_TARGET} ${LVR2_SPDLOG_TARGET})
   add_test(NAME lvr2_logging_facade_header_compile COMMAND lvr2_logging_facade_header_compile)
   set_tests_properties(lvr2_logging_facade_header_compile
@@ -236,6 +236,17 @@ set_tests_properties(lvr2_cmake_module_audit
 )
 
 add_test(
+  NAME lvr2_lyrical_cxx20_baseline
+  COMMAND ${CMAKE_COMMAND}
+    -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+    -P ${CMAKE_CURRENT_LIST_DIR}/lyrical_cxx20_baseline.cmake
+)
+set_tests_properties(lvr2_lyrical_cxx20_baseline
+  PROPERTIES
+    LABELS "cmake;ros;lyrical;cxx20"
+)
+
+add_test(
   NAME lvr2_storage_io_contract_guard
   COMMAND ${CMAKE_COMMAND}
     -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
@@ -260,7 +271,7 @@ if(LVR2_MESH_IO_ASSIMP_AVAILABLE)
     ${Boost_INCLUDE_DIRS}
     ${HDF5_INCLUDE_DIRS}
   )
-  target_compile_features(lvr2_assimp_adapter_smoke PRIVATE cxx_std_17)
+  target_compile_features(lvr2_assimp_adapter_smoke PRIVATE cxx_std_20)
   target_link_libraries(lvr2_assimp_adapter_smoke PRIVATE Eigen3::Eigen ${LVR2_HIGHFIVE_TARGET})
   if(LVR2_ASSIMP_TARGET)
     target_link_libraries(lvr2_assimp_adapter_smoke PRIVATE ${LVR2_ASSIMP_TARGET})
@@ -282,7 +293,7 @@ if(LVR2_ENABLE_FUZZING)
   target_include_directories(lvr2_mesh_io_fuzz PRIVATE
     ${PROJECT_SOURCE_DIR}/include
   )
-  target_compile_features(lvr2_mesh_io_fuzz PRIVATE cxx_std_17)
+  target_compile_features(lvr2_mesh_io_fuzz PRIVATE cxx_std_20)
   target_link_libraries(lvr2_mesh_io_fuzz PRIVATE lvr2)
   lvr2_configure_fuzz_target(lvr2_mesh_io_fuzz)
 
@@ -311,7 +322,7 @@ if(_LVR2_GTEST_MAIN_TARGET)
     test_fixtures_seeds_metrics.cpp
   )
   target_include_directories(lvr2_smoke_gtest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-  target_compile_features(lvr2_smoke_gtest PRIVATE cxx_std_17)
+  target_compile_features(lvr2_smoke_gtest PRIVATE cxx_std_20)
   target_link_libraries(lvr2_smoke_gtest PRIVATE ${_LVR2_GTEST_MAIN_TARGET})
 
   add_executable(lvr2_mesh_io_facade_gtest
@@ -322,7 +333,7 @@ if(_LVR2_GTEST_MAIN_TARGET)
     ${PROJECT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}
   )
-  target_compile_features(lvr2_mesh_io_facade_gtest PRIVATE cxx_std_17)
+  target_compile_features(lvr2_mesh_io_facade_gtest PRIVATE cxx_std_20)
   target_link_libraries(lvr2_mesh_io_facade_gtest PRIVATE
     ${_LVR2_GTEST_MAIN_TARGET}
     lvr2
@@ -335,7 +346,7 @@ if(_LVR2_GTEST_MAIN_TARGET)
     ${PROJECT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}
   )
-  target_compile_features(lvr2_pca_normals_gtest PRIVATE cxx_std_17)
+  target_compile_features(lvr2_pca_normals_gtest PRIVATE cxx_std_20)
   target_link_libraries(lvr2_pca_normals_gtest PRIVATE
     ${_LVR2_GTEST_MAIN_TARGET}
     lvr2
@@ -348,7 +359,7 @@ if(_LVR2_GTEST_MAIN_TARGET)
     ${PROJECT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}
   )
-  target_compile_features(lvr2_search_grid_contracts_gtest PRIVATE cxx_std_17)
+  target_compile_features(lvr2_search_grid_contracts_gtest PRIVATE cxx_std_20)
   target_link_libraries(lvr2_search_grid_contracts_gtest PRIVATE
     ${_LVR2_GTEST_MAIN_TARGET}
     lvr2
@@ -361,7 +372,7 @@ if(_LVR2_GTEST_MAIN_TARGET)
     ${PROJECT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}
   )
-  target_compile_features(lvr2_storage_project_store_gtest PRIVATE cxx_std_17)
+  target_compile_features(lvr2_storage_project_store_gtest PRIVATE cxx_std_20)
   target_link_libraries(lvr2_storage_project_store_gtest PRIVATE
     ${_LVR2_GTEST_MAIN_TARGET}
     lvr2
@@ -397,7 +408,7 @@ if(_LVR2_GTEST_MAIN_TARGET)
     ${PROJECT_SOURCE_DIR}/src/liblvr2/include
     ${CMAKE_CURRENT_SOURCE_DIR}
   )
-  target_compile_features(lvr2_mesh_io_assimp_gtest PRIVATE cxx_std_17)
+  target_compile_features(lvr2_mesh_io_assimp_gtest PRIVATE cxx_std_20)
   target_link_libraries(lvr2_mesh_io_assimp_gtest PRIVATE
     ${_LVR2_GTEST_MAIN_TARGET}
     lvr2

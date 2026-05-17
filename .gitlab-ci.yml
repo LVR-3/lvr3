@@ -23,7 +23,7 @@ variables:
 
 system-optout-policy-smoke:
   stage: policy
-  image: ubuntu:24.04
+  image: ubuntu:26.04
   extends: .default-smoke
   script:
     - cmake --list-presets=all
@@ -35,16 +35,17 @@ system-optout-policy-smoke:
     - cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/packaging_policy.cmake
     - cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/no_bundled_viewer.cmake
     - cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/cmake_module_audit.cmake
+    - cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/lyrical_cxx20_baseline.cmake
 
-vcpkg-smoke-humble:
+vcpkg-smoke-lyrical:
   stage: build
-  image: ros:humble-ros-base-jammy
+  image: ros:lyrical-ros-base-resolute
   extends: .default-smoke
   cache:
     key:
       files:
         - vcpkg.json
-      prefix: vcpkg-humble
+      prefix: vcpkg-lyrical
     paths:
       - .vcpkg-cache/
       - vcpkg_installed/
@@ -55,33 +56,7 @@ vcpkg-smoke-humble:
       export VCPKG_ROOT="$CI_PROJECT_DIR/.vcpkg"
       cmake --preset vcpkg-release -G Ninja $LVR3_CI_CMAKE_ARGS
       cmake --build --preset build-vcpkg-release --parallel 2 --target lvr2_mesh_io_facade_header_compile lvr2_static_assert_contracts_compile
-      ctest --test-dir build-vcpkg-release --output-on-failure -R "lvr2_(mesh_io_facade_header_compile|static_assert_contracts_compile|removed_public_mesh_io_headers|no_public_assimp_leakage|required_private_assimp_policy|no_vendored_dependencies|system_optout_semantics|diagnostic_hooks_policy|packaging_policy|no_bundled_viewer|cmake_module_audit|lvr3_package_identity_smoke|pytest_smoke)"
-      cmake --build --preset build-vcpkg-release --parallel 2 --target lvr2
-      cmake --install build-vcpkg-release --prefix "$PWD/build-vcpkg-release/install-smoke"
-      vcpkg_prefix="$(find "$PWD/vcpkg_installed" "$PWD/build-vcpkg-release/vcpkg_installed" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -n 1)"
-      test -n "$vcpkg_prefix"
-      LVR2_PACKAGE_IDENTITY_INSTALL_PREFIX="$PWD/build-vcpkg-release/install-smoke" LVR2_PACKAGE_IDENTITY_CMAKE_PREFIX_PATH="$vcpkg_prefix" cmake -P tests/package_identity/package_identity_verify.cmake
-
-vcpkg-smoke-jazzy:
-  stage: build
-  image: ros:jazzy-ros-base-noble
-  extends: .default-smoke
-  cache:
-    key:
-      files:
-        - vcpkg.json
-      prefix: vcpkg-jazzy
-    paths:
-      - .vcpkg-cache/
-      - vcpkg_installed/
-  script:
-    - |
-      git clone --depth 1 https://github.com/microsoft/vcpkg.git "$CI_PROJECT_DIR/.vcpkg"
-      "$CI_PROJECT_DIR/.vcpkg/bootstrap-vcpkg.sh" -disableMetrics
-      export VCPKG_ROOT="$CI_PROJECT_DIR/.vcpkg"
-      cmake --preset vcpkg-release -G Ninja $LVR3_CI_CMAKE_ARGS
-      cmake --build --preset build-vcpkg-release --parallel 2 --target lvr2_mesh_io_facade_header_compile lvr2_static_assert_contracts_compile
-      ctest --test-dir build-vcpkg-release --output-on-failure -R "lvr2_(mesh_io_facade_header_compile|static_assert_contracts_compile|removed_public_mesh_io_headers|no_public_assimp_leakage|required_private_assimp_policy|no_vendored_dependencies|system_optout_semantics|diagnostic_hooks_policy|packaging_policy|no_bundled_viewer|cmake_module_audit|lvr3_package_identity_smoke|pytest_smoke)"
+      ctest --test-dir build-vcpkg-release --output-on-failure -R "lvr2_(mesh_io_facade_header_compile|static_assert_contracts_compile|removed_public_mesh_io_headers|no_public_assimp_leakage|required_private_assimp_policy|no_vendored_dependencies|system_optout_semantics|diagnostic_hooks_policy|packaging_policy|no_bundled_viewer|cmake_module_audit|lvr3_package_identity_smoke|lyrical_cxx20_baseline|pytest_smoke)"
       cmake --build --preset build-vcpkg-release --parallel 2 --target lvr2
       cmake --install build-vcpkg-release --prefix "$PWD/build-vcpkg-release/install-smoke"
       vcpkg_prefix="$(find "$PWD/vcpkg_installed" "$PWD/build-vcpkg-release/vcpkg_installed" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -n 1)"
@@ -90,7 +65,7 @@ vcpkg-smoke-jazzy:
 
 optional-sanitizer-diagnostics:
   stage: diagnostics
-  image: ros:jazzy-ros-base-noble
+  image: ros:lyrical-ros-base-resolute
   extends: .default-smoke
   when: manual
   allow_failure: true
@@ -117,7 +92,7 @@ optional-sanitizer-diagnostics:
 
 optional-fuzz-seed:
   stage: diagnostics
-  image: ros:jazzy-ros-base-noble
+  image: ros:lyrical-ros-base-resolute
   extends: .default-smoke
   when: manual
   allow_failure: true
@@ -144,7 +119,7 @@ optional-fuzz-seed:
 
 optional-performance-baseline:
   stage: diagnostics
-  image: ros:jazzy-ros-base-noble
+  image: ros:lyrical-ros-base-resolute
   extends: .default-smoke
   when: manual
   allow_failure: true

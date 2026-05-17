@@ -55,33 +55,8 @@ endif()
 
 
 
-if(CMAKE_VERSION VERSION_EQUAL 3.8 OR CMAKE_VERSION VERSION_GREATER 3.8 AND TARGET rdbcpp)
-    # require C++11, which is supported only in cmake >= 3.8
-    target_compile_features(rdbcpp PUBLIC cxx_std_11)
-elseif(CMAKE_VERSION VERSION_EQUAL 3.2 OR CMAKE_VERSION VERSION_GREATER 3.2 AND TARGET rdbcpp)
-    # require C++11, which is supported only in cmake >= 3.2
-    # require C++11 by requiring rvalue reference (introduced in C++11)
-    target_compile_features(rdbcpp PUBLIC cxx_rvalue_references)
-elseif(NOT MSVC)
-    include(CheckCXXCompilerFlag)
-    if(CMAKE_CXX_EXTENSIONS) # should gnu* extensions be used?
-        CHECK_CXX_COMPILER_FLAG("-std=gnu++11" COMPILER_SUPPORTS_GNUXX11)
-        CHECK_CXX_COMPILER_FLAG("-std=gnu++0x" COMPILER_SUPPORTS_GNUXX0X)
-    endif()
-    CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-    CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
-
-    if(CMAKE_CXX_EXTENSIONS AND COMPILER_SUPPORTS_GNUXX11)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
-    elseif(CMAKE_CXX_EXTENSIONS AND COMPILER_SUPPORTS_GNUXX0X)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
-    elseif(COMPILER_SUPPORTS_CXX11)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-    elseif(COMPILER_SUPPORTS_CXX0X)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-    else()
-        message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
-    endif()
+if(TARGET rdbcpp)
+    target_compile_features(rdbcpp PUBLIC cxx_std_20)
 endif()
 
 

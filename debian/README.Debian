@@ -16,7 +16,7 @@ Assimp (`libassimp-dev` / `assimp`), tl-expected (`libexpected-dev`), spdlog
 TIFF, GDAL, HDF5, OpenCV, Eigen, Boost, YAML-CPP, OpenGL/GLUT, and OpenCL.
 
 The package-backed CMake build also requires HighFive, rply, and LASlib/LAStools.
-Verified Jammy/Noble Debian package names and rosdep keys for those dependencies
+Verified Lyrical/Resolute Debian package names and rosdep keys for those dependencies
 are not recorded here yet, so they are deliberately not listed as Debian or ROS
 package dependencies. Full Debian builds may remain blocked on those packages
 until distro packaging or local rosdep rules provide them.

@@ -1,6 +1,6 @@
 # Verifies a single package identity load order from an installed prefix.
 
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 4.2)
 project(PackageIdentityLoadOrder CXX)
 
 if(NOT DEFINED CHECK_PREFIX OR CHECK_PREFIX STREQUAL "")
@@ -169,6 +169,14 @@ foreach(_COMPONENT IN LISTS _LVR_COMPONENTS)
   list(APPEND _PUBLIC_TARGETS lvr2::${_COMPONENT} lvr3::${_COMPONENT})
 endforeach()
 set(_PUBLIC_PROPERTIES INTERFACE_LINK_LIBRARIES INTERFACE_INCLUDE_DIRECTORIES INTERFACE_COMPILE_DEFINITIONS)
+foreach(_TARGET IN LISTS _PUBLIC_TARGETS)
+  if(TARGET ${_TARGET})
+    get_target_property(_COMPILE_FEATURES ${_TARGET} INTERFACE_COMPILE_FEATURES)
+    if(NOT _COMPILE_FEATURES OR NOT ";${_COMPILE_FEATURES};" MATCHES ";cxx_std_20;")
+      message(FATAL_ERROR "${_TARGET} must export cxx_std_20, got '${_COMPILE_FEATURES}'")
+    endif()
+  endif()
+endforeach()
 foreach(_TARGET IN LISTS _PUBLIC_TARGETS)
   if(TARGET ${_TARGET})
     foreach(_PROPERTY IN LISTS _PUBLIC_PROPERTIES)
