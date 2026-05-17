@@ -69,6 +69,18 @@ set_tests_properties(lvr2_storage_io_header_compile
     LABELS "cpp;io;scan;storage;header"
 )
 
+add_executable(lvr2_cxx20_view_span_contracts
+  test_cxx20_view_span_contracts.cpp
+)
+target_include_directories(lvr2_cxx20_view_span_contracts PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_compile_features(lvr2_cxx20_view_span_contracts PRIVATE cxx_std_20)
+target_link_libraries(lvr2_cxx20_view_span_contracts PRIVATE Eigen3::Eigen ${LVR2_HIGHFIVE_TARGET})
+add_test(NAME lvr2_cxx20_view_span_contracts COMMAND lvr2_cxx20_view_span_contracts)
+set_tests_properties(lvr2_cxx20_view_span_contracts
+  PROPERTIES
+    LABELS "cpp;cxx20;views;spans;types"
+)
+
 if(NOT LVR2_SPDLOG_TARGET)
   find_package(spdlog CONFIG QUIET)
   if(TARGET spdlog::spdlog_header_only)
@@ -256,6 +268,17 @@ add_test(
 set_tests_properties(lvr2_lyrical_cxx20_baseline
   PROPERTIES
     LABELS "cmake;ros;lyrical;cxx20"
+)
+
+add_test(
+  NAME lvr2_cxx20_view_span_policy
+  COMMAND ${CMAKE_COMMAND}
+    -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+    -P ${CMAKE_CURRENT_LIST_DIR}/cxx20_view_span_policy.cmake
+)
+set_tests_properties(lvr2_cxx20_view_span_policy
+  PROPERTIES
+    LABELS "cmake;cxx20;views;spans"
 )
 
 add_test(

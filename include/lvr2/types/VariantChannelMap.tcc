@@ -29,43 +29,53 @@ namespace lvr2 {
 
 template<typename... T>
 template<typename U>
-void VariantChannelMap<T...>::add(const std::string& name, Channel<U> channel)
+void VariantChannelMap<T...>::add(std::string_view name, Channel<U> channel)
 {
-    this->insert({name, channel});
+    this->emplace(std::string(name), std::move(channel));
 }
 
 
 template<typename... T>
 template<typename U>
-void VariantChannelMap<T...>::add(const std::string& name)
+void VariantChannelMap<T...>::add(std::string_view name)
 {
-    this->insert({name, Channel<U>(0,0)});
+    this->emplace(std::string(name), Channel<U>(0,0));
 }
 
 template<typename... T>
 template<typename U>
-void VariantChannelMap<T...>::add(const std::string& name, size_t numElements, size_t width)
+void VariantChannelMap<T...>::add(std::string_view name, size_t numElements, size_t width)
 {
-    this->insert({name, Channel<U>(numElements, width)});
+    this->emplace(std::string(name), Channel<U>(numElements, width));
 }
 
 template<typename... T>
 template<typename U>
-Channel<U>& VariantChannelMap<T...>::get(const std::string& name)
+Channel<U>& VariantChannelMap<T...>::get(std::string_view name)
 {
-    return boost::get<Channel<U> >(this->at(name));
+    auto it = this->find(name);
+    if(it == this->end())
+    {
+        throw std::out_of_range("channel name not found");
+    }
+    return boost::get<Channel<U> >(it->second);
 }
 
 template<typename... T>
 template<typename U>
-const Channel<U>& VariantChannelMap<T...>::get(const std::string& name) const
+const Channel<U>& VariantChannelMap<T...>::get(std::string_view name) const
 {
-    return boost::get<Channel<U> >(this->at(name));
+    auto it = this->find(name);
+    if(it == this->end())
+    {
+        throw std::out_of_range("channel name not found");
+    }
+    return boost::get<Channel<U> >(it->second);
 }
 
 template<typename... T>
 template<typename U>
-typename Channel<U>::Optional VariantChannelMap<T...>::getOptional(const std::string& name)
+typename Channel<U>::Optional VariantChannelMap<T...>::getOptional(std::string_view name)
 {
     typename Channel<U>::Optional ret;
     auto it = this->find(name);
@@ -79,7 +89,7 @@ typename Channel<U>::Optional VariantChannelMap<T...>::getOptional(const std::st
 
 template<typename... T>
 template<typename U>
-const typename Channel<U>::Optional VariantChannelMap<T...>::getOptional(const std::string& name) const
+const typename Channel<U>::Optional VariantChannelMap<T...>::getOptional(std::string_view name) const
 {
     typename Channel<U>::Optional ret;
     auto it = this->find(name);
@@ -92,14 +102,19 @@ const typename Channel<U>::Optional VariantChannelMap<T...>::getOptional(const s
 }
 
 template<typename... T>
-int VariantChannelMap<T...>::type(const std::string& name) const
+int VariantChannelMap<T...>::type(std::string_view name) const
 {
-    return this->at(name).which();
+    auto it = this->find(name);
+    if(it == this->end())
+    {
+        throw std::out_of_range("channel name not found");
+    }
+    return it->second.which();
 }
 
 template<typename... T>
 template<typename U>
-bool VariantChannelMap<T...>::is_type(const std::string& name) const
+bool VariantChannelMap<T...>::is_type(std::string_view name) const
 {
     return this->type(name) == index_of_type<U>::value;
 }

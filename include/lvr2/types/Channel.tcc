@@ -25,7 +25,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <algorithm>
 #include <cstring>
+#include <stdexcept>
 
 namespace lvr2 {
 
@@ -48,6 +50,13 @@ Channel<T>::Channel(size_t n, size_t width, DataPtr ptr)
 , m_elementWidth(width)
 , m_data(ptr)
 {}
+
+template<typename T>
+Channel<T>::Channel(size_t n, size_t width, std::span<const T> values)
+: Channel(n, width)
+{
+    assign(values);
+}
 
 template<typename T>
 Channel<T> Channel<T>::clone() const
@@ -91,6 +100,29 @@ const typename Channel<T>::DataPtr Channel<T>::dataPtr() const {
 template<typename T>
 typename Channel<T>::DataPtr Channel<T>::dataPtr() {
     return m_data;
+}
+
+template<typename T>
+std::span<const T> Channel<T>::values() const noexcept
+{
+    return std::span<const T>(m_data.get(), m_numElements * m_elementWidth);
+}
+
+template<typename T>
+std::span<T> Channel<T>::values() noexcept
+{
+    return std::span<T>(m_data.get(), m_numElements * m_elementWidth);
+}
+
+template<typename T>
+void Channel<T>::assign(std::span<const T> values)
+{
+    const std::size_t expectedSize = m_numElements * m_elementWidth;
+    if(values.size() != expectedSize)
+    {
+        throw std::invalid_argument("channel span size does not match dimensions");
+    }
+    std::copy(values.begin(), values.end(), m_data.get());
 }
 
 

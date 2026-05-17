@@ -19,6 +19,28 @@ installed static output is available, shared fallback otherwise. Debian packagin
 configures shared output explicitly so existing runtime packages still contain
 shared libraries.
 
+## C++20 view/span API updates
+
+The core channel APIs now use C++20 view vocabulary for non-owning inputs. `lvr2::Channel<T>` exposes `values()` as a `std::span<T>`/`std::span<const T>` view over its owned channel storage, and `Channel<T>(n, width, std::span<const T>)` plus `assign(std::span<const T>)` copy contiguous input data into owned storage. The input span is never stored; mismatched `n * width` sizes throw `std::invalid_argument`.
+
+`lvr2::VariantChannelMap` and `lvr2::BaseBuffer` channel-name parameters now accept `std::string_view` for lookup and add/remove helpers. Names inserted into the maps are copied into owned `std::string` keys before the caller's view can expire or mutate. Existing calls with string literals and `std::string` continue to work, but downstream code taking pointers to the old `const std::string&` member function signatures must update to `std::string_view`.
+
+Prefer these forms for new code:
+
+```cpp
+std::vector<float> points = make_points();
+lvr2::Channel<float> channel(2, 3, std::span<const float>(points.data(), points.size()));
+
+lvr2::BaseBuffer buffer;
+buffer.addFloatChannel(std::span<const float>(points.data(), points.size()), "points", 2, 3);
+if (buffer.hasFloatChannel("points")) {
+    std::span<float> values = buffer.get<float>("points").values();
+    // values is non-owning and must not outlive the channel stored in buffer.
+}
+```
+
+Do not store `std::span` or `std::string_view` in long-lived objects unless a future slice adds an explicit owner/lifetime contract and tests.
+
 ## lvr3 package identity
 
 `find_package(lvr3)` is now available as a compatibility package identity that reuses the existing `lvr2` install/export.

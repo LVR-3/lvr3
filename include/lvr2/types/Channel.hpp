@@ -34,6 +34,9 @@
 #include <concepts>
 #include <cstddef>
 #include <memory>
+#include <span>
+#include <string>
+#include <utility>
 #include <boost/optional.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/type_index.hpp>
@@ -53,6 +56,7 @@ public:
     Channel();
     Channel(size_t n, size_t width);
     Channel(size_t n, size_t width, DataPtr ptr);
+    Channel(size_t n, size_t width, std::span<const T> values);
     
 
     // clone
@@ -65,6 +69,9 @@ public:
     size_t           numElements() const;
     const DataPtr    dataPtr() const;
     DataPtr          dataPtr();
+    std::span<const T> values() const noexcept;
+    std::span<T>       values() noexcept;
+    void               assign(std::span<const T> values);
 
     static std::string typeName() 
     {
@@ -98,6 +105,10 @@ static_assert(TypedChannel<Channel<float>, float>,
               "typed channel concept must match the public Channel contract");
 static_assert(!TypedChannel<Channel<float>, double>,
               "typed channel concept must reject mismatched value types");
+static_assert(std::same_as<decltype(std::declval<Channel<float>&>().values()), std::span<float>>,
+              "mutable channel values must expose a std::span view");
+static_assert(std::same_as<decltype(std::declval<const Channel<float>&>().values()), std::span<const float>>,
+              "const channel values must expose a const std::span view");
 
 // TODO: 
 // CustomChannel is a flat Channel: Nx1 of CustomType

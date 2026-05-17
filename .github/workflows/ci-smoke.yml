@@ -83,11 +83,12 @@ jobs:
           cmake --build --preset build-vcpkg-release --parallel 2
           --target lvr2_mesh_io_facade_header_compile
           lvr2_static_assert_contracts_compile
+          lvr2_cxx20_view_span_contracts
 
       - name: Run basic CTest smoke
         run: >-
           ctest --test-dir build-vcpkg-release --output-on-failure
-          -R "lvr2_(mesh_io_facade_header_compile|static_assert_contracts_compile|removed_public_mesh_io_headers|no_public_assimp_leakage|required_private_assimp_policy|no_vendored_dependencies|system_optout_semantics|diagnostic_hooks_policy|packaging_policy|no_bundled_viewer|cmake_module_audit|source_include_root_guard|lvr3_package_identity_smoke|lyrical_cxx20_baseline|pytest_smoke)"
+          -R "lvr2_(mesh_io_facade_header_compile|static_assert_contracts_compile|cxx20_view_span_contracts|cxx20_view_span_policy|removed_public_mesh_io_headers|no_public_assimp_leakage|required_private_assimp_policy|no_vendored_dependencies|system_optout_semantics|diagnostic_hooks_policy|packaging_policy|no_bundled_viewer|cmake_module_audit|source_include_root_guard|lvr3_package_identity_smoke|lyrical_cxx20_baseline|pytest_smoke)"
 
       - name: Install/export package smoke
         run: |
@@ -126,6 +127,7 @@ jobs:
           cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/cmake_module_audit.cmake
           cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/source_include_root_guard.cmake
           cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/lyrical_cxx20_baseline.cmake
+          cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/cxx20_view_span_policy.cmake
 
   optional-diagnostics:
     name: optional diagnostics (${{ matrix.mode }})
