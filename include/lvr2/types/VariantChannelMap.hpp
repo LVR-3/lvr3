@@ -30,18 +30,41 @@
 #ifndef LVR2_TYPES_VARIANTCHANNELMAP
 #define LVR2_TYPES_VARIANTCHANNELMAP
 
+#include <functional>
 #include <unordered_map>
 #include <iostream>
 #include <utility>
 #include <memory>
+#include <string>
+#include <string_view>
 #include <vector>
 #include "VariantChannel.hpp"
 
 namespace lvr2 {
 
+struct StringKeyHash
+{
+    using is_transparent = void;
+
+    std::size_t operator()(std::string_view key) const noexcept
+    {
+        return std::hash<std::string_view>{}(key);
+    }
+
+    std::size_t operator()(const std::string& key) const noexcept
+    {
+        return (*this)(std::string_view(key));
+    }
+
+    std::size_t operator()(const char* key) const noexcept
+    {
+        return (*this)(std::string_view(key));
+    }
+};
+
 template<typename... T>
 class VariantChannelMap
-: public std::unordered_map<std::string, VariantChannel<T...> > 
+: public std::unordered_map<std::string, VariantChannel<T...>, StringKeyHash, std::equal_to<> >
 {
 public:
     using key_type = std::string;
@@ -49,7 +72,7 @@ public:
     using elem_type = std::pair<const key_type, val_type>;
 
     using types = std::tuple<T...>;
-    using base = std::unordered_map<std::string, VariantChannel<T...> >;
+    using base = std::unordered_map<std::string, VariantChannel<T...>, StringKeyHash, std::equal_to<> >;
     using base::base;
 
     /**
@@ -232,7 +255,7 @@ public:
      * 
      */
     template<typename U>
-    void add(const std::string& name, Channel<U> channel);
+    void add(std::string_view name, Channel<U> channel);
 
 
     /**
@@ -241,7 +264,7 @@ public:
      * 
      */
     template<typename U>
-    void add(const std::string& name);
+    void add(std::string_view name);
 
     /**
      * @brief Adds an empty channel with size
@@ -251,7 +274,7 @@ public:
      * 
      */
     template<typename U>
-    void add(const std::string& name, size_t numElements, size_t width);
+    void add(std::string_view name, size_t numElements, size_t width);
 
     /**
      * @brief Gets AttributeChannel with type U from map as reference.
@@ -259,7 +282,7 @@ public:
      * @param[in] name Key of the channel.
      */
     template<typename U>
-    Channel<U>& get(const std::string& name);
+    Channel<U>& get(std::string_view name);
 
     /**
      * @brief Gets AttributeChannel by type U from map.
@@ -268,14 +291,14 @@ public:
      * 
      */
     template<typename U>
-    const Channel<U>& get(const std::string& name) const;
+    const Channel<U>& get(std::string_view name) const;
 
 
     template<typename U>
-    typename Channel<U>::Optional getOptional(const std::string& name);
+    typename Channel<U>::Optional getOptional(std::string_view name);
 
     template<typename U>
-    const typename Channel<U>::Optional getOptional(const std::string& name) const;
+    const typename Channel<U>::Optional getOptional(std::string_view name) const;
 
     /**
      * @brief Gets type index of a map entry.
@@ -283,7 +306,7 @@ public:
      * @param[in] Key of the channel.
      * @return Index of type tuple of the variant.
      */
-    int type(const std::string& name) const;
+    int type(std::string_view name) const;
 
     /**
      * @brief Checks if key has specific type U.
@@ -295,7 +318,7 @@ public:
      * @return false If the type is unequal.
      */
     template<typename U>
-    bool is_type(const std::string& name) const;
+    bool is_type(std::string_view name) const;
 
     /**
      * @brief Gets the available keys by a specific type.

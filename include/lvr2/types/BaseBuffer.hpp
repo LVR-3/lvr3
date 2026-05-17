@@ -30,6 +30,9 @@
 #define BASEBUFFER
 
 #include <algorithm>
+#include <span>
+#include <string>
+#include <string_view>
 #include <vector>
 #include "MultiChannelMap.hpp"
 #include "lvr2/io/DataStruct.hpp"
@@ -67,14 +70,14 @@ public:
      * @return 0 if not found, otherwise the channels width.
      */
     template<typename T>
-    size_t channelWidth(const std::string& name) const;
+    size_t channelWidth(std::string_view name) const;
 
     /**
      * @brief Gets an uchar channels width.
      * @param[in] name Key of the channel.
      * @return 0 if not found, otherwise the channels width.
      */
-    inline size_t ucharChannelWidth(const std::string& name) const
+    inline size_t ucharChannelWidth(std::string_view name) const
     {
         return channelWidth<unsigned char>(name);
     }
@@ -84,7 +87,7 @@ public:
      * @param[in] name Key of the channel.
      * @return 0 if not found, otherwise the channels width.
      */
-    inline size_t floatChannelWidth(const std::string& name) const
+    inline size_t floatChannelWidth(std::string_view name) const
     {
         return channelWidth<float>(name);
     }
@@ -94,7 +97,7 @@ public:
      * @param[in] name Key of the channel.
      * @return 0 if not found, otherwise the channels width.
      */
-    inline size_t indexChannelWidth(const std::string& name) const
+    inline size_t indexChannelWidth(std::string_view name) const
     {
         return channelWidth<unsigned int>(name);
     }
@@ -109,13 +112,13 @@ public:
      * @tparam T Type of the channel.
      */
     template<typename T>
-    bool hasChannel(const std::string& name) const;
+    bool hasChannel(std::string_view name) const;
 
     /**
      * @brief Checks if an uchar channel is available.
      * @param[in] name Key of the channel.
      */
-    inline bool hasUCharChannel(const std::string& name) const
+    inline bool hasUCharChannel(std::string_view name) const
     {
         return hasChannel<unsigned char>(name);
     }
@@ -124,7 +127,7 @@ public:
      * @brief Checks if a float channel is available.
      * @param[in] name Key of the channel.
      */
-    inline bool hasFloatChannel(const std::string& name) const
+    inline bool hasFloatChannel(std::string_view name) const
     {
         return hasChannel<float>(name);
     }
@@ -133,7 +136,7 @@ public:
      * @brief Checks if an index channel is available.
      * @param[in] name Key of the channel.
      */
-    inline bool hasIndexChannel(const std::string& name) const
+    inline bool hasIndexChannel(std::string_view name) const
     {
         return hasChannel<unsigned int>(name);
     }
@@ -149,14 +152,14 @@ public:
      * @tparam T Type of the channel.
      */
     template<typename T>
-    void addChannel(typename Channel<T>::Ptr data, const std::string& name);
+    void addChannel(typename Channel<T>::Ptr data, std::string_view name);
 
     /**
      * @brief Adds a float channel pointer to the map.
      * @param[in] data The channel pointer to add. 
      * @param[in] name Key of the channel.
      */
-    inline void addFloatChannel(FloatChannelPtr data, const std::string& name)
+    inline void addFloatChannel(FloatChannelPtr data, std::string_view name)
     {
         addChannel<float>(data, name);
     }
@@ -166,7 +169,7 @@ public:
      * @param[in] data The channel pointer to add. 
      * @param[in] name Key of the channel.
      */
-    inline void addUCharChannel(UCharChannelPtr data, const std::string& name)
+    inline void addUCharChannel(UCharChannelPtr data, std::string_view name)
     {
         addChannel<unsigned char>(data, name);
     }
@@ -176,7 +179,7 @@ public:
      * cointer to add. 
      * cannel.
      */
-    inline void addIndexChannel(IndexChannelPtr data, const std::string& name)
+    inline void addIndexChannel(IndexChannelPtr data, std::string_view name)
     {
         addChannel<unsigned int>(data, name);
     }
@@ -188,16 +191,35 @@ public:
      * @tparam T Type of the channel.
      */
     template<typename T>
-    void addChannel(boost::shared_array<T> array, std::string name, size_t n, size_t width);
+    void addChannel(boost::shared_array<T> array, std::string_view name, size_t n, size_t width);
+
+    /**
+     * @brief Copies a contiguous span into an owned channel and saves it to the map.
+     * @param[in] values The contiguous source values. The span is not stored.
+     * @param[in] name Key of the channel.
+     * @param[in] n Number of elements.
+     * @param[in] width Width of one element.
+     * @tparam T Type of the channel.
+     */
+    template<typename T>
+    void addChannel(std::span<const T> values, std::string_view name, size_t n, size_t width);
 
     /**
      * @brief Constructs an index channel from an boost::shared_array and saves it to the map.
      * @param[in] array The shared array of the data. 
      * @param[in] name Key of the channel.
      */
-    inline void addIndexChannel( indexArray array, std::string name, size_t n, size_t width)
+    inline void addIndexChannel( indexArray array, std::string_view name, size_t n, size_t width)
     {
         addChannel<unsigned int>(array, name, n, width);
+    }
+
+    /**
+     * @brief Copies contiguous index values into an owned channel and saves it to the map.
+     */
+    inline void addIndexChannel(std::span<const unsigned int> values, std::string_view name, size_t n, size_t width)
+    {
+        addChannel<unsigned int>(values, name, n, width);
     }
 
     /**
@@ -205,9 +227,17 @@ public:
      * @param[in] array The shared array of the data. 
      * @param[in] name Key of the channel.
      */
-    inline void addFloatChannel( floatArr array, std::string name, size_t n, size_t width)
+    inline void addFloatChannel( floatArr array, std::string_view name, size_t n, size_t width)
     {
         addChannel<float>(array, name, n, width);
+    }
+
+    /**
+     * @brief Copies contiguous float values into an owned channel and saves it to the map.
+     */
+    inline void addFloatChannel(std::span<const float> values, std::string_view name, size_t n, size_t width)
+    {
+        addChannel<float>(values, name, n, width);
     }
 
     /**
@@ -217,9 +247,17 @@ public:
      * @param[in] array The shared array of the data. 
      * @param[in] name Key of the channel.
      */
-    inline void addUCharChannel(ucharArr array, std::string name, size_t n, size_t width)
+    inline void addUCharChannel(ucharArr array, std::string_view name, size_t n, size_t width)
     {
         addChannel<unsigned char>(array, name, n, width);
+    }
+
+    /**
+     * @brief Copies contiguous uchar values into an owned channel and saves it to the map.
+     */
+    inline void addUCharChannel(std::span<const unsigned char> values, std::string_view name, size_t n, size_t width)
+    {
+        addChannel<unsigned char>(values, name, n, width);
     }
 
     /**
@@ -231,7 +269,7 @@ public:
      * @tparam T Type of the channel.
      */
     template<typename T>
-    void addEmptyChannel( const std::string& name, size_t n, size_t width);
+    void addEmptyChannel( std::string_view name, size_t n, size_t width);
 
     /**
      * @brief Adds an empty float channel to the map.
@@ -239,7 +277,7 @@ public:
      * @param[in] n Number of elements.
      * @param[in] width Width of one element.
      */
-    inline void addEmptyFloatChannel( const std::string& name, size_t n, size_t width)
+    inline void addEmptyFloatChannel( std::string_view name, size_t n, size_t width)
     {
         addEmptyChannel<float>(name, n, width);
     }
@@ -250,7 +288,7 @@ public:
      * @param[in] n Number of elements.
      * @param[in] width Width of one element.
      */
-    inline void addEmptyUCharChannel( const std::string& name, size_t n, size_t width)
+    inline void addEmptyUCharChannel( std::string_view name, size_t n, size_t width)
     {
         addEmptyChannel<unsigned char>(name, n, width);
     }
@@ -261,7 +299,7 @@ public:
      * @param[in] n Number of elements.
      * @param[in] width Width of one element.
      */
-    inline void addEmptyIndexChannel( const std::string& name, size_t n, size_t width)
+    inline void addEmptyIndexChannel( std::string_view name, size_t n, size_t width)
     {
         addEmptyChannel<unsigned int>(name, n, width);
     }
@@ -280,7 +318,7 @@ public:
      * @return false If no channel was removed.
      */
     template<typename T>
-    bool removeChannel(const std::string& name);
+    bool removeChannel(std::string_view name);
 
     /**
      * @brief Removes an index channel.
@@ -290,7 +328,7 @@ public:
      * @return true If the channel was removed.
      * @return false If no channel was removed.
      */
-    bool removeIndexChannel(const std::string& name)
+    bool removeIndexChannel(std::string_view name)
     {
         return removeChannel<unsigned int>(name);
     }
@@ -303,7 +341,7 @@ public:
      * @return true If the channel was removed.
      * @return false If no channel was removed.
      */
-    bool removeFloatChannel(const std::string& name)
+    bool removeFloatChannel(std::string_view name)
     {
         return removeChannel<float>(name);
     }
@@ -316,7 +354,7 @@ public:
      * @return true If the channel was removed.
      * @return false If no channel was removed.
      */
-    bool removeUCharChannel(const std::string& name)
+    bool removeUCharChannel(std::string_view name)
     {
         return removeChannel<unsigned char>(name);
     }
@@ -371,7 +409,7 @@ public:
      * @return An OptionalChannel which is filled if the channel was found.
      */
     template<typename T>
-    typename Channel<T>::Optional getChannel(const std::string& name);
+    typename Channel<T>::Optional getChannel(std::string_view name);
 
         /**
      * @brief Gets a channel and returns it as optional. 
@@ -381,7 +419,7 @@ public:
      * @return An OptionalChannel which is filled if the channel was found.
      */
     template<typename T>
-    const typename Channel<T>::Optional getChannel(const std::string& name) const;
+    const typename Channel<T>::Optional getChannel(std::string_view name) const;
 
 
     /**
@@ -390,7 +428,7 @@ public:
      * @param[in] name Key of the channel.
      * @return An OptionalChannel which is filled if the channel was found.
      */
-    inline Channel<float>::Optional getFloatChannel(const std::string& name)
+    inline Channel<float>::Optional getFloatChannel(std::string_view name)
     {
         return getChannel<float>(name);
     }
@@ -401,7 +439,7 @@ public:
      * @param[in] name Key of the channel.
      * @return An OptionalChannel which is filled if the channel was found.
      */
-    inline Channel<unsigned char>::Optional getUCharChannel(const std::string& name)
+    inline Channel<unsigned char>::Optional getUCharChannel(std::string_view name)
     {
         return getChannel<unsigned char>(name);
     }
@@ -412,7 +450,7 @@ public:
      * @param[in] name Key of the channel.
      * @return An OptionalChannel which is filled if the channel was found.
      */
-    inline Channel<unsigned int>::Optional getIndexChannel(const std::string& name)
+    inline Channel<unsigned int>::Optional getIndexChannel(std::string_view name)
     {
         return getChannel<unsigned int>(name);
     }
@@ -423,7 +461,7 @@ public:
      * @param[in] name Key of the channel.
      * @param[out] channelOptional The float channel optional.
      */
-    inline void getChannel(const std::string& name, FloatChannelOptional& channelOptional )
+    inline void getChannel(std::string_view name, FloatChannelOptional& channelOptional )
     { 
         channelOptional = getFloatChannel(name);
     }
@@ -434,7 +472,7 @@ public:
      * @param[in] name Key of the channel.
      * @param[out] channelOptional The index channel optional.
      */
-    inline void getChannel(const std::string& name, IndexChannelOptional& channelOptional)
+    inline void getChannel(std::string_view name, IndexChannelOptional& channelOptional)
     {
         channelOptional = getIndexChannel(name);
     }
@@ -445,7 +483,7 @@ public:
      * @param[in] name Key of the channel.
      * @param[out] channelOptional The uchar channel optional.
      */
-    inline void getChannel(const std::string& name, UCharChannelOptional& channelOptional)
+    inline void getChannel(std::string_view name, UCharChannelOptional& channelOptional)
     {
         channelOptional = getUCharChannel(name);
     }
@@ -463,7 +501,7 @@ public:
      * @return ElementProxy<T> The handle.
      */
     template<typename T>
-    ElementProxy<T> getHandle(unsigned int idx, const std::string& name);
+    ElementProxy<T> getHandle(unsigned int idx, std::string_view name);
     
     /**
      * @brief Get a Handle object (ElementProxy) of a float channel.
@@ -472,7 +510,7 @@ public:
      * @param[in] name Key of the channel.
      * @return FloatProxy The handle.
      */
-    inline FloatProxy getFloatHandle(unsigned int idx, const std::string& name)
+    inline FloatProxy getFloatHandle(unsigned int idx, std::string_view name)
     {
         return getHandle<float>(idx, name);
     }
@@ -484,7 +522,7 @@ public:
      * @param[in] name Key of the channel.
      * @return UCharProxy The handle.
      */
-    inline UCharProxy getUCharHandle(unsigned int idx, const std::string& name)
+    inline UCharProxy getUCharHandle(unsigned int idx, std::string_view name)
     {
         return getHandle<unsigned char>(idx, name);
     }
@@ -496,7 +534,7 @@ public:
      * @param[in] name Key of the channel.
      * @return IndexProxy The handle.
      */
-    inline IndexProxy getIndexHandle(unsigned int idx, const std::string& name)
+    inline IndexProxy getIndexHandle(unsigned int idx, std::string_view name)
     {
         return getHandle<unsigned int>(idx, name);
     }
@@ -515,7 +553,7 @@ public:
      * @return boost::shared_array<T> The data pointer. Empty if the channel was not found.
      */
     template<typename T>
-    boost::shared_array<T> getArray(const std::string& name, size_t& n, size_t& w);
+    boost::shared_array<T> getArray(std::string_view name, size_t& n, size_t& w);
 
     /**
      * @brief Gets a float channel as array.
@@ -525,7 +563,7 @@ public:
      * @param[in] name Key of the channel.
      * @return floatArr The data pointer. Empty if the channel was not found.
      */
-    inline floatArr getFloatArray(const std::string& name, size_t& n, size_t& w)
+    inline floatArr getFloatArray(std::string_view name, size_t& n, size_t& w)
     {
         return getArray<float>(name, n, w);
     }
@@ -538,7 +576,7 @@ public:
      * @param[in] name Key of the channel.
      * @return ucharArr The data pointer. Empty if the channel was not found.
      */
-    inline ucharArr getUCharArray(const std::string& name, size_t& n, size_t& w)
+    inline ucharArr getUCharArray(std::string_view name, size_t& n, size_t& w)
     {
         return getArray<unsigned char>(name, n, w);
     }
@@ -551,7 +589,7 @@ public:
      * @param[in] name Key of the channel.
      * @return indexArray The data pointer. Empty if the channel was not found.
      */
-    inline indexArray getIndexArray(const std::string& name, size_t& n, size_t& w)
+    inline indexArray getIndexArray(std::string_view name, size_t& n, size_t& w)
     {
         return getArray<unsigned int>(name, n, w);
     }
@@ -570,7 +608,7 @@ public:
      * @param[in] name The key of the atomic value (don't use keys that are already used for channels).
      */
     template<typename T>
-    void addAtomic(T data, const std::string& name);
+    void addAtomic(T data, std::string_view name);
 
     /**
      * @brief Adds an atomic float value. Exists only for compatibility reasons.
@@ -579,7 +617,7 @@ public:
      * @param[in] data The atomic data to add to the channel manager.
      * @param[in] name The key of the atomic value (don't use keys that are already used for channels).
      */
-    inline void addFloatAtomic(float data, const std::string& name)
+    inline void addFloatAtomic(float data, std::string_view name)
     {
         addAtomic(data, name);
     }
@@ -592,7 +630,7 @@ public:
      * @param[in] data The atomic data to add to the channel manager.
      * @param[in] name The key of the atomic value (don't use keys that are already used for channels).
      */
-    inline void addUCharAtomic(unsigned char data, const std::string& name)
+    inline void addUCharAtomic(unsigned char data, std::string_view name)
     {
         addAtomic(data, name);
     }
@@ -605,7 +643,7 @@ public:
      * @param[in] data The atomic data to add to the channel manager.
      * @param[in] name The key of the atomic value (don't use keys that are already used for channels).
      */
-    inline void addIntAtomic(int data, const std::string& name)
+    inline void addIntAtomic(int data, std::string_view name)
     {
         addAtomic(data, name);
     }
@@ -623,7 +661,7 @@ public:
      * 
      */
     template<typename T>
-    boost::optional<T> getAtomic(const std::string& name);
+    boost::optional<T> getAtomic(std::string_view name);
 
     /**
      * @brief Gets an atomic float value.
@@ -633,7 +671,7 @@ public:
      * @return The atomic value as optional. The optional is set if the atomic value was found.
      * 
      */
-    inline floatOptional getFloatAtomic(const std::string& name)
+    inline floatOptional getFloatAtomic(std::string_view name)
     {
         return getAtomic<float>(name);
     }
@@ -646,7 +684,7 @@ public:
      * @return The atomic value as optional. The optional is set if the atomic value was found.
      * 
      */
-    inline ucharOptional getUCharAtomic(const std::string& name)
+    inline ucharOptional getUCharAtomic(std::string_view name)
     {
         return getAtomic<unsigned char>(name);
     }
@@ -659,7 +697,7 @@ public:
      * @return The atomic value as optional. The optional is set if the atomic value was found.
      * 
      */
-    inline intOptional getIntAtomic(const std::string& name)
+    inline intOptional getIntAtomic(std::string_view name)
     {
         return getAtomic<int>(name);
     }
