@@ -37,28 +37,24 @@ std::shared_ptr<spdlog::logger> logger_instance()
     return logger;
 }
 
-spdlog::level::level_enum to_spdlog_level(log::Level level)
-{
-    switch(level)
-    {
-        case log::Level::trace: return spdlog::level::trace;
-        case log::Level::debug: return spdlog::level::debug;
-        case log::Level::info: return spdlog::level::info;
-        case log::Level::warning: return spdlog::level::warn;
-        case log::Level::error: return spdlog::level::err;
-    }
-
-    return spdlog::level::info;
-}
-
 } // namespace
 
 namespace log
 {
 
+namespace detail
+{
+
+LVR2_API void* logger_handle()
+{
+    return logger_instance().get();
+}
+
+} // namespace detail
+
 LVR2_API void set_level(Level level)
 {
-    logger_instance()->set_level(to_spdlog_level(level));
+    logger_instance()->set_level(detail::to_spdlog_level(level));
 }
 
 LVR2_API void flush()
@@ -68,7 +64,7 @@ LVR2_API void flush()
 
 LVR2_API void write(Level level, std::string_view message)
 {
-    logger_instance()->log(to_spdlog_level(level), "{}", message);
+    logger_instance()->log(detail::to_spdlog_level(level), "{}", message);
 }
 
 } // namespace log

@@ -234,13 +234,10 @@ if(LVR2_BUILD_STATIC_LIBS)
         PUBLIC
         tl::expected
         ${LVR2_FMT_TARGET}
+        ${LVR2_SPDLOG_TARGET}
         ${LVR2_HIGHFIVE_TARGET}
         ${LVR2_INTERNAL_DEPENDENCIES_STATIC}
         ${LVR2_LIB_DEPENDENCIES}
-    )
-    target_link_libraries(lvr2_static
-        PRIVATE
-        ${LVR2_SPDLOG_TARGET}
     )
     target_compile_definitions(lvr2_static
         PUBLIC
@@ -269,14 +266,10 @@ if(BUILD_SHARED_LIBS)
         Eigen3::Eigen
         tl::expected
         ${LVR2_FMT_TARGET}
+        ${LVR2_SPDLOG_TARGET}
         ${LVR2_HIGHFIVE_TARGET}
         ${LVR2_INTERNAL_DEPENDENCIES_SHARED}
         ${LVR2_LIB_DEPENDENCIES}
-    )
-
-    target_link_libraries(lvr2
-        PRIVATE
-        ${LVR2_SPDLOG_TARGET}
     )
     if(LVR2_MESH_IO_ASSIMP_AVAILABLE)
         target_sources(lvr2 PRIVATE io/AssimpMeshAdapter.cpp)

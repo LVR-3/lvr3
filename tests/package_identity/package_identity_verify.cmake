@@ -33,6 +33,7 @@ function(_write_fake_prefix _prefix _shape)
   set(_LVR3_MODULES "${_LVR3_CONFIG_DIR}/Modules")
   set(_TL_EXPECTED_CONFIG_DIR "${_prefix}/share/cmake/tl-expected")
   set(_FMT_CONFIG_DIR "${_prefix}/share/cmake/fmt")
+  set(_SPDLOG_CONFIG_DIR "${_prefix}/share/cmake/spdlog")
 
   file(REMOVE_RECURSE "${_prefix}")
   file(MAKE_DIRECTORY
@@ -42,6 +43,7 @@ function(_write_fake_prefix _prefix _shape)
     "${_LVR3_MODULES}"
     "${_TL_EXPECTED_CONFIG_DIR}"
     "${_FMT_CONFIG_DIR}"
+    "${_SPDLOG_CONFIG_DIR}"
     "${_prefix}/include"
     "${_prefix}/lib"
   )
@@ -54,6 +56,8 @@ function(_write_fake_prefix _prefix _shape)
 "if(NOT TARGET tl::expected)\n  add_library(tl::expected INTERFACE IMPORTED)\nendif()\nset(tl-expected_FOUND TRUE)\n")
   file(WRITE "${_FMT_CONFIG_DIR}/fmt-config.cmake"
 "if(NOT TARGET fmt::fmt)\n  add_library(fmt::fmt INTERFACE IMPORTED)\nendif()\nset(fmt_FOUND TRUE)\n")
+  file(WRITE "${_SPDLOG_CONFIG_DIR}/spdlog-config.cmake"
+"if(NOT TARGET spdlog::spdlog)\n  add_library(spdlog::spdlog INTERFACE IMPORTED)\nendif()\nset(spdlog_FOUND TRUE)\n")
 
   if(_shape STREQUAL "static-only")
     set(_TARGETS_CONTENT
@@ -62,7 +66,7 @@ if(NOT TARGET lvr2::lvr2)
   add_library(lvr2::lvr2 STATIC IMPORTED)
   set_target_properties(lvr2::lvr2 PROPERTIES
     IMPORTED_LOCATION \"${_prefix}/lib/liblvr2.a\"
-    INTERFACE_LINK_LIBRARIES \"tl::expected;fmt::fmt\")
+    INTERFACE_LINK_LIBRARIES \"tl::expected;fmt::fmt;spdlog::spdlog\")
 endif()
 ")
   elseif(_shape STREQUAL "dual")
@@ -72,13 +76,13 @@ if(NOT TARGET lvr2::lvr2)
   add_library(lvr2::lvr2 SHARED IMPORTED)
   set_target_properties(lvr2::lvr2 PROPERTIES
     IMPORTED_LOCATION \"${_prefix}/lib/liblvr2${CMAKE_SHARED_LIBRARY_SUFFIX}\"
-    INTERFACE_LINK_LIBRARIES \"tl::expected;fmt::fmt\")
+    INTERFACE_LINK_LIBRARIES \"tl::expected;fmt::fmt;spdlog::spdlog\")
 endif()
 if(NOT TARGET lvr2::lvr2_static)
   add_library(lvr2::lvr2_static STATIC IMPORTED)
   set_target_properties(lvr2::lvr2_static PROPERTIES
     IMPORTED_LOCATION \"${_prefix}/lib/liblvr2.a\"
-    INTERFACE_LINK_LIBRARIES \"tl::expected;fmt::fmt\")
+    INTERFACE_LINK_LIBRARIES \"tl::expected;fmt::fmt;spdlog::spdlog\")
 endif()
 ")
   elseif(_shape STREQUAL "shared-only")
@@ -88,7 +92,7 @@ if(NOT TARGET lvr2::lvr2)
   add_library(lvr2::lvr2 SHARED IMPORTED)
   set_target_properties(lvr2::lvr2 PROPERTIES
     IMPORTED_LOCATION \"${_prefix}/lib/liblvr2${CMAKE_SHARED_LIBRARY_SUFFIX}\"
-    INTERFACE_LINK_LIBRARIES \"tl::expected;fmt::fmt\")
+    INTERFACE_LINK_LIBRARIES \"tl::expected;fmt::fmt;spdlog::spdlog\")
 endif()
 ")
   else()
@@ -120,6 +124,7 @@ macro(check_required_components _NAME)
 endmacro()
 find_dependency(tl-expected CONFIG)
 find_dependency(fmt CONFIG)
+find_dependency(spdlog CONFIG)
 include(\"${_LVR2_CONFIG_DIR}/lvr2-targets.cmake\")
 list(APPEND CMAKE_MODULE_PATH \"${_LVR2_CONFIG_DIR}/Modules\")
 set(LVR2_INCLUDE_DIRS \"${_prefix}/include\")

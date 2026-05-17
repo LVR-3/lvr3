@@ -68,7 +68,9 @@ endforeach()
 file(READ "${LVR2_SOURCE_DIR}/include/lvr2/util/Logging.hpp" _logging_policy_header)
 foreach(_required_token IN ITEMS
   "namespace log"
-  "fmt::format_string"
+  "SourceLocation"
+  "logger_handle"
+  "fmt::runtime"
   "void info"
   "void warning"
   "void error"
@@ -79,14 +81,31 @@ foreach(_required_token IN ITEMS
   endif()
 endforeach()
 
-if(_logging_policy_header MATCHES "spdlog")
-  message(FATAL_ERROR "Public logging header must not expose the private spdlog sink")
+foreach(_banned_header_token IN ITEMS
+  "fmt::format_string"
+  "fmt::format[ \\t\\r\\n]*\\("
+)
+  if(_logging_policy_header MATCHES "${_banned_header_token}")
+    message(FATAL_ERROR "Logging facade must not pre-format or expose fmt format-string types: ${_banned_header_token}")
+  endif()
+endforeach()
+
+foreach(_public_signature_leak IN ITEMS
+  "void[ \\t\\r\\n]+(trace|debug|info|warning|warn|error|write)[^;{\\n]*(fmt::|spdlog::)"
+)
+  if(_logging_policy_header MATCHES "${_public_signature_leak}")
+    message(FATAL_ERROR "Stable public logging signatures must not mention fmt:: or spdlog::")
+  endif()
+endforeach()
+
+file(READ "${LVR2_SOURCE_DIR}/migration_guide.md" _logging_policy_migration_guide)
+if(_logging_policy_migration_guide MATCHES "fmt::streamed")
+  message(FATAL_ERROR "Public logging migration examples must not recommend fmt::streamed")
 endif()
 
 file(READ "${LVR2_SOURCE_DIR}/cmake/lvr2-config.cmake.in" _logging_policy_lvr2_config)
-if(_logging_policy_lvr2_config MATCHES "find_dependency\\(spdlog CONFIG\\)" AND
-   NOT _logging_policy_lvr2_config MATCHES "_LVR2_PACKAGE_HAS_STATIC_TARGET")
-  message(FATAL_ERROR "spdlog may appear in installed config only as a static LINK_ONLY closure dependency")
+if(NOT _logging_policy_lvr2_config MATCHES "find_dependency\\(spdlog CONFIG\\)")
+  message(FATAL_ERROR "Installed packages must declare spdlog for the inline logging detail layer")
 endif()
 
 message(STATUS "Format logging policy guard passed")

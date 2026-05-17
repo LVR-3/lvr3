@@ -385,7 +385,7 @@ endif(LVR2_WITH_FREENECT)
 # USED THIRD PARTY STUFF
 ###############################################################################
 
-# fmt is part of the public logging facade for the C++17 baseline.
+# fmt is used by the public logging convenience header for the C++17 baseline.
 lvr2_find_package(fmt CONFIG REQUIRED)
 if(TARGET fmt::fmt)
   set(LVR2_FMT_TARGET fmt::fmt)
@@ -395,7 +395,7 @@ else()
   message(FATAL_ERROR "fmt package did not provide fmt::fmt or fmt::fmt-header-only")
 endif()
 
-# spdlog (package-backed; no vendored fallback)
+# spdlog is the real logging engine used by the inline detail forwarding layer.
 lvr2_find_package(spdlog CONFIG REQUIRED)
 if(TARGET spdlog::spdlog_header_only)
   set(LVR2_SPDLOG_TARGET spdlog::spdlog_header_only)

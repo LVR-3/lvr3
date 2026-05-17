@@ -93,7 +93,7 @@ The stream-style logging API has been removed. Code such as this no longer compi
 lvr2::logout::get() << lvr2::info << "Loaded " << count << " points" << lvr2::endl;
 ```
 
-Use the C++17 `{fmt}`-backed facade instead:
+Use the C++17 format-style facade instead:
 
 ```cpp
 #include <lvr2/util/Logging.hpp>
@@ -103,9 +103,9 @@ lvr2::log::warning("Skipping scan {}", scan_index);
 lvr2::log::error("Failed to open '{}': {}", path, reason);
 ```
 
-Runtime/user-provided message text should use the explicit runtime APIs, for example `lvr2::log::info_runtime(message)`. Types that only support `operator<<` can be logged through `{fmt}` with `fmt::streamed(value)`.
+Runtime/user-provided message text should use the explicit runtime APIs, for example `lvr2::log::info_runtime(message)`. The normal formatted path forwards the original format string and arguments to spdlog, including the optional `LVR2_LOG_INFO(...)`/`LVR2_LOG_WARNING(...)`/`LVR2_LOG_ERROR(...)` source-location macros. Types that only support stream insertion need a real formatter, `format_as`, or an explicit cheap summary string; do not add new stream-format logging shortcuts.
 
-The public logging header now depends on the `fmt` package. Installed `lvr2`/`lvr3` CMake configs declare this dependency, and distributors using the system-package path need `libfmt-dev` (or an equivalent package). `spdlog` remains an implementation-only sink: shared-only installed configs do not require it, while exported static targets may still need the private `spdlog` link dependency for static link closure.
+The public logging calls keep LVR-owned signatures and examples: no `fmt::` or `spdlog::` types appear in normal call sites. The installed `lvr2`/`lvr3` CMake configs declare `fmt` and `spdlog` because the C++17 convenience header uses them in an inline detail layer, while the ABI fallback remains `lvr2::log::write(Level, std::string_view)`.
 
 ## CMake file layout and module audit
 
