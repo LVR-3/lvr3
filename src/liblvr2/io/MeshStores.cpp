@@ -10,8 +10,8 @@
 #include "lvr2/types/Model.hpp"
 #include "lvr2/util/Util.hpp"
 
-#include <boost/filesystem.hpp>
-#include <boost/smart_ptr/make_shared_array.hpp>
+#include <filesystem>
+#include <memory>
 
 #include <algorithm>
 #include <cstdint>
@@ -73,7 +73,7 @@ template<typename T>
 void saveKernelArray(const lvr2::FileKernelPtr& kernel,
                      const lvr2::Description& description,
                      const std::vector<std::size_t>& shape,
-                     const boost::shared_array<T>& data,
+                     const std::shared_ptr<T[]>& data,
                      const std::string& dataType)
 {
     kernel->saveArray(*description.dataRoot, *description.data, shape, data);
@@ -81,7 +81,7 @@ void saveKernelArray(const lvr2::FileKernelPtr& kernel,
 }
 
 template<typename T>
-boost::shared_array<T> loadKernelArray(const lvr2::FileKernelPtr& kernel,
+std::shared_ptr<T[]> loadKernelArray(const lvr2::FileKernelPtr& kernel,
                                        const lvr2::Description& description,
                                        std::vector<std::size_t>& shape)
 {
@@ -436,7 +436,7 @@ void saveTexture(const lvr2::FileKernelPtr& kernel,
     kernel->saveMetaYAML(*desc.metaRoot, *desc.meta, meta);
 }
 
-boost::optional<lvr2::Texture> loadTexture(const lvr2::FileKernelPtr& kernel,
+std::optional<lvr2::Texture> loadTexture(const lvr2::FileKernelPtr& kernel,
                                            const lvr2::MeshSchemaPtr& schema,
                                            const std::string& meshName,
                                            std::size_t materialIndex,
@@ -445,7 +445,7 @@ boost::optional<lvr2::Texture> loadTexture(const lvr2::FileKernelPtr& kernel,
     auto desc = schema->texture(meshName, materialIndex, textureName);
     if (!kernel->exists(*desc.dataRoot, *desc.data))
     {
-        return boost::none;
+        return std::nullopt;
     }
 
     YAML::Node meta;
@@ -542,12 +542,12 @@ void loadMaterials(const lvr2::FileKernelPtr& kernel,
 }
 
 template<typename T>
-boost::shared_array<T> loadArray(const std::shared_ptr<HighFive::File>& file,
+std::shared_ptr<T[]> loadArray(const std::shared_ptr<HighFive::File>& file,
                                  HighFive::Group& group,
                                  const std::string& datasetName,
                                  std::vector<std::size_t>& dimensions)
 {
-    boost::shared_array<T> result;
+    std::shared_ptr<T[]> result;
     if (!file || !file->isValid() || !group.exist(datasetName))
     {
         return result;
@@ -567,7 +567,7 @@ boost::shared_array<T> loadArray(const std::shared_ptr<HighFive::File>& file,
 }
 
 template<typename T>
-boost::shared_array<T> loadArray(const std::shared_ptr<HighFive::File>& file,
+std::shared_ptr<T[]> loadArray(const std::shared_ptr<HighFive::File>& file,
                                  const std::string& groupName,
                                  const std::string& datasetName,
                                  std::vector<std::size_t>& dimensions)
@@ -577,7 +577,7 @@ boost::shared_array<T> loadArray(const std::shared_ptr<HighFive::File>& file,
 }
 
 template<typename T>
-boost::shared_array<T> loadArray(const std::shared_ptr<HighFive::File>& file,
+std::shared_ptr<T[]> loadArray(const std::shared_ptr<HighFive::File>& file,
                                  const std::string& groupName,
                                  const std::string& datasetName,
                                  std::size_t& size)
@@ -596,7 +596,7 @@ void saveArray(const std::shared_ptr<HighFive::File>& file,
                const std::string& datasetName,
                std::vector<std::size_t> dimensions,
                std::vector<hsize_t> chunkSizes,
-               boost::shared_array<T> data)
+               std::shared_ptr<T[]> data)
 {
     if (!file || !file->isValid())
     {
@@ -633,7 +633,7 @@ void saveArray(const std::shared_ptr<HighFive::File>& file,
                const std::string& groupName,
                const std::string& datasetName,
                std::vector<std::size_t> dimensions,
-               boost::shared_array<T> data)
+               std::shared_ptr<T[]> data)
 {
     std::vector<hsize_t> chunks;
     chunks.reserve(dimensions.size());
@@ -743,7 +743,7 @@ void saveVariantChannel(const std::shared_ptr<HighFive::File>& file,
 
 template<typename VariantT, int R>
 requires (R == 0)
-boost::optional<VariantT> loadVariantChannel(const std::shared_ptr<HighFive::File>& file,
+std::optional<VariantT> loadVariantChannel(const std::shared_ptr<HighFive::File>& file,
                                              const HighFive::DataType& type,
                                              HighFive::Group& group,
                                              const std::string& name)
@@ -757,12 +757,12 @@ boost::optional<VariantT> loadVariantChannel(const std::shared_ptr<HighFive::Fil
             return VariantT(*channel);
         }
     }
-    return boost::none;
+    return std::nullopt;
 }
 
 template<typename VariantT, int R>
 requires (R != 0)
-boost::optional<VariantT> loadVariantChannel(const std::shared_ptr<HighFive::File>& file,
+std::optional<VariantT> loadVariantChannel(const std::shared_ptr<HighFive::File>& file,
                                              const HighFive::DataType& type,
                                              HighFive::Group& group,
                                              const std::string& name)
@@ -777,7 +777,7 @@ boost::optional<VariantT> loadVariantChannel(const std::shared_ptr<HighFive::Fil
             {
                 return VariantT(*channel);
             }
-            return boost::none;
+            return std::nullopt;
         }
     }
     return loadVariantChannel<VariantT, R - 1>(file, type, group, name);
@@ -785,17 +785,17 @@ boost::optional<VariantT> loadVariantChannel(const std::shared_ptr<HighFive::Fil
 
 std::string meshAttributeGroup(const std::string& meshName, const std::string& group)
 {
-    return (boost::filesystem::path(meshName) / group).string();
+    return (std::filesystem::path(meshName) / group).string();
 }
 
 template<typename T>
-boost::optional<AttributeChannel<T>> loadAttributeChannel(const std::shared_ptr<HighFive::File>& file,
+std::optional<AttributeChannel<T>> loadAttributeChannel(const std::shared_ptr<HighFive::File>& file,
                                                           const std::string& group,
                                                           const std::string& name)
 {
     if (!file || !file->isValid() || !hdf5util::exist(file, group))
     {
-        return boost::none;
+        return std::nullopt;
     }
     auto hdf5Group = hdf5util::getGroup(file, group, false);
     return loadChannel<T>(file, hdf5Group, name);
@@ -962,7 +962,7 @@ void Hdf5MeshStore::save_mesh(HighFive::Group& group, const lvr2::MeshBufferPtr&
                 static_cast<std::size_t>(texture.m_numChannels)};
             std::vector<hsize_t> chunks{dimensions[0], dimensions[1], dimensions[2]};
             const std::size_t byteCount = dimensions[0] * dimensions[1] * dimensions[2];
-            boost::shared_array<unsigned char> copy(new unsigned char[byteCount]);
+            std::shared_ptr<unsigned char[]> copy(new unsigned char[byteCount]);
             std::memcpy(copy.get(), texture.m_data, byteCount);
             saveArray(file_, compress_, chunkSize_, textures, std::to_string(texture.m_index), dimensions, chunks, copy);
         }
@@ -972,8 +972,8 @@ void Hdf5MeshStore::save_mesh(HighFive::Group& group, const lvr2::MeshBufferPtr&
     {
         auto materials = hdf5util::getGroup(group, kDirectMaterialsGroup, true);
         const std::size_t count = buffer->getMaterials().size();
-        boost::shared_array<int> textureHandles(new int[count]);
-        boost::shared_array<int16_t> colors(new int16_t[count * 3]);
+        std::shared_ptr<int[]> textureHandles(new int[count]);
+        std::shared_ptr<int16_t[]> colors(new int16_t[count * 3]);
 
         for (std::size_t i = 0; i < count; ++i)
         {
@@ -1093,14 +1093,14 @@ lvr2::MeshBufferPtr Hdf5MeshStore::load_mesh(HighFive::Group& group)
                     lvr2::Material material;
                     if (materialColor[3 * i] != -1)
                     {
-                        material.m_color = boost::optional<lvr2::RGB8Color>({
+                        material.m_color = std::optional<lvr2::RGB8Color>({
                             static_cast<std::uint8_t>(materialColor[3 * i + 0]),
                             static_cast<std::uint8_t>(materialColor[3 * i + 1]),
                             static_cast<std::uint8_t>(materialColor[3 * i + 2])});
                     }
                     if (materialTexture[i] != -1)
                     {
-                        material.m_texture = boost::optional<lvr2::TextureHandle>(materialTexture[i]);
+                        material.m_texture = std::optional<lvr2::TextureHandle>(materialTexture[i]);
                     }
                     materials.push_back(material);
                 }
@@ -1114,25 +1114,25 @@ lvr2::MeshBufferPtr Hdf5MeshStore::load_mesh(HighFive::Group& group)
 
 FloatChannelOptional Hdf5MeshStore::getVertices()
 {
-    return loadChannel<float>(file_, (boost::filesystem::path(meshName_) / kDirectGeometryGroup).string(), "vertices");
+    return loadChannel<float>(file_, (std::filesystem::path(meshName_) / kDirectGeometryGroup).string(), "vertices");
 }
 
 IndexChannelOptional Hdf5MeshStore::getIndices()
 {
-    return loadChannel<unsigned int>(file_, (boost::filesystem::path(meshName_) / kDirectGeometryGroup).string(), "face_indices");
+    return loadChannel<unsigned int>(file_, (std::filesystem::path(meshName_) / kDirectGeometryGroup).string(), "face_indices");
 }
 
 bool Hdf5MeshStore::addVertices(const FloatChannel& channel)
 {
     ensure_mesh_group();
-    saveChannel(file_, compress_, chunkSize_, (boost::filesystem::path(meshName_) / kDirectGeometryGroup).string(), "vertices", channel);
+    saveChannel(file_, compress_, chunkSize_, (std::filesystem::path(meshName_) / kDirectGeometryGroup).string(), "vertices", channel);
     return true;
 }
 
 bool Hdf5MeshStore::addIndices(const IndexChannel& channel)
 {
     ensure_mesh_group();
-    saveChannel(file_, compress_, chunkSize_, (boost::filesystem::path(meshName_) / kDirectGeometryGroup).string(), "face_indices", channel);
+    saveChannel(file_, compress_, chunkSize_, (std::filesystem::path(meshName_) / kDirectGeometryGroup).string(), "face_indices", channel);
     return true;
 }
 

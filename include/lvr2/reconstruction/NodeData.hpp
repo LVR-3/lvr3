@@ -34,23 +34,67 @@
 
 #ifndef LAS_VEGAS_NODEDATA_H
 #define LAS_VEGAS_NODEDATA_H
-#include <boost/timer/timer.hpp>
+#include <chrono>
 #include <ctime>
+#include <cstring>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
 namespace lvr2
 {
+
+class NodeDataTimer
+{
+public:
+    void resume()
+    {
+        if(!m_running)
+        {
+            m_started = Clock::now();
+            m_running = true;
+        }
+    }
+
+    void stop()
+    {
+        if(m_running)
+        {
+            m_elapsed += Clock::now() - m_started;
+            m_running = false;
+        }
+    }
+
+    std::string format() const
+    {
+        auto elapsed = m_elapsed;
+        if(m_running)
+        {
+            elapsed += Clock::now() - m_started;
+        }
+
+        std::ostringstream out;
+        out << std::chrono::duration<double>(elapsed).count() << "s";
+        return out.str();
+    }
+
+private:
+    using Clock = std::chrono::steady_clock;
+
+    Clock::time_point m_started{};
+    Clock::duration m_elapsed{};
+    bool m_running = false;
+};
 /**
  * Class that contains the actual points of a node
  */
 template <typename BaseVecT>
 class NodeData
 {
-    static boost::timer::cpu_timer itimer;
-    static boost::timer::cpu_timer otimer;
+    static NodeDataTimer itimer;
+    static NodeDataTimer otimer;
     static bool timer_init;
 
     // Iterator
@@ -183,9 +227,9 @@ class NodeData
     void fillBuffer(size_t start_id);
     void fillBufferNormal(size_t start_id);
     // path to data
-    string m_dataPath;
+    std::string m_dataPath;
 
-    string m_dataPathNormal;
+    std::string m_dataPathNormal;
     // if m_gotSize is set, the m_size will be used, else the size will be calculated
     bool m_gotSize;
     // amount of points stored in data

@@ -37,7 +37,7 @@
 
 #include "DataStruct.hpp"
 
-#include <boost/shared_array.hpp>
+#include <memory>
 #include <exception>
 #include <string>
 
@@ -154,11 +154,11 @@ public:
   void open(std::vector<std::string> filePaths);
   size_t getNumPoints();
   bool getNextPoint(xyznc &point);
-  //        boost::shared_array<xyzn> getNextPoints(size_t &return_amount, size_t amount =
-  //        1000000); boost::shared_array<xyzc> getNextPoints(size_t &return_amount, size_t amount
-  //        = 1000000); boost::shared_array<xyznc> getNextPoints(size_t &return_amount, size_t
+  //        std::shared_ptr<xyzn[]> getNextPoints(size_t &return_amount, size_t amount =
+  //        1000000); std::shared_ptr<xyzc[]> getNextPoints(size_t &return_amount, size_t amount
+  //        = 1000000); std::shared_ptr<xyznc[]> getNextPoints(size_t &return_amount, size_t
   //        amount = 1000000);
-  boost::shared_ptr<void> getNextPoints(size_t &return_amount, size_t amount = 1000000);
+  std::shared_ptr<void> getNextPoints(size_t &return_amount, size_t amount = 1000000);
   fileType getFileType(size_t i);
   fileType getFileType();
   void rewind(size_t i);

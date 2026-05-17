@@ -33,8 +33,8 @@
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/LBPointArray.hpp"
 
-#include <boost/filesystem.hpp>
-#include <boost/shared_array.hpp>
+#include <filesystem>
+#include <memory>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,7 +57,7 @@
 namespace lvr2
 {
 
-typedef boost::shared_array<float> floatArr;
+typedef std::shared_ptr<float[]> floatArr;
 
 using Vec = BaseVector<float>;
 typedef QueryPoint<Vec> QueryPointC;
@@ -163,7 +163,7 @@ private:
     LBPointArray<unsigned char>* kd_tree_splits;
 
     LBPointArray<float> Result_Normals;
-    boost::shared_ptr<LBKdTree> kd_tree_gen;
+    std::shared_ptr<LBKdTree> kd_tree_gen;
 
     float m_vx, m_vy, m_vz;
     int m_k, m_ki, m_kd;

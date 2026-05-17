@@ -37,9 +37,9 @@
 #include <span>
 #include <string>
 #include <utility>
-#include <boost/optional.hpp>
-#include <boost/shared_array.hpp>
-#include <boost/type_index.hpp>
+#include <optional>
+#include <memory>
+#include <typeindex>
 #include <iostream>
 
 namespace lvr2 {
@@ -48,10 +48,10 @@ template<typename T>
 class Channel
 {
 public:
-    using Optional =  boost::optional<Channel<T> >;
+    using Optional =  std::optional<Channel<T> >;
     using Ptr = std::shared_ptr<Channel<T> >;
     using DataType = T;
-    using DataPtr = boost::shared_array<T>;
+    using DataPtr = std::shared_ptr<T[]>;
 
     Channel();
     Channel(size_t n, size_t width);
@@ -75,7 +75,7 @@ public:
 
     static std::string typeName() 
     {
-        return boost::typeindex::type_id<T>().pretty_name();
+        return std::type_index(typeid(T)).name();
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Channel<T>& ch)

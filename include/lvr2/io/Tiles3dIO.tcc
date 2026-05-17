@@ -38,7 +38,7 @@
 
 #include "lvr2/io/modelio/B3dmIO.hpp"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include <Cesium3DTiles/Tileset.h>
 
@@ -68,12 +68,12 @@ Tiles3dIO<BaseVecT>::Tiles3dIO(const std::string& directory)
 template<typename BaseVecT>
 void Tiles3dIO<BaseVecT>::write(TreeConstPtr& tree, bool compress, float scale)
 {
-    if (boost::filesystem::exists(m_rootDir))
+    if (std::filesystem::exists(m_rootDir))
     {
-        boost::filesystem::remove_all(m_rootDir);
+        std::filesystem::remove_all(m_rootDir);
     }
-    boost::filesystem::create_directories(m_rootDir);
-    boost::filesystem::create_directory(m_rootDir + "tiles/");
+    std::filesystem::create_directories(m_rootDir);
+    std::filesystem::create_directory(m_rootDir + "tiles/");
 
     Cesium3DTiles::Tileset tileset;
     tileset.root.refine = Cesium3DTiles::Tile::Refine::ADD;

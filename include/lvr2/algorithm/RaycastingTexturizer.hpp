@@ -28,6 +28,7 @@
 #pragma once
 
 // std includes
+#include <functional>
 #include <memory>
 
 // lvr2 includes

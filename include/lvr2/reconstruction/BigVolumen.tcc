@@ -71,7 +71,7 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
     {
         if(lineReader.getFileType() == XYZNRGB)
         {
-            boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc> (lineReader.getNextPoints(rsize,10000000));
+            std::shared_ptr<xyznc> a = std::static_pointer_cast<xyznc> (lineReader.getNextPoints(rsize,10000000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -85,7 +85,7 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
         }
         else if(lineReader.getFileType() == XYZN)
         {
-            boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn> (lineReader.getNextPoints(rsize,10000000));
+            std::shared_ptr<xyzn> a = std::static_pointer_cast<xyzn> (lineReader.getNextPoints(rsize,10000000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -99,7 +99,7 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
         }
         else if(lineReader.getFileType() == XYZ)
         {
-            boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz> (lineReader.getNextPoints(rsize,10000000));
+            std::shared_ptr<xyz> a = std::static_pointer_cast<xyz> (lineReader.getNextPoints(rsize,10000000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -114,7 +114,7 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
         }
         else if(lineReader.getFileType() == XYZRGB)
         {
-            boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc> (lineReader.getNextPoints(rsize,10000000));
+            std::shared_ptr<xyzc> a = std::static_pointer_cast<xyzc> (lineReader.getNextPoints(rsize,10000000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -190,7 +190,7 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
     {
         if (lineReader.getFileType() == XYZNRGB)
         {
-            boost::shared_ptr<xyznc> a = boost::static_pointer_cast<xyznc>(lineReader.getNextPoints(rsize,10000000));
+            std::shared_ptr<xyznc> a = std::static_pointer_cast<xyznc>(lineReader.getNextPoints(rsize,10000000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -255,7 +255,7 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
                 }
             }
         } else if (lineReader.getFileType() == XYZN) {
-            boost::shared_ptr<xyzn> a = boost::static_pointer_cast<xyzn>(lineReader.getNextPoints(rsize,10000000));
+            std::shared_ptr<xyzn> a = std::static_pointer_cast<xyzn>(lineReader.getNextPoints(rsize,10000000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;
@@ -310,7 +310,7 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
             }
         } else if (lineReader.getFileType() == XYZ)
         {
-            boost::shared_ptr<xyz> a = boost::static_pointer_cast<xyz>(lineReader.getNextPoints(rsize,10000000));
+            std::shared_ptr<xyz> a = std::static_pointer_cast<xyz>(lineReader.getNextPoints(rsize,10000000));
             if(rsize>0)             lvr2::log::info("{}{}", "[BigVolumen] RSIZE: ", rsize);
             else std::cout << "[BigVolumen] rsize :0 " << " lr: " << lineReader.ok() << endl;
 //            std::cout << "RSIZE: " << rsize << endl;
@@ -376,7 +376,7 @@ BigVolumen<BaseVecT>::BigVolumen(std::vector<std::string> cloudPath, float voxel
         }
         else if (lineReader.getFileType() == XYZRGB)
         {
-            boost::shared_ptr<xyzc> a = boost::static_pointer_cast<xyzc>(lineReader.getNextPoints(rsize,10000000));
+            std::shared_ptr<xyzc> a = std::static_pointer_cast<xyzc>(lineReader.getNextPoints(rsize,10000000));
             if (rsize <= 0  && !lineReader.ok())
             {
                 break;

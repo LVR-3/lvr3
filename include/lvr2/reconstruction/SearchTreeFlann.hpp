@@ -104,7 +104,7 @@ protected:
     /// The FLANN search tree structure.
     unique_ptr<flann::Index<flann::L2_Simple<CoordT>>> m_tree;
 
-    boost::shared_array<CoordT> m_data;
+    std::shared_ptr<CoordT[]> m_data;
 };
 
 template <typename BaseVecT>

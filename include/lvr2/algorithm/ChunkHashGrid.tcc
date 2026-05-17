@@ -31,13 +31,13 @@ void ChunkHashGrid::setChunk(std::string layer, int x, int y, int z, T data)
 }
 
 template <typename T>
-boost::optional<T> ChunkHashGrid::getChunk(std::string layer, int x, int y, int z)
+std::optional<T> ChunkHashGrid::getChunk(std::string layer, int x, int y, int z)
 {
     // skip if the Coordinates are too large or too negative
     if(x > getChunkMaxChunkIndex().x || y > getChunkMaxChunkIndex().y || z > getChunkMaxChunkIndex().z ||
         x < getChunkMinChunkIndex().x || y < getChunkMinChunkIndex().y || z < getChunkMinChunkIndex().z)
     {
-        return boost::optional<T>{};
+        return std::optional<T>{};
     }
     std::size_t chunkHash = hashValue(x, y, z);
 
@@ -47,15 +47,15 @@ boost::optional<T> ChunkHashGrid::getChunk(std::string layer, int x, int y, int 
         m_items.remove({layer, chunkHash});
         m_items.push_front({layer, chunkHash});
 
-        return boost::get<T>(m_hashGrid[layer][chunkHash]);
+        return std::get<T>(m_hashGrid[layer][chunkHash]);
     }
 
     if (loadChunk<T>(layer, x, y, z))
     {
-        return boost::get<T>(m_hashGrid[layer][chunkHash]);
+        return std::get<T>(m_hashGrid[layer][chunkHash]);
     }
 
-    return boost::optional<T>{};
+    return std::optional<T>{};
 }
 
 template <typename T>

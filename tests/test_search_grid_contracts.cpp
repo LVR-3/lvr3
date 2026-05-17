@@ -13,7 +13,7 @@
 #include <utility>
 #include <vector>
 
-#include <boost/shared_array.hpp>
+#include <memory>
 
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/geometry/BoundingBox.hpp"
@@ -75,7 +75,7 @@ constexpr float kDistanceTolerance = 1.0e-5f;
 
 lvr2::PointBufferPtr makePointBuffer(const std::vector<Vec>& points)
 {
-    boost::shared_array<float> raw(new float[std::max<std::size_t>(points.size() * 3, 1)]);
+    std::shared_ptr<float[]> raw(new float[std::max<std::size_t>(points.size() * 3, 1)]);
     for(std::size_t i = 0; i < points.size(); ++i)
     {
         raw[i * 3 + 0] = points[i].x;

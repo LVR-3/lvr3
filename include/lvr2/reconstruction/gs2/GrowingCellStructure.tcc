@@ -267,7 +267,7 @@ std::string growingCellDebugSummary(const T& value)
             float max_err = 0;
             for(auto faceH : m_mesh->faces())
             {
-                float err = faceAgeErrorMap.get(faceH).value().second;
+                float err = faceAgeErrorMap.get(faceH).value().get().second;
                 if(err > max_err)
                 {
                     errorFaceH = faceH;

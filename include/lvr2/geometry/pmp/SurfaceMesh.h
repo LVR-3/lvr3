@@ -15,7 +15,8 @@
 #include "Properties.h"
 #include "BoundingBox.h"
 
-#include <boost/optional.hpp>
+#include <optional>
+#include <functional>
 
 namespace pmp
 {
@@ -1165,19 +1166,19 @@ public:
     //! Property if the property does not exist or if the type does not
     //! match.
     template <class T>
-    boost::optional<T&> get_object_property(const std::string& name)
+    std::optional<std::reference_wrapper<T>> get_object_property(const std::string& name)
     {
         auto prop = oprops_.get<T>(name);
-        return prop ? boost::optional<T&>(prop[0]) : boost::none;
+        return prop ? std::optional<std::reference_wrapper<T>>(prop[0]) : std::nullopt;
     }
     //! get the object property named \p name of type \p T. returns an invalid
     //! Property if the property does not exist or if the type does not
     //! match.
     template <class T>
-    boost::optional<const T&> get_object_property(const std::string& name) const
+    std::optional<std::reference_wrapper<const T>> get_object_property(const std::string& name) const
     {
         auto prop = oprops_.get<T>(name);
-        return prop ? boost::optional<const T&>(prop[0]) : boost::none;
+        return prop ? std::optional<std::reference_wrapper<const T>>(prop[0]) : std::nullopt;
     }
 
     //! if a object property of type \p T with name \p name exists, it is

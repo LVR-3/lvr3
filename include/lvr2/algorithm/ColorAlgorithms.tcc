@@ -41,7 +41,7 @@ namespace lvr2
 {
 
 template <typename BaseVecT>
-boost::optional<DenseVertexMap<RGB8Color>> calcColorFromPointCloud(
+std::optional<DenseVertexMap<RGB8Color>> calcColorFromPointCloud(
     const BaseMesh<BaseVecT>& mesh,
     const PointsetSurfacePtr<BaseVecT> surface
 )
@@ -49,7 +49,7 @@ boost::optional<DenseVertexMap<RGB8Color>> calcColorFromPointCloud(
     if (!surface->pointBuffer()->hasColors())
     {
         // cout << "none" << endl;
-        return boost::none;
+        return std::nullopt;
     }
 
     DenseVertexMap<RGB8Color> vertexMap;

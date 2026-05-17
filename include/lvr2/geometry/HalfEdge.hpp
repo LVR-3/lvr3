@@ -62,7 +62,7 @@ public:
     }
 };
 
-/// Semantically equivalent to `boost::optional<HalfEdgeHandle>`
+/// Semantically equivalent to `std::optional<HalfEdgeHandle>`
 class OptionalHalfEdgeHandle : public BaseOptionalHandle<HalfEdgeHandle>
 {
 public:

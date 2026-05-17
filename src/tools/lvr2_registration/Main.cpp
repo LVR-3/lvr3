@@ -38,15 +38,15 @@
 #include "lvr2/registration/RegistrationPipeline.hpp"
 
 #include "lvr2/config/CommandLine.hpp"
-#include <boost/filesystem.hpp>
-#include <boost/optional.hpp>
+#include <filesystem>
+#include <optional>
 #include <iostream>
 #include <chrono>
 #include <fstream>
 
 using namespace lvr2;
 using namespace std;
-using boost::filesystem::path;
+using std::filesystem::path;
 
 
 int main(int argc, char** argv)
@@ -328,23 +328,23 @@ int main(int argc, char** argv)
     //         ScanPtr tempScan(new Scan());
     //         size_t six;
     //         size_t pointsNum;
-    //         boost::shared_array<float> bb_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "boundingBox", six);
+    //         std::shared_ptr<float[]> bb_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "boundingBox", six);
     //         BoundingBox<BaseVector<float>> bb(BaseVector<float>(bb_array[0], bb_array[1], bb_array[2]),
     //                                 BaseVector<float>(bb_array[3], bb_array[4], bb_array[5]));
     //         // bounding box transfered to object
     //         tempScan->boundingBox = bb;
 
-    //         boost::shared_array<float> fov_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "fov", six);
+    //         std::shared_ptr<float[]> fov_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "fov", six);
     //         // fov transfered to object
           
     //         // TODO: min and max angles from new structure
 
-    //         boost::shared_array<float> res_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "resolution", six);
+    //         std::shared_ptr<float[]> res_array = h5_ptr->loadArray<float>("raw/scans/" + numOfScansInHDF[i], "resolution", six);
     //         // resolution transfered
     //         tempScan->hResolution = res_array[0];
     //         tempScan->vResolution = res_array[1];
     //         // point cloud transfered
-    //         boost::shared_array<float> point_array = h5_ptr->loadArray<float>("raw/scans/"+ numOfScansInHDF[i], "points", pointsNum);
+    //         std::shared_ptr<float[]> point_array = h5_ptr->loadArray<float>("raw/scans/"+ numOfScansInHDF[i], "points", pointsNum);
     //         // important because x, y, z coords
     //         pointsNum = pointsNum / 3;
     //         PointBufferPtr pointPointer = PointBufferPtr(new PointBuffer(point_array, pointsNum));

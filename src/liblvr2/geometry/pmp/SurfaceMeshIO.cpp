@@ -859,9 +859,9 @@ void read_fprop(const HighFive::Group& group, SurfaceMesh& mesh, const std::stri
 
 void SurfaceMeshIO::read_hdf5(const HighFive::Group& group, SurfaceMesh& mesh)
 {
-    auto vn = lvr2::hdf5util::getAttribute<uint64_t>(group, "n_vertices").get();
-    auto en = lvr2::hdf5util::getAttribute<uint64_t>(group, "n_edges").get();
-    auto fn = lvr2::hdf5util::getAttribute<uint64_t>(group, "n_faces").get();
+    auto vn = lvr2::hdf5util::getAttribute<uint64_t>(group, "n_vertices").value();
+    auto en = lvr2::hdf5util::getAttribute<uint64_t>(group, "n_edges").value();
+    auto fn = lvr2::hdf5util::getAttribute<uint64_t>(group, "n_faces").value();
 
     if (fn == 0)
         return;

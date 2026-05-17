@@ -110,7 +110,7 @@ template<typename ValueT> using SparseVertexMap     = SparseAttrMap<VertexHandle
  template<typename ValueT> using TinyFaceMap        = TinyAttrMap<FaceHandle, ValueT>;
  template<typename ValueT> using TinyVertexMap      = TinyAttrMap<VertexHandle, ValueT>;
 
- template<typename ValueT> using DenseVertexMapOptional = boost::optional<DenseVertexMap<ValueT>>; 
+ template<typename ValueT> using DenseVertexMapOptional = std::optional<DenseVertexMap<ValueT>>;
 } // namespace lvr2
 
 #endif /* LVR2_ATTRMAPS_ATTRMAPS_H_ */

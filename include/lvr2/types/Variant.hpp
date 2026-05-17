@@ -28,8 +28,8 @@
 #ifndef LVR2_TYPES_VARIANT_HPP
 #define LVR2_TYPES_VARIANT_HPP
 
-#include <boost/variant.hpp>
-#include <boost/type_index.hpp>
+#include <variant>
+#include <typeindex>
 #include <tuple>
 #include <iostream>
 #include <memory>
@@ -38,23 +38,24 @@ namespace lvr2
 {
 
 /**
- * @brief LVR2 variant type. Based on boost::variant with some extra functions
+ * @brief LVR2 variant type. Based on std::variant with some extra functions
  * 
  * @tparam T 
  */
 template<typename... T>
-class Variant : public boost::variant<T...>
+class Variant : public std::variant<T...>
 {
-    using base = boost::variant<T...>;
-    using base::base;
+    using base = std::variant<T...>;
 
 protected:
     template <class T1, class Tuple>
     struct TupleIndex;
 
 public:
+    using base::base;
     using types = std::tuple<T...>;
-    using base::which;
+
+    std::size_t which() const noexcept { return this->index(); }
 
     template<typename U>
     static constexpr std::size_t index_of_type()
@@ -88,7 +89,7 @@ public:
     template<typename U>
     constexpr bool is_type() const
     {
-        return this->which() == index_of_type<U>();
+        return this->index() == index_of_type<U>();
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Variant<T...>& v)
@@ -99,12 +100,12 @@ public:
 
 // Visitor Implementations
 protected:
-    struct TypeNameVisitor : public boost::static_visitor<std::string>
+    struct TypeNameVisitor
     {
         template<typename U>
-        std::string operator()(const U& type) const
+        std::string operator()(const U&) const
         {
-            return boost::typeindex::type_id<U>().pretty_name();
+            return std::type_index(typeid(U)).name();
         }
     };
 

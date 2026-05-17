@@ -12,8 +12,8 @@
 #include "lvr2/io/schema/ScanProjectSchema.hpp"
 #include "lvr2/util/Timestamp.hpp"
 
-#include <boost/optional.hpp>
-#include <boost/filesystem.hpp>
+#include <optional>
+#include <filesystem>
 #include <string_view>
 
 #include <opencv2/core.hpp>
@@ -22,7 +22,7 @@
 #include <vector>
 #include <string>
 
-#include <boost/variant.hpp>
+#include <variant>
 #include <yaml-cpp/yaml.h>
 
 namespace lvr2
@@ -126,7 +126,7 @@ namespace lvr2
 
     struct BoundedOptional
     {
-        boost::optional<BoundingBox<BaseVector<float>>> boundingBox;
+        std::optional<BoundingBox<BaseVector<float>>> boundingBox;
     };
 
     /*****************************************************************************
@@ -324,7 +324,7 @@ namespace lvr2
     struct Camera : SensorEntity, Transformable
     {
         //// META BEGIN
-        // TODO: check boost::typeindex<>::pretty_name (contains lvr2 as namespace: "lvr2::Camera")
+        // TODO: check type-name formatting (contains lvr2 as namespace: "lvr2::Camera")
         static constexpr char type[] = "camera";
         /// Pinhole camera model
         PinholeModel model;
@@ -627,7 +627,7 @@ namespace lvr2
     };
 
     using HyperspectralPanoramaChannelPtr = std::shared_ptr<HyperspectralPanoramaChannel>;
-    using HyperspectralPanoramaChannelOptional = boost::optional<HyperspectralPanoramaChannel>;
+    using HyperspectralPanoramaChannelOptional = std::optional<HyperspectralPanoramaChannel>;
 
     inline std::ostream& operator<<(std::ostream& os, const HyperspectralPanoramaChannel& c)
     {
@@ -701,7 +701,7 @@ namespace lvr2
     };
 
     using HyperspectralPanoramaPtr = std::shared_ptr<HyperspectralPanorama>;
-    using HyperspectralPanoramaOptional = boost::optional<HyperspectralPanorama>;
+    using HyperspectralPanoramaOptional = std::optional<HyperspectralPanorama>;
 
     inline std::ostream& operator<<(std::ostream& os, const HyperspectralPanorama& p)
     {

@@ -33,7 +33,7 @@
  */
 
 #include "lvr2/util/Panic.hpp"
-#include <boost/shared_array.hpp>
+#include <memory>
 
 #include <sstream>
 #include <string>
@@ -70,7 +70,7 @@ StableVector<HandleT, ElemT>::StableVector(size_t countElements, const ElementTy
 {}
 
 template<typename HandleT, typename ElemT>
-StableVector<HandleT, ElemT>::StableVector(size_t countElements, const boost::shared_array<ElementType>& sharedArray)
+StableVector<HandleT, ElemT>::StableVector(size_t countElements, const std::shared_ptr<ElementType[]>& sharedArray)
     : m_usedCount(countElements)
 {
     m_elements.reserve(countElements);
@@ -105,7 +105,7 @@ void StableVector<HandleT, ElemT>::increaseSize(HandleType upTo)
         panic("call to increaseSize() with a valid handle!");
     }
 
-    m_elements.resize(upTo.idx(), boost::none);
+    m_elements.resize(upTo.idx(), std::nullopt);
 }
 
 template<typename HandleT, typename ElemT>
@@ -130,7 +130,7 @@ void StableVector<HandleT, ElemT>::erase(HandleType handle)
 {
     checkAccess(handle);
 
-    m_elements[handle.idx()] = boost::none;
+    m_elements[handle.idx()] = std::nullopt;
     --m_usedCount;
 }
 
@@ -141,21 +141,21 @@ void StableVector<HandleT, ElemT>::clear()
 }
 
 template<typename HandleT, typename ElemT>
-boost::optional<ElemT&> StableVector<HandleT, ElemT>::get(HandleType handle)
+std::optional<std::reference_wrapper<ElemT>> StableVector<HandleT, ElemT>::get(HandleType handle)
 {
     if (handle.idx() >= size() || !m_elements[handle.idx()])
     {
-        return boost::none;
+        return std::nullopt;
     }
     return *m_elements[handle.idx()];
 }
 
 template<typename HandleT, typename ElemT>
-boost::optional<const ElemT&> StableVector<HandleT, ElemT>::get(HandleType handle) const
+std::optional<std::reference_wrapper<const ElemT>> StableVector<HandleT, ElemT>::get(HandleType handle) const
 {
     if (handle.idx() >= size() || !m_elements[handle.idx()])
     {
-        return boost::none;
+        return std::nullopt;
     }
     return *m_elements[handle.idx()];
 }
@@ -240,7 +240,7 @@ StableVectorIterator<HandleT, ElemT> StableVector<HandleT, ElemT>::end() const
 
 template<typename HandleT, typename ElemT>
 StableVectorIterator<HandleT, ElemT>::StableVectorIterator(
-    const vector<boost::optional<ElemT>>* deleted,
+    const vector<std::optional<ElemT>>* deleted,
     bool startAtEnd
 )
     : m_elements(deleted), m_pos(startAtEnd ? deleted->size() : 0)

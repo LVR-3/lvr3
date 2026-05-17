@@ -35,6 +35,7 @@
 #include <queue>
 #include <set>
 #include <list>
+#include <functional>
 
 #include "lvr2/attrmaps/AttrMaps.hpp"
 #include "lvr2/util/Progress.hpp"
@@ -253,11 +254,11 @@ DenseVertexMap<float> calcVertexHeightDifferences(
         // however, the correct solution would be to find the intersection of the edge
         // with the limiting geometry (sphere/cylinder)
         
-        boost::optional<const Normal<typename BaseVecT::CoordType>&> normal_opt = vertex_normals.get(vH);
+        std::optional<std::reference_wrapper<const Normal<typename BaseVecT::CoordType>>> normal_opt = vertex_normals.get(vH);
         BaseVecT normal;
         if (normal_opt.has_value())
         {
-            normal = normal_opt.value();
+            normal = normal_opt.value().get();
         }
         else
         {

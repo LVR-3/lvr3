@@ -31,7 +31,7 @@
 #include <string>
 #include <vector>
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <Eigen/Dense>
 
 #include "lvr2/types/MatrixTypes.hpp"
@@ -74,7 +74,7 @@ public:
 
 private:
 
-    using Path = boost::filesystem::path;
+    using Path = std::filesystem::path;
 
     size_t examinePLY(const std::string& filename);
     size_t examineASCII(const std::string& filename);    

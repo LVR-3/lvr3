@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include <memory>
-#include <boost/optional.hpp>
+#include <optional>
 #include "MatrixTypes.hpp"
 #include "lvr2/util/Panic.hpp"
 #include "lvr2/util/Timestamp.hpp"
@@ -86,7 +86,7 @@ namespace lvr2
     };
 
     using PinholeModelPtr = std::shared_ptr<PinholeModel>;
-    using PinholeModelOptional = boost::optional<PinholeModel>;
+    using PinholeModelOptional = std::optional<PinholeModel>;
 
 
 
@@ -151,7 +151,7 @@ namespace lvr2
     };
 
     using CylindricalModelPtr = std::shared_ptr<CylindricalModel>;
-    using CylindricalModelOptional = boost::optional<CylindricalModel>;
+    using CylindricalModelOptional = std::optional<CylindricalModel>;
 
     inline std::ostream& operator<<(std::ostream& os, const CylindricalModel& m)
     {
@@ -226,7 +226,7 @@ namespace lvr2
     };
 
     using SphericalModelPtr = std::shared_ptr<SphericalModel>;
-    using SphericalModelOptional = boost::optional<SphericalModel>;
+    using SphericalModelOptional = std::optional<SphericalModel>;
 
     inline std::ostream& operator<<(std::ostream& os, const SphericalModel& m)
     {

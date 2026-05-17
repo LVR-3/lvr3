@@ -12,8 +12,22 @@
 #include "lvr2/io/schema/ScanProjectSchemaRdbx.hpp"
 #endif
 
-#include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
+#include <algorithm>
+#include <cctype>
+#include <filesystem>
+
+namespace
+{
+
+std::string toUpperAscii(std::string value)
+{
+    std::ranges::transform(value, value.begin(), [](unsigned char c) {
+        return static_cast<char>(std::toupper(c));
+    });
+    return value;
+}
+
+} // namespace
 
 namespace lvr2
 {
@@ -21,13 +35,13 @@ namespace lvr2
 DirectorySchemaPtr directorySchemaFromName(const std::string& schemaName, const std::string& rootDirectory)
 {
     // Check root directory
-    if(!boost::filesystem::is_directory(boost::filesystem::path(rootDirectory)))
+    if(!std::filesystem::is_directory(std::filesystem::path(rootDirectory)))
     {
                 lvr2::log::warning("{}{}{}", "[DirectorySchemaFromName] Cannot create directory schema. Given root is not a directory: '", rootDirectory, "'.");
         return nullptr;
     }
 
-    std::string name = boost::to_upper_copy<std::string>(schemaName);
+    std::string name = toUpperAscii(schemaName);
 
     if(name == "EUROC")
     {
@@ -67,7 +81,7 @@ DirectorySchemaPtr directorySchemaFromName(const std::string& schemaName, const 
 
 HDF5SchemaPtr hdf5SchemaFromName(const std::string& schemaName)
 {
-    std::string name = boost::to_upper_copy<std::string>(schemaName);
+    std::string name = toUpperAscii(schemaName);
 
     if(name == "HDF5")
     {
@@ -87,9 +101,9 @@ HDF5SchemaPtr hdf5SchemaFromName(const std::string& schemaName)
 
 ScanProjectSchemaPtr schemaFromName(const std::string& schemaName, const std::string root)
 {
-    boost::filesystem::path path(root);
+    std::filesystem::path path(root);
 
-    if(boost::filesystem::is_directory(path))
+    if(std::filesystem::is_directory(path))
     {
         return directorySchemaFromName(schemaName, root);
     }

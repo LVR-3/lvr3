@@ -40,12 +40,12 @@
 #include "lvr2/io/schema/MeshSchemaHDF5.hpp"
 #include "lvr2/config/lvropenmp.hpp"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include "lvr2/config/CommandLine.hpp"
 #include <lvr2/util/Logging.hpp>
 
 using namespace lvr2;
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 using Vec = BaseVector<float>;
 using Mesh = PMPMesh<Vec>;
@@ -240,8 +240,8 @@ int main(int argc, char** argv)
         {
             lvr2::log::info("Reading mesh {} from chunks in HDF5", input_file.string());
 
-            chunk_size = hdf5util::getAttribute<float>(root, "chunk_size").get();
-            float voxel_size = hdf5util::getAttribute<float>(root, "voxel_size").get();
+            chunk_size = hdf5util::getAttribute<float>(root, "chunk_size").value();
+            float voxel_size = hdf5util::getAttribute<float>(root, "voxel_size").value();
 
             auto chunk_group = std::make_shared<HighFive::Group>(root.getGroup("/chunks"));
             std::vector<std::string> chunk_files = chunk_group->listObjectNames();

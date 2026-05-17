@@ -37,7 +37,7 @@
 #include "lvr2/io/MeshStores.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <iostream>
 #include <string>
 
@@ -57,16 +57,16 @@ int main(int argc, char** argv)
     }
     if (options.getLoad())
     {
-        if (boost::filesystem::exists(options.getChunkedMesh()))
+        if (std::filesystem::exists(options.getChunkedMesh()))
         {
             // loading a hdf5 file and extracting the chunks for a given bounding box
             lvr2::ChunkManager chunkLoader(options.getChunkedMesh(), options.getCacheSize());
 
             // TODO: remove tmp test later
             // beginn: tmp test of extractArea method for dat/scan.pts with chunkSize 200
-            if (!boost::filesystem::exists("area"))
+            if (!std::filesystem::exists("area"))
             {
-                boost::filesystem::create_directories("area");
+                std::filesystem::create_directories("area");
             }
             lvr2::BoundingBox<lvr2::BaseVector<float>> area(
                 lvr2::BaseVector<float>(options.getXMin(), options.getYMin(), options.getZMin()),
@@ -80,10 +80,10 @@ int main(int argc, char** argv)
     else
     {
         // saving a mesh as multiple chunked meshes in an hdf5 file
-        boost::filesystem::path outputPath = boost::filesystem::absolute(options.getOutputDir());
-        if (!boost::filesystem::is_directory(outputPath))
+        std::filesystem::path outputPath = std::filesystem::absolute(options.getOutputDir());
+        if (!std::filesystem::is_directory(outputPath))
         {
-            boost::filesystem::create_directories(outputPath);
+            std::filesystem::create_directories(outputPath);
         }
 
         float size = options.getChunkSize();
@@ -92,7 +92,7 @@ int main(int argc, char** argv)
 
         // Check extension
         std::vector<std::string> files = options.getInputFile();
-        boost::filesystem::path selectedFile(files[0]);
+        std::filesystem::path selectedFile(files[0]);
         std::string extension = selectedFile.extension().string();
         lvr2::MeshBufferPtr meshBuffer;
         if (extension == ".h5")

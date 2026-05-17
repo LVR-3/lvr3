@@ -40,7 +40,7 @@
 
 using std::ifstream;
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "lvr2/io/WaveformIO.hpp"
 #include "lvr2/io/Progress.hpp"
@@ -51,7 +51,7 @@ namespace lvr2
 
 ModelPtr WaveformIO::read(std::string filename)
 {
-    boost::filesystem::path selectedFile(filename);
+    std::filesystem::path selectedFile(filename);
     ModelPtr model(new Model);
     
     // Open file
@@ -160,7 +160,7 @@ ModelPtr WaveformIO::read(std::string filename)
 
     //TODO A better way is needed
     long totalSize = maxSampleCount * (points.size() -1);
-    boost::shared_array<uint16_t> waveformData(new uint16_t[totalSize]);
+    std::shared_ptr<uint16_t[]> waveformData(new uint16_t[totalSize]);
     for (long i = 0; i < points.size() -1 ; i++)
     {
 	for (int j = 0; j < maxSampleCount; j++)

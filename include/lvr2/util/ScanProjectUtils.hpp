@@ -4,7 +4,7 @@
 #undef USE_UNORDERED_MAP
 
 #include <utility>
-#include <boost/optional.hpp>
+#include <optional>
 
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 #include "lvr2/types/ScanTypes.hpp"

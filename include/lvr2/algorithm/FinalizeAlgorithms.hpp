@@ -35,9 +35,9 @@
 #ifndef FINALIZEALGORITHMS
 #define FINALIZEALGORITHMS
 
-#include <boost/shared_ptr.hpp>
-#include <boost/smart_ptr/make_shared.hpp>
-#include <boost/optional.hpp>
+#include <functional>
+#include <memory>
+#include <optional>
 
 #include "lvr2/attrmaps/AttrMaps.hpp"
 #include "lvr2/algorithm/ClusterPainter.hpp"
@@ -65,8 +65,8 @@ template<typename BaseVecT>
 class SimpleFinalizer
 {
 private:
-    boost::optional<const VertexMap<RGB8Color>&> m_colorData;
-    boost::optional<const VertexMap<Normal<typename BaseVecT::CoordType>>&> m_normalData;
+    std::optional<std::reference_wrapper<const VertexMap<RGB8Color>>> m_colorData;
+    std::optional<std::reference_wrapper<const VertexMap<Normal<typename BaseVecT::CoordType>>>> m_normalData;
 
 public:
     SimpleFinalizer() {};
@@ -151,19 +151,19 @@ private:
     const ClusterBiMap<FaceHandle>& m_cluster;
 
     // Normals (optional)
-    boost::optional<const VertexMap<Normal<typename BaseVecT::CoordType>>&> m_vertexNormals;
+    std::optional<std::reference_wrapper<const VertexMap<Normal<typename BaseVecT::CoordType>>>> m_vertexNormals;
 
     // Basic colors
     // Cluster colors will color each vertex in the color of its corresponding cluster
     // These have lower priority when cluster colors, as only one mode can be used
-    boost::optional<const ClusterMap<RGB8Color>&> m_clusterColors;
+    std::optional<std::reference_wrapper<const ClusterMap<RGB8Color>>> m_clusterColors;
 
     // Vertex colors will color each vertex individually
     // These have a higher priority than cluster colors
-    boost::optional<const VertexMap<RGB8Color>&> m_vertexColors;
+    std::optional<std::reference_wrapper<const VertexMap<RGB8Color>>> m_vertexColors;
 
     // Materials and textures
-    boost::optional<const MaterializerResult<BaseVecT>&> m_materializerResult;
+    std::optional<std::reference_wrapper<const MaterializerResult<BaseVecT>>> m_materializerResult;
 };
 
 } // namespace lvr2

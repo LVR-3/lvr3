@@ -58,7 +58,7 @@ bool HashMap<HandleT, ValueT>::containsKey(HandleT key) const
 }
 
 template<typename HandleT, typename ValueT>
-boost::optional<ValueT> HashMap<HandleT, ValueT>::insert(HandleT key, const ValueT& value)
+std::optional<ValueT> HashMap<HandleT, ValueT>::insert(HandleT key, const ValueT& value)
 {
     auto res = m_map.insert(make_pair(key, value));
     if (!res.second)
@@ -72,12 +72,12 @@ boost::optional<ValueT> HashMap<HandleT, ValueT>::insert(HandleT key, const Valu
     }
     else
     {
-        return boost::none;
+        return std::nullopt;
     }
 }
 
 template<typename HandleT, typename ValueT>
-boost::optional<ValueT> HashMap<HandleT, ValueT>::erase(HandleT key)
+std::optional<ValueT> HashMap<HandleT, ValueT>::erase(HandleT key)
 {
     auto it = m_map.find(key);
     if (it != m_map.end())
@@ -88,7 +88,7 @@ boost::optional<ValueT> HashMap<HandleT, ValueT>::erase(HandleT key)
     }
     else
     {
-        return boost::none;
+        return std::nullopt;
     }
 }
 
@@ -99,7 +99,7 @@ void HashMap<HandleT, ValueT>::clear()
 }
 
 template<typename HandleT, typename ValueT>
-boost::optional<ValueT&> HashMap<HandleT, ValueT>::get(HandleT key)
+std::optional<std::reference_wrapper<ValueT>> HashMap<HandleT, ValueT>::get(HandleT key)
 {
     // Try to lookup value. If none was found and a default value is set,
     // insert it and return that instead.
@@ -114,14 +114,14 @@ boost::optional<ValueT&> HashMap<HandleT, ValueT>::get(HandleT key)
         }
         else
         {
-            return boost::none;
+            return std::nullopt;
         }
     }
     return (*it).second;
 }
 
 template<typename HandleT, typename ValueT>
-boost::optional<const ValueT&> HashMap<HandleT, ValueT>::get(HandleT key) const
+std::optional<std::reference_wrapper<const ValueT>> HashMap<HandleT, ValueT>::get(HandleT key) const
 {
     // Try to lookup value. If none was found and a default value is set,
     // return that instead.
@@ -134,7 +134,7 @@ boost::optional<const ValueT&> HashMap<HandleT, ValueT>::get(HandleT key) const
         }
         else
         {
-            return boost::none;
+            return std::nullopt;
         }
     }
     return (*it).second;

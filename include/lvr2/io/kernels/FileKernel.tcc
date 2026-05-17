@@ -3,7 +3,7 @@ namespace lvr2
 
 
 template<typename T>
-boost::shared_array<T> FileKernel::loadArray(
+std::shared_ptr<T[]> FileKernel::loadArray(
     const std::string& group, 
     const std::string& container, 
     std::vector<size_t>& dims) const
@@ -57,8 +57,8 @@ boost::shared_array<T> FileKernel::loadArray(
         return loadBoolArray(group, container, dims);
     }
     else {
-        // boost::type_info<>
-        std::cout << "[FileKernel] WARNING: not implemented type " << boost::typeindex::type_id<T>().pretty_name() << std::endl;
+        // type_info
+        std::cout << "[FileKernel] WARNING: not implemented type " << std::type_index(typeid(T)).name() << std::endl;
         throw std::runtime_error("loadArray fail");
     }
 }
@@ -68,7 +68,7 @@ void FileKernel::saveArray(
     const std::string& groupName, 
     const std::string& datasetName, 
     const std::vector<size_t>& dimensions, 
-    const boost::shared_array<T>& data) const
+    const std::shared_ptr<T[]>& data) const
 {
     if constexpr (std::is_same_v<T, char>)
     {
@@ -119,8 +119,8 @@ void FileKernel::saveArray(
         return saveBoolArray(groupName, datasetName, dimensions, data);
     }
     else {
-        // boost::type_info<>
-        std::cout << "[FileKernel] WARNING: not implemented type " << boost::typeindex::type_id<T>().pretty_name() << std::endl;
+        // type_info
+        std::cout << "[FileKernel] WARNING: not implemented type " << std::type_index(typeid(T)).name() << std::endl;
         throw std::runtime_error("saveArray fail");
     }
 }

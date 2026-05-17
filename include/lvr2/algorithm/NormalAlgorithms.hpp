@@ -55,7 +55,7 @@ namespace lvr2
  * @return Either the normal or `none` if the face has a zero area.
  */
 template <typename BaseVecT>
-boost::optional<Normal<typename BaseVecT::CoordType>> getFaceNormal(std::array<BaseVecT, 3> vertices);
+std::optional<Normal<typename BaseVecT::CoordType>> getFaceNormal(std::array<BaseVecT, 3> vertices);
 
 /**
  * @brief Calculates a normal for each face in the mesh.
@@ -72,7 +72,7 @@ DenseFaceMap<Normal<typename BaseVecT::CoordType>> calcFaceNormals(const BaseMes
  *        normals of its adjacent faces.
  */
 template<typename BaseVecT>
-boost::optional<Normal<typename BaseVecT::CoordType>> interpolatedVertexNormal(
+std::optional<Normal<typename BaseVecT::CoordType>> interpolatedVertexNormal(
     const BaseMesh<BaseVecT>& mesh,
     const FaceMap<Normal<typename BaseVecT::CoordType>>& normals,
     VertexHandle handle

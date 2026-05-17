@@ -1,7 +1,9 @@
 #include <lvr2/types/BaseBuffer.hpp>
 #include <lvr2/types/Channel.hpp>
+#include <lvr2/attrmaps/HashMap.hpp>
 
 #include <concepts>
+#include <memory>
 #include <span>
 #include <stdexcept>
 #include <string>
@@ -24,6 +26,7 @@ int main()
 
     static_assert(std::same_as<decltype(std::declval<Channel<float>&>().values()), std::span<float>>);
     static_assert(std::same_as<decltype(std::declval<const Channel<float>&>().values()), std::span<const float>>);
+    static_assert(std::same_as<Channel<float>::DataPtr, std::shared_ptr<float[]>>);
 
     std::vector<float> source{1.0F, 2.0F, 3.0F, 4.0F, 5.0F, 6.0F};
     Channel<float> channel(2, 3, std::span<const float>(source.data(), source.size()));
@@ -33,6 +36,11 @@ int main()
     std::span<float> channelValues = channel.values();
     channelValues[1] = 8.0F;
     if (int failure = failIf(channel.dataPtr()[1] != 8.0F, 2)) return failure;
+
+    auto shared = std::shared_ptr<float[]>(new float[3]{7.0F, 8.0F, 9.0F});
+    Channel<float> sharedChannel(1, 3, shared);
+    shared[0] = 10.0F;
+    if (int failure = failIf(sharedChannel.values()[0] != 10.0F, 12)) return failure;
 
     bool rejectedWrongSize = false;
     try
@@ -73,6 +81,14 @@ int main()
     indicesName.clear();
     if (int failure = failIf(!buffer.hasIndexChannel("indices"), 10)) return failure;
     if (int failure = failIf(buffer.indexChannelWidth("indices") != 3, 11)) return failure;
+
+    lvr2::HashMap<lvr2::VertexHandle, int> map;
+    map.insert(lvr2::VertexHandle(0), 3);
+    auto value = map.get(lvr2::VertexHandle(0));
+    if (int failure = failIf(!value, 13)) return failure;
+    value->get() = 4;
+    auto updated = map.get(lvr2::VertexHandle(0));
+    if (int failure = failIf(!updated || updated->get() != 4, 14)) return failure;
 
     return 0;
 }

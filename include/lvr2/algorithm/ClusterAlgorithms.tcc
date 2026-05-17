@@ -55,6 +55,7 @@
 #include <sstream>
 #include <cmath>
 #include <limits>
+#include <numbers>
 #include <unordered_set>
 
 using std::unordered_set;
@@ -295,8 +296,7 @@ BoundingRectangle<typename BaseVecT::CoordType> calculateBoundingRectangle(
 
 
 
-    // const float pi = boost::math::constants::pi<float>(); // FIXME: doesnt seem to work with c++11
-    const float pi = std::atan(1) * 4; // reasonable approximation for pi
+    const float pi = std::numbers::pi_v<float>;
 
     // resolution of iterative improvement steps for a fourth rotation
     const float delta = (pi / 2) / 90;
@@ -698,7 +698,7 @@ Plane<BaseVecT> calcRegressionPlaneRANSAC(
     for (auto faceH: cluster.handles)
     {
         // Iterate over all vertices of current face
-        boost::optional<VertexHandle> vHlast;
+        std::optional<VertexHandle> vHlast;
         for (auto vH: mesh.getVerticesOfFace(faceH))
         {
             // If current vertex is not visited, add distance

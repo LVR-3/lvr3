@@ -52,7 +52,7 @@ SearchTreeFlann<BaseVecT>::SearchTreeFlann(PointBufferPtr buffer)
     FloatChannelOptional pts_optional = buffer->getFloatChannel("points");
     FloatChannel pts_channel = *pts_optional;
 
-    m_data = boost::shared_array<CoordT>(new CoordT[3 * n]);
+    m_data = std::shared_ptr<CoordT[]>(new CoordT[3 * n]);
     auto flannPoints = flann::Matrix<CoordT>(m_data.get(), n, 3);
     for(size_t i = 0; i < n; i++)
     {

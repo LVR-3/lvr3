@@ -19,11 +19,6 @@
 #endif
 #include <spdlog/spdlog.h>
 
-namespace boost::filesystem
-{
-class path;
-} // namespace boost::filesystem
-
 namespace lvr2
 {
 
@@ -93,11 +88,6 @@ struct IsPathArgument : std::false_type
 
 template<>
 struct IsPathArgument<std::filesystem::path> : std::true_type
-{
-};
-
-template<>
-struct IsPathArgument<boost::filesystem::path> : std::true_type
 {
 };
 

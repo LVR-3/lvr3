@@ -36,7 +36,7 @@
 #include "lvr2/util/Timestamp.hpp"
 #include <lvr2/util/Logging.hpp>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <iostream>
 using std::cout;
 using std::endl;

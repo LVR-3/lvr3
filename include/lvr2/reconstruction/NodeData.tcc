@@ -34,8 +34,7 @@
 
 #include "lvr2/reconstruction/NodeData.hpp"
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
+#include <filesystem>
 #include <sstream>
 #include <vector>
 
@@ -43,10 +42,10 @@ namespace lvr2
 {
 
 template <typename BaseVecT>
-boost::timer::cpu_timer NodeData<BaseVecT>::itimer;
+NodeDataTimer NodeData<BaseVecT>::itimer;
 
 template <typename BaseVecT>
-boost::timer::cpu_timer NodeData<BaseVecT>::otimer;
+NodeDataTimer NodeData<BaseVecT>::otimer;
 
 template <typename BaseVecT>
 bool NodeData<BaseVecT>::timer_init = false;
@@ -70,15 +69,15 @@ NodeData<BaseVecT>::NodeData(size_t bufferSize) : m_bufferSize(bufferSize)
     m_gotSize = false;
     m_id = ++c_last_id;
     m_dataPath = "node-";
-    m_dataPath.append(to_string(c_tstamp));
+    m_dataPath.append(std::to_string(c_tstamp));
     m_dataPath.append("/");
-    boost::filesystem::path dir(m_dataPath);
+    std::filesystem::path dir(m_dataPath);
 
-    if (!(boost::filesystem::exists(dir)))
+    if (!(std::filesystem::exists(dir)))
     {
-        boost::filesystem::create_directory(dir);
+        std::filesystem::create_directory(dir);
     }
-    m_dataPath.append(to_string(m_id));
+    m_dataPath.append(std::to_string(m_id));
     m_dataPathNormal = m_dataPath;
     m_dataPath.append(".xyz");
     m_dataPathNormal.append(".normals");
@@ -121,7 +120,7 @@ void NodeData<BaseVecT>::fillBufferNormal(size_t start_id)
 }
 
 template <typename BaseVecT>
-void NodeData<BaseVecT>::open(string path)
+void NodeData<BaseVecT>::open(std::string path)
 {
     m_dataPath = path;
 }
@@ -129,8 +128,8 @@ void NodeData<BaseVecT>::open(string path)
 template <typename BaseVecT>
 void NodeData<BaseVecT>::remove()
 {
-    boost::filesystem::remove(m_dataPath);
-    boost::filesystem::remove(m_dataPathNormal);
+    std::filesystem::remove(m_dataPath);
+    std::filesystem::remove(m_dataPathNormal);
     m_dataPath = "";
     m_dataPathNormal = "";
     m_readBuffer.clear();
@@ -222,7 +221,7 @@ void NodeData<BaseVecT>::writeBuffer()
     }
     else
     {
-        std::cout << "ERROR: " << errno << ": " << strerror(errno) << std::endl;
+        std::cout << "ERROR: " << errno << ": " << std::strerror(errno) << std::endl;
         throw std::runtime_error("asd");
     }
 
@@ -241,7 +240,7 @@ void NodeData<BaseVecT>::writeBuffer()
     }
     else
     {
-        std::cout << "ERROR: " << errno << ": " << strerror(errno) << std::endl;
+        std::cout << "ERROR: " << errno << ": " << std::strerror(errno) << std::endl;
         throw std::runtime_error("asd");
     }
 

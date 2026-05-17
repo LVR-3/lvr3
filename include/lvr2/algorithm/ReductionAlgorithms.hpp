@@ -37,7 +37,7 @@
 #ifndef LVR2_ALGORITHM_REDUCTIONALGORITHMS_H_
 #define LVR2_ALGORITHM_REDUCTIONALGORITHMS_H_
 
-#include <boost/optional.hpp>
+#include <optional>
 
 
 
@@ -65,7 +65,7 @@ namespace lvr2
  *                             according to the changes done in the mesh.
  * @param[in] collapseCost Function which is called with an edge handle and a
  *                         FaceMap containing normals; it is expected to return
- *                         an optional float. `boost::none` means that this
+ *                         an optional float. `std::nullopt` means that this
  *                         edge cannot be collapsed.
  *
  * @return The number of edges actually collapsed.

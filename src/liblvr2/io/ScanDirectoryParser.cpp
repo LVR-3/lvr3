@@ -1,6 +1,6 @@
 #include <iomanip>
 #include <sstream>
-#include <boost/format.hpp>
+#include <format>
 
 #include "lvr2/io/ScanDirectoryParser.hpp"
 #include "lvr2/io/ModelFactory.hpp"
@@ -8,7 +8,7 @@
 #include "lvr2/util/IOUtils.hpp"
 #include <lvr2/util/Logging.hpp>
 
-using namespace boost::filesystem;
+using namespace std::filesystem;
 
 namespace lvr2
 {
@@ -219,13 +219,13 @@ void ScanDirectoryParser::parseDirectory()
     {
         // Construct name of current file
         std::stringstream point_ss;
-        point_ss << m_pointPrefix << boost::format("%03d") % i << m_pointExtension;
+        point_ss << m_pointPrefix << std::format("{:03d}", i) << m_pointExtension;
         std::string pointFileName = point_ss.str();
         Path pointPath = Path(m_directory)/Path(pointFileName);
 
         // Construct name of transformation file
         std::stringstream pose_ss;
-        pose_ss << m_posePrefix << boost::format("%03d") % i << m_poseExtension;
+        pose_ss << m_posePrefix << std::format("{:03d}", i) << m_poseExtension;
         std::string poseFileName = pose_ss.str();
         Path posePath = Path(m_directory)/Path(poseFileName);
 

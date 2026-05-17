@@ -32,7 +32,6 @@
 #include <algorithm>
 #include <unordered_set>
 #include <memory>
-#include <boost/core/typeinfo.hpp>
 
 #include "lvr2/types/MultiChannelMap.hpp"
 
@@ -40,7 +39,7 @@ namespace lvr2 {
 
 namespace manipulators {
 
-class Slice : public boost::static_visitor< MultiChannelMap::val_type > 
+class Slice
 {
 public:
     Slice(size_t left, size_t right)
@@ -82,7 +81,7 @@ inline void no_delete(T* x)
 
 }
 
-class SliceShallow : public boost::static_visitor< MultiChannelMap::val_type > 
+class SliceShallow
 {
 public:
     SliceShallow(size_t left, size_t right)
@@ -99,9 +98,7 @@ public:
 
         size_t offset = m_left * channel.width();
 
-        boost::core::typeinfo const & ti = BOOST_CORE_TYPEID(T);
-
-        boost::shared_array<T> shallow_ptr(
+        std::shared_ptr<T[]> shallow_ptr(
             channel.dataPtr().get() + offset,
             no_delete<T>
         );
@@ -120,7 +117,7 @@ private:
     const size_t m_right;
 };
 
-class RandomSample : public boost::static_visitor< MultiChannelMap::val_type > 
+class RandomSample
 {
 public:
     RandomSample(size_t num_samples)

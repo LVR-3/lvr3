@@ -3,9 +3,10 @@
 #ifndef LVR2_TYPES_VARIANTCHANNEL
 #define LVR2_TYPES_VARIANTCHANNEL
 
-#include <boost/variant.hpp>
+#include <variant>
 #include <tuple>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <iostream>
 
@@ -14,17 +15,18 @@
 namespace lvr2 {
 
 template<typename... T>
-class VariantChannel : public boost::variant<Channel<T>...>
+class VariantChannel : public std::variant<Channel<T>...>
 {
-    using base = boost::variant<Channel<T>...>;
-    using base::base;
+    using base = std::variant<Channel<T>...>;
 protected:
     template <class T1, class Tuple>
     struct TupleIndex;
 
 public:
+    using base::base;
     using types = std::tuple<T...>;
-    using base::which;
+
+    std::size_t which() const noexcept { return this->index(); }
 
     /**
      * @brief Access type index with type
@@ -48,12 +50,12 @@ public:
     std::string typeName() const;
 
     template<typename U>
-    boost::shared_array<U> dataPtr() const;
+    std::shared_ptr<U[]> dataPtr() const;
 
     template<std::size_t N>
-    boost::shared_array<type_of_index<N> > dataPtr() const
+    std::shared_ptr<type_of_index<N>[]> dataPtr() const
     {
-        return boost::apply_visitor(DataPtrVisitor<type_of_index<N> >(), *this);
+        return std::visit(DataPtrVisitor<type_of_index<N> >(), static_cast<const base&>(*this));
     }
 
     /**
@@ -88,7 +90,7 @@ public:
     
 // Visitor Implementations
 protected:
-    struct NumElementsVisitor : public boost::static_visitor<size_t>
+    struct NumElementsVisitor
     {
         template<typename U>
         size_t operator()(const Channel<U>& channel) const
@@ -97,7 +99,7 @@ protected:
         }
     };
 
-    struct WidthVisitor : public boost::static_visitor<size_t>
+    struct WidthVisitor
     {
         template<typename U>
         size_t operator()(const Channel<U>& channel) const
@@ -106,7 +108,7 @@ protected:
         }
     };
 
-    struct TypeNameVisitor : public boost::static_visitor<std::string>
+    struct TypeNameVisitor
     {
         template<typename U>
         std::string operator()(const Channel<U>& channel) const
@@ -116,25 +118,25 @@ protected:
     };
 
     template<typename U>
-    struct DataPtrVisitor : public boost::static_visitor<boost::shared_array<U> >
+    struct DataPtrVisitor
     {
         template<typename V>
         requires TypedChannel<Channel<V>, U>
-        boost::shared_array<U> operator()(const Channel<V>& channel) const
+        std::shared_ptr<U[]> operator()(const Channel<V>& channel) const
         {
             return channel.dataPtr();
         }
 
         template<typename V>
         requires (!TypedChannel<Channel<V>, U>)
-        boost::shared_array<U> operator()(const Channel<V>& channel) const
+        std::shared_ptr<U[]> operator()(const Channel<V>& channel) const
         {
             throw std::invalid_argument("tried to get wrong type of channel");
-            return boost::shared_array<U>();
+            return std::shared_ptr<U[]>();
         }
     };
 
-    struct CloneVisitor : public boost::static_visitor< VariantChannel<T...> >
+    struct CloneVisitor
     {
         template<typename U>
         VariantChannel<T...> operator()(const Channel<U>& channel) const
@@ -156,7 +158,7 @@ protected:
 };
 
 template<typename ...Tp>
-using VariantChannelOptional = boost::optional<VariantChannel<Tp...> >;
+using VariantChannelOptional = std::optional<VariantChannel<Tp...> >;
 
 
 } // namespace lvr2

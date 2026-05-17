@@ -232,7 +232,7 @@ Description ScanProjectSchemaRaw::hyperspectralPanoramaChannel(
     d.data = sstr.str() + ".png";
     
     d.metaRoot = d.dataRoot;
-    d.meta = boost::none;
+    d.meta = std::nullopt;
     
     return d;
 }

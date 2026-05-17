@@ -5,7 +5,7 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include <boost/shared_array.hpp>
+#include <memory>
 
 #include <algorithm>
 #include <exception>
@@ -285,7 +285,7 @@ public:
 
         try
         {
-            boost::shared_array<float> copy(new float[values]);
+            std::shared_ptr<float[]> copy(new float[values]);
             if (values > 0)
             {
                 std::copy(array.data, array.data + values, copy.get());

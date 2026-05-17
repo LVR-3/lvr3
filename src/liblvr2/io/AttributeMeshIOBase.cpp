@@ -66,15 +66,15 @@ bool AttributeMeshIOBase::addMesh(const HalfEdgeMesh<BaseVec>& hem)
   return addVertices(vertices) && addIndices(indices);
 }
 
-boost::optional<HalfEdgeMesh<BaseVec>> AttributeMeshIOBase::getMesh()
+std::optional<HalfEdgeMesh<BaseVec>> AttributeMeshIOBase::getMesh()
 {
   auto vertices_opt = getVertices();
   auto indices_opt = getIndices();
 
   if(vertices_opt && indices_opt)
   {
-    auto& vertices = vertices_opt.get();
-    auto& indices = indices_opt.get();
+    auto& vertices = vertices_opt.value();
+    auto& indices = indices_opt.value();
 
     HalfEdgeMesh<BaseVec> hem;
     for (size_t i = 0; i < vertices.numElements(); i++)
@@ -89,7 +89,7 @@ boost::optional<HalfEdgeMesh<BaseVec>> AttributeMeshIOBase::getMesh()
     }
     return hem;
   }
-  return boost::none;
+  return std::nullopt;
 }
 
 }

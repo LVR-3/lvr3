@@ -277,11 +277,11 @@ public:
     {
         m_mesh.object_property<Texture>("o:texture") = texture;
     }
-    boost::optional<Texture&> getTexture()
+    std::optional<std::reference_wrapper<Texture>> getTexture()
     {
         return m_mesh.get_object_property<Texture>("o:texture");
     }
-    boost::optional<const Texture&> getTexture() const
+    std::optional<std::reference_wrapper<const Texture>> getTexture() const
     {
         return m_mesh.get_object_property<Texture>("o:texture");
     }

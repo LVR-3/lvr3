@@ -63,7 +63,7 @@ public:
         const std::string& group,
         const std::string& container) const;
 
-    virtual boost::optional<cv::Mat> loadImage(
+    virtual std::optional<cv::Mat> loadImage(
         const std::string& group,
         const std::string& container) const;
 
@@ -136,73 +136,73 @@ public:
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<char>& data) const;
+        const std::shared_ptr<char[]>& data) const;
 
     virtual void saveUCharArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<unsigned char>& data) const;
+        const std::shared_ptr<unsigned char[]>& data) const;
 
     virtual void saveShortArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<short>& data) const;
+        const std::shared_ptr<short[]>& data) const;
 
     virtual void saveUShortArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<unsigned short>& data) const;
+        const std::shared_ptr<unsigned short[]>& data) const;
 
     virtual void saveUInt16Array(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<uint16_t>& data) const;
+        const std::shared_ptr<uint16_t[]>& data) const;
 
     virtual void saveIntArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<int>& data) const;
+        const std::shared_ptr<int[]>& data) const;
 
     virtual void saveUIntArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<unsigned int>& data) const;
+        const std::shared_ptr<unsigned int[]>& data) const;
 
     virtual void saveLIntArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<long int>& data) const;
+        const std::shared_ptr<long int[]>& data) const;
 
     virtual void saveULIntArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<unsigned long int>& data) const;
+        const std::shared_ptr<unsigned long int[]>& data) const;
 
     virtual void saveFloatArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<float>& data) const;
+        const std::shared_ptr<float[]>& data) const;
 
     virtual void saveDoubleArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<double>& data) const;
+        const std::shared_ptr<double[]>& data) const;
 
     virtual void saveBoolArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<bool>& data) const;
+        const std::shared_ptr<bool[]>& data) const;
 
     virtual bool exists(const std::string& group) const;
     virtual bool exists(const std::string& group, const std::string& container) const;
@@ -213,13 +213,13 @@ public:
     virtual std::vector<std::string> listDatasets(const std::string& group) const;
 
     template<typename T>
-    boost::shared_array<T> loadArray(
+    std::shared_ptr<T[]> loadArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         size_t& size) const;
 
     template<typename T>
-    boost::shared_array<T> loadArray(
+    std::shared_ptr<T[]> loadArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         std::vector<size_t>& dim) const;
@@ -229,14 +229,14 @@ public:
         const std::string& groupName, 
         const std::string& datasetName,
         const size_t& size,
-        const boost::shared_array<T> data) const;
+        const std::shared_ptr<T[]> data) const;
 
     template<typename T> 
     void saveArray(
         const std::string& groupName, 
         const std::string& datasetName,
         const vector<size_t>& dim,
-        const boost::shared_array<T> data) const;
+        const std::shared_ptr<T[]> data) const;
 
     template<typename T>
     ChannelOptional<T> loadChannelOptional(HighFive::Group& g, const std::string& datasetName) const;
@@ -294,7 +294,7 @@ public:
     bool getChannel(const std::string group, const std::string name, UCharChannelOptional& channel) const;
 
     template <typename T>
-    bool getChannel(const std::string group, const std::string name, boost::optional<AttributeChannel<T>>& channel) const;
+    bool getChannel(const std::string group, const std::string name, std::optional<AttributeChannel<T>>& channel) const;
 
     template <typename T>
     bool addChannel(const std::string group, const std::string name, const AttributeChannel<T>& channel) const;
@@ -333,16 +333,16 @@ public:
     void save(HighFive::Group& group, std::string datasetName, const VariantChannel<Tp...>& vchannel) const;
     
     template<typename VariantChannelT>
-    boost::optional<VariantChannelT> load(std::string groupName, std::string datasetName) const;
+    std::optional<VariantChannelT> load(std::string groupName, std::string datasetName) const;
     
     template<typename VariantChannelT>
-    boost::optional<VariantChannelT> load(HighFive::Group& group, std::string datasetName) const;
+    std::optional<VariantChannelT> load(HighFive::Group& group, std::string datasetName) const;
     
     template<typename VariantChannelT>
-    boost::optional<VariantChannelT> loadVariantChannel(std::string groupName, std::string datasetName) const;
+    std::optional<VariantChannelT> loadVariantChannel(std::string groupName, std::string datasetName) const;
 
     template<typename VariantChannelT>
-    boost::optional<VariantChannelT> loadDynamic(HighFive::DataType dtype,
+    std::optional<VariantChannelT> loadDynamic(HighFive::DataType dtype,
         HighFive::Group& group,
         std::string name) const;
 

@@ -348,6 +348,10 @@ The service path supports point-buffer round trips through the raw-PLY directory
 
 The storage implementation uses one `StorageBackend`/`StorageRegistry` path for Directory, HDF5, fake/test, plugin, and future custom/IP backends. It does not provide CRTP compatibility aliases, a built-in-only backend selector, or a second extension path. See `docs/io/baseio-removal-inventory.md` for final guard and validation commands.
 
+## Boost standard-library replacements
+
+Public and refactored APIs now use C++20 standard vocabulary instead of Boost standard-equivalent types: `std::filesystem`, `std::optional`, `std::variant`, `std::shared_ptr<T[]>` owners with `std::span` views, `std::mutex`, and `std::chrono`. Optional references now use `std::optional<std::reference_wrapper<T>>`; access the referenced object with `opt->get()` or `opt.value().get()`. Hard Boost cases such as mapped files, Boost archive serialization, property-tree XML parsing, MPI packaging, and stale DateTime/log link cleanup remain isolated for follow-up work. See `docs/migration/2026-05-17-boost-standard-vocabulary.md` and `docs/dependencies/boost-removal-inventory.md` for details.
+
 ## 25.1.0 -> 25.2.0
 
 

@@ -4,7 +4,7 @@
 #include "lvr2/reconstruction/AdaptiveKSearchSurface.hpp"
 #include "lvr2/types/PointBuffer.hpp"
 
-#include <boost/shared_array.hpp>
+#include <memory>
 
 #include <cmath>
 #include <cstddef>
@@ -47,7 +47,7 @@ float minCosineForDegrees(float degrees)
 
 lvr2::PointBufferPtr makePointBuffer(const std::vector<Vec>& points)
 {
-    boost::shared_array<float> raw(new float[points.size() * 3]);
+    std::shared_ptr<float[]> raw(new float[points.size() * 3]);
     for(std::size_t i = 0; i < points.size(); ++i)
     {
         raw[i * 3 + 0] = points[i].x;
@@ -60,7 +60,7 @@ lvr2::PointBufferPtr makePointBuffer(const std::vector<Vec>& points)
 
 void setNormals(lvr2::PointBufferPtr buffer, const std::vector<Vec>& normals)
 {
-    boost::shared_array<float> raw(new float[normals.size() * 3]);
+    std::shared_ptr<float[]> raw(new float[normals.size() * 3]);
     for(std::size_t i = 0; i < normals.size(); ++i)
     {
         raw[i * 3 + 0] = normals[i].x;
@@ -109,7 +109,7 @@ lvr2::PointBufferPtr estimatePcaNormals(const std::vector<Vec>& points)
     return estimateNormals(points, 0);
 }
 
-Vec normalAt(const boost::shared_array<float>& normals, std::size_t index)
+Vec normalAt(const std::shared_ptr<float[]>& normals, std::size_t index)
 {
     return Vec(normals[index * 3 + 0], normals[index * 3 + 1], normals[index * 3 + 2]);
 }

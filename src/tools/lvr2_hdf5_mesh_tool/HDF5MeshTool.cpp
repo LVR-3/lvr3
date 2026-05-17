@@ -59,7 +59,7 @@ int main( int argc, char ** argv )
   using MeshToolStore = lvr2::io::mesh::Hdf5MeshStore;
 
   // Get extension
-  boost::filesystem::path selectedFile(options.getInputFile());
+  std::filesystem::path selectedFile(options.getInputFile());
   std::string extension = selectedFile.extension().string();
   MeshBufferPtr meshBuffer;
   MeshToolStore hdf5In;
@@ -134,7 +134,7 @@ int main( int argc, char ** argv )
 
     // face normals
     DenseFaceMap<Normal<float>> faceNormals;
-    boost::optional<DenseFaceMap<Normal<float>>> faceNormalsOpt;
+    std::optional<DenseFaceMap<Normal<float>>> faceNormalsOpt;
     if (readFromHdf5)
     {
       faceNormalsOpt = hdf5In.getDenseAttributeMap<DenseFaceMap<Normal<float>>>("face_normals");
@@ -198,7 +198,7 @@ int main( int argc, char ** argv )
 
     // vertex normals
     DenseVertexMap<Normal<float>> vertexNormals;
-    boost::optional<DenseVertexMap<Normal<float>>> vertexNormalsOpt;
+    std::optional<DenseVertexMap<Normal<float>>> vertexNormalsOpt;
     if (readFromHdf5)
     {
       vertexNormalsOpt = hdf5In.getDenseAttributeMap<DenseVertexMap<Normal<float>>>("vertex_normals");
@@ -212,9 +212,9 @@ int main( int argc, char ** argv )
     {
             lvr2::log::info("{}", "Using existing vertex normals from mesh buffer...");
       const FloatChannelOptional channel_opt = meshBuffer->getChannel<float>("vertex_normals");
-      if (channel_opt && channel_opt.get().width() == 3 and channel_opt.get().numElements() == hem.numVertices())
+      if (channel_opt && channel_opt.value().width() == 3 and channel_opt.value().numElements() == hem.numVertices())
       {
-        auto &channel = channel_opt.get();
+        auto &channel = channel_opt.value();
         vertexNormals.reserve(channel.numElements());
         for (size_t i = 0; i < channel.numElements(); i++)
         {
@@ -254,7 +254,7 @@ int main( int argc, char ** argv )
     // vertex colors
     using color = std::array<uint8_t, 3>;
     DenseVertexMap<color> colors;
-    boost::optional<DenseVertexMap<color>> colorsOpt;
+    std::optional<DenseVertexMap<color>> colorsOpt;
     ChannelOptional<uint8_t> channel_opt;
     bool colorsFoundInSource = false;
     if (readFromHdf5)
@@ -268,11 +268,11 @@ int main( int argc, char ** argv )
       colorsFoundInSource = true;
     }
     else if (meshBuffer != nullptr && (channel_opt = meshBuffer->getChannel<uint8_t>("vertex_colors"))
-      && channel_opt && channel_opt.get().width() == 3 && channel_opt.get().numElements() == hem.numVertices()) {
+      && channel_opt && channel_opt.value().width() == 3 && channel_opt.value().numElements() == hem.numVertices()) {
             lvr2::log::info("{}", "Using existing colors from mesh buffer...");
       colorsFoundInSource = true;
 
-      auto &channel = channel_opt.get();
+      auto &channel = channel_opt.value();
       colors.reserve(channel.numElements());
       for (size_t i = 0; i < channel.numElements(); i++)
       {
@@ -308,7 +308,7 @@ int main( int argc, char ** argv )
 
     // vertex average angles
     DenseVertexMap<float> averageAngles;
-    boost::optional<DenseVertexMap<float>> averageAnglesOpt;
+    std::optional<DenseVertexMap<float>> averageAnglesOpt;
     if (readFromHdf5)
     {
       averageAnglesOpt = hdf5In.getDenseAttributeMap<DenseVertexMap<float>>("average_angles");
@@ -344,7 +344,7 @@ int main( int argc, char ** argv )
 
     // roughness
     DenseVertexMap<float> roughness;
-    boost::optional<DenseVertexMap<float>> roughnessOpt;
+    std::optional<DenseVertexMap<float>> roughnessOpt;
     if (readFromHdf5)
     {
       roughnessOpt = hdf5In.getDenseAttributeMap<DenseVertexMap<float>>("roughness");
@@ -380,7 +380,7 @@ int main( int argc, char ** argv )
 
     // height differences
     DenseVertexMap<float> heightDifferences;
-    boost::optional<DenseVertexMap<float>> heightDifferencesOpt;
+    std::optional<DenseVertexMap<float>> heightDifferencesOpt;
     if (readFromHdf5)
     {
       heightDifferencesOpt = hdf5In.getDenseAttributeMap<DenseVertexMap<float>>("height_diff");
@@ -417,7 +417,7 @@ int main( int argc, char ** argv )
 
     // border costs
     DenseVertexMap<float> borderCosts;
-    boost::optional<DenseVertexMap<float>> borderCostsOpt;
+    std::optional<DenseVertexMap<float>> borderCostsOpt;
     if (readFromHdf5)
     {
       borderCostsOpt = hdf5In.getDenseAttributeMap<DenseVertexMap<float>>("border");
@@ -453,7 +453,7 @@ int main( int argc, char ** argv )
 
     // Free space above vertices
     DenseVertexMap<float> freeSpace;
-    boost::optional<DenseVertexMap<float>> freeSpaceOpt;
+    std::optional<DenseVertexMap<float>> freeSpaceOpt;
     if (readFromHdf5)
     {
       freeSpaceOpt = hdf5In.getDenseAttributeMap<DenseVertexMap<float>>("freespace");

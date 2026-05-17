@@ -36,8 +36,8 @@
 #ifndef LVR2_ALGORITHM_TEXTURIZER_H_
 #define LVR2_ALGORITHM_TEXTURIZER_H_
 
-#include <boost/shared_ptr.hpp>
-#include <boost/smart_ptr/make_shared.hpp>
+#include <memory>
+#include <memory>
 
 #include "lvr2/geometry/BaseMesh.hpp"
 #include "lvr2/geometry/BaseVector.hpp"

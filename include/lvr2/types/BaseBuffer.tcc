@@ -57,7 +57,7 @@ void BaseBuffer::addChannel(typename Channel<T>::Ptr data, std::string_view name
 
 template<typename T>
 void BaseBuffer::addChannel(
-    boost::shared_array<T> array,
+    std::shared_ptr<T[]> array,
     std::string_view name,
     size_t n,
     size_t width)
@@ -118,26 +118,26 @@ ElementProxy<T> BaseBuffer::getHandle(unsigned int idx, std::string_view name)
     auto it = this->find(name);
     if(it != this->end() && it->second.is_type<T>())
     {
-        return boost::get<Channel<T> >(it->second)[idx];
+        return std::get<Channel<T> >(it->second)[idx];
     }
     return ElementProxy<T>();
 }
 
 template<typename T>
-boost::shared_array<T> BaseBuffer::getArray(
+std::shared_ptr<T[]> BaseBuffer::getArray(
     std::string_view name, size_t& n, size_t& w)
 {
     auto it = this->find(name);
     if(it != this->end() && it->second.is_type<T>())
     {
-        Channel<T> channel = boost::get<Channel<T> >(it->second);
+        Channel<T> channel = std::get<Channel<T> >(it->second);
         n = channel.numElements();
         w = channel.width();
         return channel.dataPtr();
     } 
     n = 0;
     w = 0;
-    return boost::shared_array<T>();
+    return std::shared_ptr<T[]>();
 }
 
 template<typename T>
@@ -149,9 +149,9 @@ void BaseBuffer::addAtomic(T data, std::string_view name)
 }
 
 template<typename T>
-boost::optional<T> BaseBuffer::getAtomic(std::string_view name)
+std::optional<T> BaseBuffer::getAtomic(std::string_view name)
 {
-    boost::optional<T> ret;
+    std::optional<T> ret;
     typename Channel<T>::Optional channel = getChannel<T>(name);
     if(channel)
     {

@@ -3,8 +3,8 @@
 
 #include <string>
 
-#include <boost/optional.hpp>
-#include <boost/filesystem.hpp>
+#include <optional>
+#include <filesystem>
 
 #include "lvr2/io/schema/ScanProjectSchema.hpp"
 

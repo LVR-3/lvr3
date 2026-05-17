@@ -34,7 +34,7 @@
 #include <thread>
 #include <vector>
 
-#include <boost/filesystem/fstream.hpp>
+#include <fstream>
 
 #include "lvr2/geometry/BaseVector.hpp"
 #include "lvr2/io/ModelFactory.hpp"

@@ -31,7 +31,7 @@
 #include <tuple>
 #include <stdlib.h>
 
-#include <boost/optional.hpp>
+#include <optional>
 #include "Options.hpp"
 
 

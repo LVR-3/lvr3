@@ -1,7 +1,7 @@
 #ifndef DIRECTORY_KERNEL_HPP
 #define DIRECTORY_KERNEL_HPP
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <iostream>
 #include <regex>
 #include <iostream>
@@ -51,7 +51,7 @@ public:
         const std::string& group,
         const std::string& container) const;
 
-    virtual boost::optional<cv::Mat> loadImage(
+    virtual std::optional<cv::Mat> loadImage(
         const std::string& group,
         const std::string& container) const;
 
@@ -124,73 +124,73 @@ public:
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<char>& data) const;
+        const std::shared_ptr<char[]>& data) const;
 
     virtual void saveUCharArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<unsigned char>& data) const;
+        const std::shared_ptr<unsigned char[]>& data) const;
 
     virtual void saveShortArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<short>& data) const;
+        const std::shared_ptr<short[]>& data) const;
 
     virtual void saveUShortArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<unsigned short>& data) const;
+        const std::shared_ptr<unsigned short[]>& data) const;
 
     virtual void saveUInt16Array(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<uint16_t>& data) const;
+        const std::shared_ptr<uint16_t[]>& data) const;
 
     virtual void saveIntArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<int>& data) const;
+        const std::shared_ptr<int[]>& data) const;
 
     virtual void saveUIntArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<unsigned int>& data) const;
+        const std::shared_ptr<unsigned int[]>& data) const;
 
     virtual void saveLIntArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<long int>& data) const;
+        const std::shared_ptr<long int[]>& data) const;
 
     virtual void saveULIntArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<unsigned long int>& data) const;
+        const std::shared_ptr<unsigned long int[]>& data) const;
 
     virtual void saveFloatArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<float>& data) const;
+        const std::shared_ptr<float[]>& data) const;
 
     virtual void saveDoubleArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<double>& data) const;
+        const std::shared_ptr<double[]>& data) const;
 
     virtual void saveBoolArray(
         const std::string& groupName, 
         const std::string& datasetName, 
         const std::vector<size_t>& dimensions, 
-        const boost::shared_array<bool>& data) const;
+        const std::shared_ptr<bool[]>& data) const;
 
     virtual bool exists(const std::string& group) const;
     virtual bool exists(const std::string& group, const std::string& container) const;
@@ -212,25 +212,25 @@ public:
 
 protected:
     template <typename T>
-    boost::shared_array<T> loadArray(
+    std::shared_ptr<T[]> loadArray(
         const std::string &group, 
         const std::string &container, 
         std::vector<size_t> &dims) const
     {
         dims.resize(0);
 
-        boost::filesystem::path p = getAbsolutePath(group, container);
+        std::filesystem::path p = getAbsolutePath(group, container);
 
         if(p.extension() == "")
         {
             p += ".data";
         }
 
-        if(!boost::filesystem::exists(p))
+        if(!std::filesystem::exists(p))
         {
             // return empty pointer if path not exist:
             // should not happen. the check needs to be done from above module
-            return boost::shared_array<T>(nullptr);;
+            return std::shared_ptr<T[]>(nullptr);;
         }
 
         std::string filename = p.string();
@@ -243,27 +243,27 @@ protected:
         } else {
             // has some unknown extension
             PointBufferPtr points = loadPointBuffer(group, container);
-            return boost::shared_array<T>(nullptr);
+            return std::shared_ptr<T[]>(nullptr);
         }
     }
 
     template <typename T>
     void saveArray(
         const std::string &group, const std::string& container, 
-        const std::vector<size_t> &dims, const boost::shared_array<T>& data) const
+        const std::vector<size_t> &dims, const std::shared_ptr<T[]>& data) const
     {
         if (dims.size() > 0)
         {
             // prepare filesystem for incoming data
-            boost::filesystem::path p = getAbsolutePath(group, container);
+            std::filesystem::path p = getAbsolutePath(group, container);
             if(p.extension() == "")
             {
                 p += ".data";
             }
 
-            if(!boost::filesystem::exists(p.parent_path()))
+            if(!std::filesystem::exists(p.parent_path()))
             {
-                boost::filesystem::create_directories(p.parent_path());
+                std::filesystem::create_directories(p.parent_path());
             }
 
             std::string filename = p.string();
@@ -283,7 +283,7 @@ protected:
         }
     }
 
-    boost::filesystem::path getAbsolutePath(const std::string &group, const std::string &name) const;
+    std::filesystem::path getAbsolutePath(const std::string &group, const std::string &name) const;
 };
 
 using DirectoryKernelPtr = std::shared_ptr<DirectoryKernel>;

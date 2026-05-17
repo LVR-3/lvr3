@@ -40,7 +40,7 @@
 #include <vector>
 #include <array>
 
-#include <boost/optional.hpp>
+#include <optional>
 
 
 #include "lvr2/types/ColorTypes.hpp"
@@ -63,7 +63,7 @@ namespace lvr2
  * @return  Optional of a DenseVertexMap with a RGB8Color for each vertex
  */
 template<typename BaseVecT>
-boost::optional<DenseVertexMap<RGB8Color>> calcColorFromPointCloud(
+std::optional<DenseVertexMap<RGB8Color>> calcColorFromPointCloud(
     const BaseMesh<BaseVecT>& mesh,
     const PointsetSurfacePtr<BaseVecT> surface
 );

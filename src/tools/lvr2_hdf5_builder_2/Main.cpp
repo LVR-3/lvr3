@@ -5,8 +5,8 @@
 #include "lvr2/util/Timestamp.hpp"
 #include <lvr2/util/Logging.hpp>
 
-#include <boost/filesystem.hpp>
-#include <boost/shared_array.hpp>
+#include <filesystem>
+#include <memory>
 
 #include <algorithm>
 #include <cstdio>
@@ -22,7 +22,7 @@ namespace
 {
 
 template <typename T>
-boost::shared_array<T> reduceData(boost::shared_array<T> data,
+std::shared_ptr<T[]> reduceData(std::shared_ptr<T[]> data,
                                   size_t dataCount,
                                   size_t dataWidth,
                                   unsigned int reductionFactor,
@@ -31,7 +31,7 @@ boost::shared_array<T> reduceData(boost::shared_array<T> data,
     const unsigned int step = std::max(1u, reductionFactor);
     *reducedDataCount = dataCount == 0 ? 0 : ((dataCount - 1) / step) + 1;
 
-    boost::shared_array<T> reducedData(new T[(*reducedDataCount) * dataWidth]);
+    std::shared_ptr<T[]> reducedData(new T[(*reducedDataCount) * dataWidth]);
 
     size_t reducedDataIdx = 0;
     for (size_t i = 0; i < dataCount; i++)
@@ -127,26 +127,26 @@ lvr2::io::storage::Status writePreviews(const std::string& outputFile,
 int main(int argc, char** argv)
 {
     hdf5tool2::Options options(argc, argv);
-    boost::filesystem::path inputDir(options.getInputDir());
-    boost::filesystem::path outputDir(options.getOutputDir());
+    std::filesystem::path inputDir(options.getInputDir());
+    std::filesystem::path outputDir(options.getOutputDir());
 
-    boost::filesystem::path outputPath(outputDir / options.getOutputFile());
+    std::filesystem::path outputPath(outputDir / options.getOutputFile());
 
     m_usePreviews = options.getPreview();
     m_previewReductionFactor = options.getPreviewReductionRatio();
 
     // check if input directory exists
-    if (!boost::filesystem::exists(inputDir))
+    if (!std::filesystem::exists(inputDir))
     {
                 lvr2::log::error("{}{}{}", "Error: Directory ", options.getInputDir(), " does not exist");
         exit(-1);
     }
 
     // check if output directory exists
-    if (!boost::filesystem::exists(outputDir))
+    if (!std::filesystem::exists(outputDir))
     {
                 lvr2::log::info("{}{}", "Creating directory ", options.getOutputDir());
-        if (!boost::filesystem::create_directory(outputDir))
+        if (!std::filesystem::create_directory(outputDir))
         {
                         lvr2::log::error("{}{}", "Error: Unable to create ", options.getOutputDir());
             exit(-1);
@@ -157,7 +157,7 @@ int main(int argc, char** argv)
     ScanProjectPtr existingScanProject;
 
     // check if HDF5 already exists
-    if (boost::filesystem::exists(outputPath))
+    if (std::filesystem::exists(outputPath))
     {
                 lvr2::log::info("{}", "File already exists. Expanding File...");
 

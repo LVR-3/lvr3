@@ -3,8 +3,8 @@
 
 #include <string>
 
-#include <boost/optional.hpp>
-#include <boost/filesystem.hpp>
+#include <optional>
+#include <filesystem>
 
 #include "lvr2/io/schema/ScanProjectSchema.hpp"
 
@@ -36,7 +36,7 @@ public:
         const std::string &scanImagePath, const size_t &scanImageNo) const;
 
 private:
-    //boost::filesystem::path m_rootPath;
+    //std::filesystem::path m_rootPath;
 };
 
 } // namespace lvr2

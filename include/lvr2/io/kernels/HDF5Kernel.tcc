@@ -52,12 +52,12 @@ ChannelOptional<T> HDF5Kernel::loadChannelOptional(
 }
 
 template <typename T>
-boost::shared_array<T> HDF5Kernel::loadArray(
+std::shared_ptr<T[]> HDF5Kernel::loadArray(
     const std::string &groupName,
     const std::string &datasetName,
     size_t &size) const
 {
-    boost::shared_array<T> ret;
+    std::shared_ptr<T[]> ret;
 
     HighFive::Group g = hdf5util::getGroup(
         m_hdf5File,
@@ -78,12 +78,12 @@ boost::shared_array<T> HDF5Kernel::loadArray(
 }
 
 template<typename T>
-boost::shared_array<T> HDF5Kernel::loadArray(
+std::shared_ptr<T[]> HDF5Kernel::loadArray(
     const std::string& groupName,
     const std::string& datasetName,
     std::vector<size_t>& dim) const
 {
-    boost::shared_array<T> ret;
+    std::shared_ptr<T[]> ret;
     HighFive::Group g = hdf5util::getGroup(m_hdf5File, groupName);
 
     if(m_hdf5File && m_hdf5File->isValid())
@@ -99,7 +99,7 @@ boost::shared_array<T> HDF5Kernel::loadArray(
 
             if(elementCount)
             {
-                ret = boost::shared_array<T>(new T[elementCount]);
+                ret = std::shared_ptr<T[]>(new T[elementCount]);
 
                 dataset.read(ret.get());
             }
@@ -118,7 +118,7 @@ void HDF5Kernel::saveArray(
     const std::string& groupName,
     const std::string& datasetName,
     const size_t& size,
-    const boost::shared_array<T> data) const
+    const std::shared_ptr<T[]> data) const
 {
     std::vector<size_t> dim = {size, 1};
     save(groupName, datasetName, dim,  data);
@@ -160,7 +160,7 @@ void HDF5Kernel::saveArray(
     const std::string& groupName,
     const std::string& datasetName,
     const vector<size_t>& dim,
-    const boost::shared_array<T> data) const
+    const std::shared_ptr<T[]> data) const
 {
     HighFive::Group g = hdf5util::getGroup(m_hdf5File, groupName, true);
 
@@ -193,7 +193,7 @@ void HDF5Kernel::saveArray(
 
 
 template <typename T>
-bool HDF5Kernel::getChannel(const std::string group, const std::string name, boost::optional<AttributeChannel<T>>& channel)  const
+bool HDF5Kernel::getChannel(const std::string group, const std::string name, std::optional<AttributeChannel<T>>& channel)  const
 {
     // TODO check group for vertex / face attribute and set flag in hdf5 channel
     HighFive::Group g = hdf5util::getGroup(m_hdf5File, "channels");
@@ -372,13 +372,13 @@ void HDF5Kernel::save(
 // R == 0
 template<typename VariantChannelT, int R>
 requires (R == 0)
-boost::optional<VariantChannelT> loadVChannel(
+std::optional<VariantChannelT> loadVChannel(
     HighFive::DataType dtype,
     const HDF5Kernel* channel_io,
     HighFive::Group& group,
     std::string name)
 {
-    boost::optional<VariantChannelT> ret;
+    std::optional<VariantChannelT> ret;
     if(dtype == HighFive::AtomicType<typename VariantChannelT::template type_of_index<R> >())
     {
         auto channel = channel_io->template loadChannelOptional<typename VariantChannelT::template type_of_index<R> >(group, name);
@@ -394,16 +394,16 @@ boost::optional<VariantChannelT> loadVChannel(
 // R != 0
 template<typename VariantChannelT, int R>
 requires (R != 0)
-boost::optional<VariantChannelT> loadVChannel(
+std::optional<VariantChannelT> loadVChannel(
     HighFive::DataType dtype,
     const HDF5Kernel* channel_io,
     HighFive::Group& group,
     std::string name)
 {
-    boost::optional<VariantChannelT> ret;
+    std::optional<VariantChannelT> ret;
     if(dtype == HighFive::AtomicType<typename VariantChannelT::template type_of_index<R> >())
     {
-        boost::optional<VariantChannelT> ret;
+        std::optional<VariantChannelT> ret;
         auto loaded_channel = channel_io->loadChannelOptional<typename VariantChannelT::template type_of_index<R> >(group, name);
         if(loaded_channel)
         {
@@ -419,7 +419,7 @@ boost::optional<VariantChannelT> loadVChannel(
 
 
 template<typename VariantChannelT>
-boost::optional<VariantChannelT> HDF5Kernel::loadDynamic(
+std::optional<VariantChannelT> HDF5Kernel::loadDynamic(
     HighFive::DataType dtype,
     HighFive::Group& group,
     std::string name) const
@@ -430,11 +430,11 @@ boost::optional<VariantChannelT> HDF5Kernel::loadDynamic(
 
 
 template<typename VariantChannelT>
-boost::optional<VariantChannelT> HDF5Kernel::load(
+std::optional<VariantChannelT> HDF5Kernel::load(
     std::string groupName,
     std::string datasetName) const
 {
-    boost::optional<VariantChannelT> ret;
+    std::optional<VariantChannelT> ret;
 
     if(hdf5util::exist(m_hdf5File, groupName))
     {
@@ -449,11 +449,11 @@ boost::optional<VariantChannelT> HDF5Kernel::load(
 
 
 template<typename VariantChannelT>
-boost::optional<VariantChannelT> HDF5Kernel::load(
+std::optional<VariantChannelT> HDF5Kernel::load(
     HighFive::Group& group,
     std::string datasetName) const
 {
-    boost::optional<VariantChannelT> ret;
+    std::optional<VariantChannelT> ret;
 
     std::unique_ptr<HighFive::DataSet> dataset;
 
@@ -476,7 +476,7 @@ boost::optional<VariantChannelT> HDF5Kernel::load(
 
 
 template<typename VariantChannelT>
-boost::optional<VariantChannelT> HDF5Kernel::loadVariantChannel(
+std::optional<VariantChannelT> HDF5Kernel::loadVariantChannel(
     std::string groupName,
     std::string datasetName) const
 {

@@ -197,8 +197,8 @@ template <typename BaseVecT, typename BoxT>
 PointBufferPtr HashGrid<BaseVecT, BoxT>::toPointBuffer() const
 {
     size_t n = m_cells.size();
-    boost::shared_array<float> centers(new float[3 * n]);
-    boost::shared_array<float> queryPoints(new float[8 * n]);
+    std::shared_ptr<float[]> centers(new float[3 * n]);
+    std::shared_ptr<float[]> queryPoints(new float[8 * n]);
 
     std::vector<size_t> bucketOffsets(m_cells.bucket_count());
     bucketOffsets[0] = 0;

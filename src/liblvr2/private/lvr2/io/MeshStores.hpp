@@ -7,7 +7,7 @@
 #include "lvr2/types/MeshBuffer.hpp"
 #include "lvr2/util/Hdf5Util.hpp"
 
-#include <boost/optional.hpp>
+#include <optional>
 
 #include <highfive/H5File.hpp>
 

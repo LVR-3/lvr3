@@ -36,7 +36,7 @@
 #ifndef LVR2_UTIL_BASEHANDLE_H_
 #define LVR2_UTIL_BASEHANDLE_H_
 
-#include <boost/optional.hpp>
+#include <optional>
 #include <limits>
 
 #include "lvr2/geometry/pmp/SurfaceMesh.h"
@@ -61,7 +61,7 @@ using BaseHandle = pmp::Handle;
  * @brief Base class for optional handles (handles that can be "null" or
  *        "None").
  *
- * This class is semantically equivalent to boost::optional<BaseHandle>. This
+ * This class is semantically equivalent to std::optional<BaseHandle>. This
  * class uses a special index value to store the "None" value. This saves
  * memory.
  */
@@ -78,7 +78,7 @@ public:
     BaseOptionalHandle(NonOptionalT src)
         : BaseHandle(src)
     {}
-    BaseOptionalHandle(boost::optional<BaseHandle> handle)
+    BaseOptionalHandle(std::optional<BaseHandle> handle)
         : BaseHandle(handle ? handle->idx() : std::numeric_limits<pmp::IndexType>::max())
     {}
 

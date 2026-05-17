@@ -98,11 +98,11 @@ public:
     // Implemented methods from the interface (check interface for docs)
     // =======================================================================
     bool containsKey(HandleT key) const final;
-    boost::optional<ValueT> insert(HandleT key, const ValueT& value) final;
-    boost::optional<ValueT> erase(HandleT key) final;
+    std::optional<ValueT> insert(HandleT key, const ValueT& value) final;
+    std::optional<ValueT> erase(HandleT key) final;
     void clear() final;
-    boost::optional<ValueT&> get(HandleT key) final;
-    boost::optional<const ValueT&> get(HandleT key) const final;
+    std::optional<std::reference_wrapper<ValueT>> get(HandleT key) final;
+    std::optional<std::reference_wrapper<const ValueT>> get(HandleT key) const final;
     size_t numValues() const final;
 
     AttributeMapHandleIteratorPtr<HandleT> begin() const final;
@@ -115,7 +115,7 @@ public:
 
 private:
     vector<pair<HandleT, ValueT>> m_list;
-    boost::optional<ValueT> m_default;
+    std::optional<ValueT> m_default;
 
     // Internal helper method
     typename std::vector<pair<HandleT, ValueT>>::const_iterator keyIterator(HandleT key) const;

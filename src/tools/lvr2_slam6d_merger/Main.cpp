@@ -42,7 +42,7 @@
 #include <iterator>
 using namespace std;
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 
 #include <Eigen/Dense>
@@ -69,11 +69,11 @@ namespace slam6dmerger
 
 using namespace lvr2;
 
-boost::filesystem::path getCorrespondingPath(const boost::filesystem::path& scan, const string& extension)
+std::filesystem::path getCorrespondingPath(const std::filesystem::path& scan, const string& extension)
 {
     std::stringstream ss;
     ss << scan.stem().string() << extension;
-    return boost::filesystem::path(ss.str());
+    return std::filesystem::path(ss.str());
 }
 
 
@@ -84,8 +84,8 @@ boost::filesystem::path getCorrespondingPath(const boost::filesystem::path& scan
 int main(int argc, char** argv)
 {
     using namespace slam6dmerger;
-    using boost::filesystem::path;
-    using boost::filesystem::directory_iterator;
+    using std::filesystem::path;
+    using std::filesystem::directory_iterator;
 
     Options options(argc, argv);
 
@@ -180,7 +180,7 @@ int main(int argc, char** argv)
         sprintf(name_buffer, "scan%03d.3d", scan_counter);
         path target_path = outputDir / path(name_buffer);
                 lvr2::log::info("{}{}{}{}{}", "Copying ", current_path.string(), " to ", target_path.string(), ".");
-        boost::filesystem::copy(current_path, target_path);
+        std::filesystem::copy(current_path, target_path);
 
         // -------->>>> OCT FILE
 
@@ -190,7 +190,7 @@ int main(int argc, char** argv)
             sprintf(name_buffer, "scan%03d.oct", scan_counter);
             path oct_out = outputDir / path(name_buffer);
                         lvr2::log::info("{}{}{}{}{}", "Copying ", oct_in.string(), " to ", oct_out.string(), ".");
-            boost::filesystem::copy(oct_in, oct_out);
+            std::filesystem::copy(oct_in, oct_out);
         }
 
         // -------->>>> FRAMES
@@ -210,7 +210,7 @@ int main(int argc, char** argv)
         else
         {
                         lvr2::log::info("{}{}{}{}{}", "Copying ", frames_in.string(), " to ", frames_out.string(), ".");
-            boost::filesystem::copy(frames_in, frames_out);
+            std::filesystem::copy(frames_in, frames_out);
         }
 
         // ------->>>> POSE
@@ -230,7 +230,7 @@ int main(int argc, char** argv)
         else
         {
                         lvr2::log::info("{}{}{}{}{}", "Copying ", pose_in.string(), " to ", pose_out.string(), ".");
-            boost::filesystem::copy(pose_in, pose_out);
+            std::filesystem::copy(pose_in, pose_out);
         }
 
 
@@ -244,7 +244,7 @@ int main(int argc, char** argv)
         sprintf(name_buffer, "scan%03d.3d", scan_counter);
         path target_path = outputDir / path(name_buffer);
                 lvr2::log::info("{}{}{}{}{}", "Copying ", current_path.string(), " to ", target_path.string(), ".");
-        boost::filesystem::copy(current_path, target_path);
+        std::filesystem::copy(current_path, target_path);
 
         // -------->>>> OCT FILE
 
@@ -254,7 +254,7 @@ int main(int argc, char** argv)
             sprintf(name_buffer, "scan%03d.oct", scan_counter);
             path oct_out = outputDir / path(name_buffer);
                         lvr2::log::info("{}{}{}{}{}", "Copying ", oct_in.string(), " to ", oct_out.string(), ".");
-            boost::filesystem::copy(oct_in, oct_out);
+            std::filesystem::copy(oct_in, oct_out);
         }
 
         // -------->>>> FRAMES

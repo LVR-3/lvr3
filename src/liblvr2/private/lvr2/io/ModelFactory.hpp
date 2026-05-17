@@ -45,7 +45,7 @@
 #include <array>
 #include <map>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 
 namespace lvr2
@@ -70,7 +70,7 @@ class ModelFactory
 
 };
 
-typedef boost::shared_ptr<ModelFactory> ModelFactoryPtr;
+typedef std::shared_ptr<ModelFactory> ModelFactoryPtr;
 
 } // namespace lvr2
 

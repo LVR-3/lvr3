@@ -151,25 +151,25 @@ class TextureHandle : public BaseHandle
     using BaseHandle::BaseHandle;
 };
 
-/// Semantically equivalent to `boost::optional<EdgeHandle>`
+/// Semantically equivalent to `std::optional<EdgeHandle>`
 class OptionalEdgeHandle : public BaseOptionalHandle<EdgeHandle>
 {
     using BaseOptionalHandle<EdgeHandle>::BaseOptionalHandle;
 };
 
-/// Semantically equivalent to `boost::optional<FaceHandle>`
+/// Semantically equivalent to `std::optional<FaceHandle>`
 class OptionalFaceHandle : public BaseOptionalHandle<FaceHandle>
 {
     using BaseOptionalHandle<FaceHandle>::BaseOptionalHandle;
 };
 
-/// Semantically equivalent to `boost::optional<VertexHandle>`
+/// Semantically equivalent to `std::optional<VertexHandle>`
 class OptionalVertexHandle : public BaseOptionalHandle<VertexHandle>
 {
     using BaseOptionalHandle<VertexHandle>::BaseOptionalHandle;
 };
 
-/// Semantically equivalent to `boost::optional<ClusterHandle>`
+/// Semantically equivalent to `std::optional<ClusterHandle>`
 class OptionalClusterHandle : public BaseOptionalHandle<ClusterHandle>
 {
     using BaseOptionalHandle<ClusterHandle>::BaseOptionalHandle;

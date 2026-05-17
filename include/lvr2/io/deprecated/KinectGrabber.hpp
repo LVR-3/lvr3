@@ -38,7 +38,7 @@
 #include "lvr2/types/PointBuffer.hpp"
 #include "libfreenect.hpp"
 
-#include <boost/thread.hpp"
+#include <mutex>
 #include <vector>
 
 namespace lvr2
@@ -62,10 +62,10 @@ protected:
 	PointBufferPtr			m_buffer;
 
 	/// Mutex for save depth buffer access
-	boost::mutex			m_depthMutex;
+	std::mutex			m_depthMutex;
 
 	/// Mutex for save color buffer access
-	boost::mutex			m_colorMutex;
+	std::mutex			m_colorMutex;
 
 	/// The raw depth image
 	std::vector<short>		m_depthImage;

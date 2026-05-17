@@ -6,7 +6,7 @@
 #include <map>
 #include <string>
 
-#include <boost/shared_array.hpp>
+#include <memory>
 #include <iostream>
 
 namespace lvr2
@@ -25,17 +25,17 @@ public:
      *        contains point cloud data, the interal buffer will
      *        be freed als well as all other attribute channels.
      */
-    void setWaveformArray(boost::shared_array<uint16_t> waveformData, boost::shared_array<size_t> waveformSize)
+    void setWaveformArray(std::shared_ptr<uint16_t[]> waveformData, std::shared_ptr<size_t[]> waveformSize)
     {
 	m_waveform = waveformData;
         m_waveformSize = waveformSize;
     }
 
-    boost::shared_array<uint16_t> getWaveformArray()
+    std::shared_ptr<uint16_t[]> getWaveformArray()
     {
         return m_waveform;
     }
-    boost::shared_array<size_t> getWaveformSize()
+    std::shared_ptr<size_t[]> getWaveformSize()
     {
         return m_waveformSize;
     }
@@ -44,8 +44,8 @@ public:
     WaveformBuffer clone();
 
 private:
-    boost::shared_array<uint16_t> m_waveform;
-    boost::shared_array<size_t> m_waveformSize;
+    std::shared_ptr<uint16_t[]> m_waveform;
+    std::shared_ptr<size_t[]> m_waveformSize;
 };
 
 using WaveformBufferPtr = std::shared_ptr<WaveformBuffer>;

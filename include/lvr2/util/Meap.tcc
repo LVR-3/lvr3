@@ -50,7 +50,7 @@ bool Meap<KeyT, ValueT>::containsKey(KeyT key) const
 }
 
 template<typename KeyT, typename ValueT>
-boost::optional<ValueT> Meap<KeyT, ValueT>::insert(KeyT key, const ValueT& value)
+std::optional<ValueT> Meap<KeyT, ValueT>::insert(KeyT key, const ValueT& value)
 {
     auto previous = m_indices.find(key);
     if (previous != m_indices.end())
@@ -68,7 +68,7 @@ boost::optional<ValueT> Meap<KeyT, ValueT>::insert(KeyT key, const ValueT& value
 
         // Correct heap by bubbling up
         bubbleUp(idx);
-        return boost::none;
+        return std::nullopt;
     }
 }
 
@@ -86,16 +86,16 @@ size_t Meap<KeyT, ValueT>::numValues() const
 }
 
 template<typename KeyT, typename ValueT>
-boost::optional<const ValueT&> Meap<KeyT, ValueT>::get(KeyT key) const
+std::optional<std::reference_wrapper<const ValueT>> Meap<KeyT, ValueT>::get(KeyT key) const
 {
     auto maybeIndex = m_indices.get(key);
     if (maybeIndex)
     {
-        return m_heap[*maybeIndex].value();
+        return m_heap[maybeIndex->get()].value();
     }
     else
     {
-        return boost::none;
+        return std::nullopt;
     }
 }
 
@@ -157,12 +157,12 @@ void Meap<KeyT, ValueT>::updateValue(const KeyT& key, const ValueT& newValue)
 }
 
 template<typename KeyT, typename ValueT>
-boost::optional<ValueT> Meap<KeyT, ValueT>::erase(KeyT key)
+std::optional<ValueT> Meap<KeyT, ValueT>::erase(KeyT key)
 {
     const auto maybeIndex = m_indices.find(key);
     if (maybeIndex == m_indices.end())
     {
-        return boost::none;
+        return std::nullopt;
     }
 
     auto index = maybeIndex->second;
@@ -309,7 +309,7 @@ void Meap<KeyT, ValueT>::debugOutput() const
         auto idx = m_indices.get(k);
         if (idx)
         {
-            std::cout << *idx << std::endl;
+            std::cout << idx->get() << std::endl;
         }
         else
         {

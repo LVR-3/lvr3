@@ -3,9 +3,10 @@
 #ifndef LVR2_TYPES_CUSTOMCHANNELTYPES_HPP
 #define LVR2_TYPES_CUSTOMCHANNELTYPES_HPP
 
+#include <cstdint>
 #include <vector>
-#include <boost/shared_array.hpp>
-#include <boost/optional.hpp>
+#include <memory>
+#include <optional>
 
 #include "ByteEncoding.hpp"
 
@@ -18,11 +19,11 @@ struct WaveformData {
 };
 
 template<>
-boost::shared_array<unsigned char> byteEncode(
+std::shared_ptr<unsigned char[]> byteEncode(
     const WaveformData& data, size_t& bsize);
 
 template<>
-boost::optional<WaveformData> byteDecode(
+std::optional<WaveformData> byteDecode(
     const unsigned char* buffer, const size_t& bsize);
 
 

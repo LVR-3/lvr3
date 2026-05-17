@@ -9,7 +9,7 @@
 #include "Options.hpp"
 #include <lvr2/util/Logging.hpp>
 
-using boost::optional;
+using std::optional;
 using std::unique_ptr;
 using std::make_unique;
 
@@ -222,7 +222,7 @@ string colorScale, bool noTransformation)
             TexCoords texCoords(xPixel,yPixel);
             if (vertexTexCoords.get(vertexH))
             {
-                vertexTexCoords.get(vertexH).get().push(clusterH, texCoords);
+                vertexTexCoords.get(vertexH).value().get().push(clusterH, texCoords);
             }
             else
             {

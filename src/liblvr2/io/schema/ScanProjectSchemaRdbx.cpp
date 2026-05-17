@@ -3,12 +3,11 @@
 //
 #include <sstream>
 #include <iomanip>
-#include <boost/filesystem/operations.hpp>
 #include <filesystem>
 #include <vector>
 #include "lvr2/types/ScanTypes.hpp"
 #include "lvr2/io/schema/ScanProjectSchemaRdbx.hpp"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include <iostream>
 #include <fstream>
@@ -76,19 +75,19 @@ Description ScanProjectSchemaRdbx::scan(
 {
 
     Description dp = lidar(scanPosNo, lidarNo);
-    auto path = m_rootPath / dp.dataRoot.get() / "scans";
+    auto path = m_rootPath / dp.dataRoot.value() / "scans";
     Description d;
 
     struct dirent *ent;
     // matching REGEX to Timestamp of Scan
     std::vector<std::string> matching_files;
-    boost::filesystem::directory_iterator end_itr;
+    std::filesystem::directory_iterator end_itr;
     std::regex rxRDBX("([0-9]+)\\_([0-9]+)\\.rdbx");
 
-    for (boost::filesystem::directory_iterator i(path); i != end_itr; ++i)
+    for (std::filesystem::directory_iterator i(path); i != end_itr; ++i)
     {
         // Skip if not a file
-        if (!boost::filesystem::is_regular_file(i->status()))
+        if (!std::filesystem::is_regular_file(i->status()))
             continue;
         auto path_str = i->path().filename().string();
         if (regex_match(path_str, rxRDBX))
@@ -126,18 +125,18 @@ Description ScanProjectSchemaRdbx::cameraImage(
     const size_t &cameraImageNo) const
 {
     Description dp = lidar(scanPosNo, camNo);
-    auto path = m_rootPath / dp.dataRoot.get() / "images";
+    auto path = m_rootPath / dp.dataRoot.value() / "images";
 
     // Find the correct files
     std::vector<std::string> matching_files;
-    boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
+    std::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
     //std::regex rxJPG("([0-9]+)\\_([0-9]+)\\_0" + std::to_string(cameraImageNo + 1) + "_([0-9])+\\.jpg");
     std::regex rxJPG("([0-9]+)\\_([0-9]+)\\_0" + std::to_string(cameraImageNo + 1) + "\\_0"+std::to_string(groupNo + 1)+"\\.jpg");      
     // Search the directory
-    for (boost::filesystem::directory_iterator i(path); i != end_itr; ++i)
+    for (std::filesystem::directory_iterator i(path); i != end_itr; ++i)
     {
         // Skip if not a file
-        if (!boost::filesystem::is_regular_file(i->status()))
+        if (!std::filesystem::is_regular_file(i->status()))
         {
             continue;
         }
@@ -219,8 +218,8 @@ Description ScanProjectSchemaRdbx::cameraImageGroup(
     {
         // Same as camera without meta
         Description d = camera(scanPosNo, camNo);
-        d.metaRoot = boost::none;
-        d.meta = boost::none;
+        d.metaRoot = std::nullopt;
+        d.meta = std::nullopt;
         return d;
     }
     else

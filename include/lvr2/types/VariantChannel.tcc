@@ -31,58 +31,58 @@ namespace lvr2 {
 template<typename... T>
 size_t VariantChannel<T...>::numElements() const
 {
-    return boost::apply_visitor(NumElementsVisitor(), *this);
+    return std::visit(NumElementsVisitor(), static_cast<const base&>(*this));
 }
 
 template<typename... T>
 size_t VariantChannel<T...>::width() const
 {
-    return boost::apply_visitor(WidthVisitor(), *this);
+    return std::visit(WidthVisitor(), static_cast<const base&>(*this));
 }
 
 template<typename... T>
 std::string VariantChannel<T...>::typeName() const
 {
-    return boost::apply_visitor(TypeNameVisitor(), *this);
+    return std::visit(TypeNameVisitor(), static_cast<const base&>(*this));
 }
 
 template<typename... T>
 template<typename U>
-boost::shared_array<U> VariantChannel<T...>::dataPtr() const
+std::shared_ptr<U[]> VariantChannel<T...>::dataPtr() const
 {
-    return boost::apply_visitor(DataPtrVisitor<U>(), *this);
+    return std::visit(DataPtrVisitor<U>(), static_cast<const base&>(*this));
 }
 
 template<typename... T>
 int VariantChannel<T...>::type() const
 {
-    return this->which();
+    return static_cast<int>(this->index());
 }
 
 template<typename... T>
 template<typename U>
 bool VariantChannel<T...>::is_type() const {
-    return this->which() == index_of_type<U>::value;
+    return this->index() == index_of_type<U>::value;
 }
 
 template<typename... T>
 template<typename U>
 Channel<U> VariantChannel<T...>::extract() const
 {
-    return boost::get<Channel<U> >(*this);
+    return std::get<Channel<U> >(static_cast<const base&>(*this));
 }
 
 template<typename... T>
 template<typename U>
 Channel<U>& VariantChannel<T...>::extract()
 {
-    return boost::get<Channel<U> >(*this);
+    return std::get<Channel<U> >(static_cast<base&>(*this));
 }
 
 template<typename... T>
 VariantChannel<T...> VariantChannel<T...>::clone() const
 {
-    return boost::apply_visitor(CloneVisitor(), *this);
+    return std::visit(CloneVisitor(), static_cast<const base&>(*this));
 }
 
 }

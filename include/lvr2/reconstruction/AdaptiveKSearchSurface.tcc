@@ -38,7 +38,7 @@
 #include <Eigen/Dense>
 
 // boost libraries
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include <fstream>
 #include <set>

@@ -34,7 +34,7 @@
 #include <map>
 #include <string>
 
-#include <boost/shared_array.hpp>
+#include <memory>
 #include <iostream>
 
 namespace lvr2

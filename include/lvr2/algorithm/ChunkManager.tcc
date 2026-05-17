@@ -45,7 +45,7 @@ ChannelPtr<T> ChunkManager::extractChannelOfArea(
                 channel = std::make_shared<Channel<T>>(
                     numElements,
                     chunkChannel.width(),
-                    boost::shared_array<T>(new T[numElements * chunkChannel.width()]));
+                    std::shared_ptr<T[]>(new T[numElements * chunkChannel.width()]));
             }
 
             if (chunkChannel.numElements() == chunk->numVertices())
@@ -139,7 +139,7 @@ ChunkManager::applyChannelFilter(const std::vector<bool>& vertexFilter,
         return originalChannel;
     }
 
-    boost::shared_array<T> data(new T[numElements * originalChannel.width()]);
+    std::shared_ptr<T[]> data(new T[numElements * originalChannel.width()]);
 
     std::size_t tmpIndex = 0;
     for (std::size_t i = 0; i < originalChannel.numElements(); i++)

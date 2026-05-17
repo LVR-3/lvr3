@@ -4,12 +4,9 @@
   "description": "LVR3 surface reconstruction dependencies for the vcpkg-first build path.",
   "dependencies": [
     "boost-date-time",
-    "boost-filesystem",
     "boost-iostreams",
     "boost-mpi",
     "boost-serialization",
-    "boost-thread",
-    "boost-timer",
     "eigen3",
     "flann",
     "freeglut",

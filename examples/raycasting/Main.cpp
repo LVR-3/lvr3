@@ -3,7 +3,7 @@
 #include <tuple>
 #include <stdlib.h>
 
-#include <boost/optional.hpp>
+#include <optional>
 #include <chrono>
 
 // lvr2 includes

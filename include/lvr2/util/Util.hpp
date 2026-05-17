@@ -36,7 +36,7 @@
 #define LVR2_UTIL_HPP
 
 #include <vector>
-#include <boost/shared_array.hpp>
+#include <memory>
 
 #include "lvr2/types/MatrixTypes.hpp"
 #include "lvr2/types/PointBuffer.hpp"
@@ -105,9 +105,9 @@ public:
      * @return returns A shared array with a copy of the data from the given vector
      */
     template<typename T>
-    static boost::shared_array<T> convert_vector_to_shared_array(std::vector<T> source)
+    static std::shared_ptr<T[]> convert_vector_to_shared_array(std::vector<T> source)
     {
-        boost::shared_array<T> ret = boost::shared_array<T>( new T[source.size()] );
+        std::shared_ptr<T[]> ret = std::shared_ptr<T[]>( new T[source.size()] );
         std::copy(source.begin(), source.end(), ret.get());
 
         return ret;

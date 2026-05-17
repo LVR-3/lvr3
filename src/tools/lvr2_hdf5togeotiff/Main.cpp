@@ -2,9 +2,7 @@
  * @brief Main file for HDF5 to GeoTIFF or BSQ to HDF5 conversion.
  * @author ndettmer <ndettmer@uos.de>
  */
-#include <boost/range/iterator_range.hpp>
-#include <boost/foreach.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include <string>
 #include <fstream>
@@ -37,7 +35,7 @@ int processConversion(std::string input_filename,
     // extract radiometric data
     std::string groupname = "raw/spectral/position_" + position_code;
     std::string datasetname = "spectral";
-    boost::shared_array<uint16_t> spectrals = hdf5.loadUInt16Array(groupname, datasetname, dim);
+    std::shared_ptr<uint16_t[]> spectrals = hdf5.loadUInt16Array(groupname, datasetname, dim);
 
     // extract array dimension information
     size_t num_channels = dim[0];
@@ -83,11 +81,11 @@ int main(int argc, char**argv)
 
     /*--------------- GET PROGRAM OPTIONS --------------------*/
 
-    boost::filesystem::path input_filename(options.getH5File());
-    std::string input_extension = boost::filesystem::extension(input_filename);
+    std::filesystem::path input_filename(options.getH5File());
+    std::string input_extension = input_filename.extension().string();
 
-    boost::filesystem::path output_filename(options.getGTIFFFile());
-    std::string  output_extension = boost::filesystem::extension(output_filename);
+    std::filesystem::path output_filename(options.getGTIFFFile());
+    std::string  output_extension = output_filename.extension().string();
     
     size_t min_channel = options.getMinChannel();
     size_t max_channel = options.getMaxChannel();
@@ -96,10 +94,10 @@ int main(int argc, char**argv)
 
     /*---------------- PREPARE CONVERSION -------------------*/
 
-    boost::filesystem::path output_dir = output_filename.parent_path();
-    if (output_dir != "" && !boost::filesystem::exists(output_dir))
+    std::filesystem::path output_dir = output_filename.parent_path();
+    if (output_dir != "" && !std::filesystem::exists(output_dir))
     {
-        boost::filesystem::create_directory(output_dir);
+        std::filesystem::create_directory(output_dir);
     }
 
     std::cout << "Starting conversion..." <<  std::endl;

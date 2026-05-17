@@ -277,7 +277,7 @@ void RieglProject::parse_asciiclouds()
         throw fs::filesystem_error(
             ss.str(),
             scans_path,
-            boost::system::errc::make_error_code(boost::system::errc::not_a_directory)
+            std::make_error_code(std::errc::not_a_directory)
         );
     }
 
@@ -305,7 +305,7 @@ void RieglProject::parse_asciiclouds()
             throw fs::filesystem_error(
                 ss.str(),
                 cloud_path,
-                boost::system::errc::make_error_code(boost::system::errc::not_a_directory)
+                std::make_error_code(std::errc::not_a_directory)
             );
         }
 

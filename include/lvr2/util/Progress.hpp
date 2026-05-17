@@ -39,6 +39,7 @@
 #include <sstream>
 #include <iostream>
 #include <chrono>
+#include <mutex>
 
 using std::stringstream;
 using std::cout;
@@ -47,8 +48,6 @@ using std::flush;
 using std::string;
 using std::wstring;
 using std::wcout;
-
-#include <boost/thread/mutex.hpp>
 
 namespace lvr2
 {
@@ -122,7 +121,7 @@ protected:
     size_t	 		m_currentVal;
 
     /// A mutex object for counter increment (for parallel executions)
-    boost::mutex 	m_mutex;
+    std::mutex 	m_mutex;
 
     /// The current progress in percent
     int			    m_percent;
@@ -180,7 +179,7 @@ protected:
     size_t			m_currentVal;
 
     /// A mutex object for counter increment (for parallel executions)
-    boost::mutex 	m_mutex;
+    std::mutex 	m_mutex;
 
     /// A string stream for output generation
     stringstream	m_stream;
@@ -253,7 +252,7 @@ protected:
     size_t	 		m_currentVal;
 
 	/// A mutex object for counter increment (for parallel executions)
-	boost::mutex 	m_mutex;
+	std::mutex 	m_mutex;
 
 	/// The current progress in percent
 	int				m_percent;

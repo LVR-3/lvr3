@@ -12,14 +12,14 @@ namespace lvr2
 
 bool isMetaFile(const std::string& filename)
 {
-    boost::filesystem::path p(filename);
+    std::filesystem::path p(filename);
     std::unordered_set<std::string> metaExtensions = {".yaml", ".slam6d", ".frames" , ".json" , ".pose" , ".scn", ".img"};
     return metaExtensions.find(p.extension().string()) != metaExtensions.end();
 }
 
 void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
 {
-    boost::filesystem::path p(outfile);
+    std::filesystem::path p(outfile);
 
     if(p.extension() == "")
     {
@@ -34,10 +34,10 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
     }
     else if (p.extension() == ".slam6d")
     {
-        boost::filesystem::path dir = p.parent_path();
+        std::filesystem::path dir = p.parent_path();
         std::string filename = p.stem().string();
-        boost::filesystem::path posePath = dir / (filename + ".pose");
-        boost::filesystem::path framesPath = dir / (filename + ".frames");
+        std::filesystem::path posePath = dir / (filename + ".pose");
+        std::filesystem::path framesPath = dir / (filename + ".frames");
 
         ScanPosition sp;
 
@@ -56,7 +56,7 @@ void saveMetaInformation(const std::string &outfile, const YAML::Node &node)
 
 YAML::Node loadMetaInformation(const std::string &in)
 {
-    boost::filesystem::path inPath(in);
+    std::filesystem::path inPath(in);
 
     if(inPath.extension() == "")
     {
@@ -66,7 +66,7 @@ YAML::Node loadMetaInformation(const std::string &in)
     if (inPath.extension() == ".yaml" || inPath.extension() == ".json" || inPath.extension() == ".pose" || inPath.extension() == ".img" || inPath.extension() == ".scn" )
     {
         YAML::Node n;
-        if (boost::filesystem::exists(inPath))
+        if (std::filesystem::exists(inPath))
         {
             n = YAML::LoadFile(inPath.string());
         }
@@ -81,13 +81,13 @@ YAML::Node loadMetaInformation(const std::string &in)
     {
         YAML::Node node;
 
-        boost::filesystem::path dir = inPath.parent_path();
+        std::filesystem::path dir = inPath.parent_path();
         std::string filename = inPath.stem().string();
-        boost::filesystem::path posePath = dir / (filename + ".pose");
-        boost::filesystem::path framesPath = dir / (filename + ".frames");
+        std::filesystem::path posePath = dir / (filename + ".pose");
+        std::filesystem::path framesPath = dir / (filename + ".frames");
 
-        bool pose_exist = boost::filesystem::exists(posePath);
-        bool frames_exist = boost::filesystem::exists(framesPath);
+        bool pose_exist = std::filesystem::exists(posePath);
+        bool frames_exist = std::filesystem::exists(framesPath);
 
         if(!pose_exist && !frames_exist)
         {

@@ -4,7 +4,7 @@ namespace lvr2
 {
 
 template<typename T>
-Transform<T> getTransformationFromPose(const boost::filesystem::path& pose)
+Transform<T> getTransformationFromPose(const std::filesystem::path& pose)
 {
     std::ifstream poseIn(pose.c_str());
     if(poseIn.good())
@@ -55,7 +55,7 @@ Transform<T> getTransformationFromPose(const boost::filesystem::path& pose)
 }
 
 template<typename T>
-Transform<T> getTransformationFromFrames(const boost::filesystem::path& frames)
+Transform<T> getTransformationFromFrames(const std::filesystem::path& frames)
 {
     T alignxf[16];
     int color;
@@ -83,7 +83,7 @@ Transform<T> getTransformationFromFrames(const boost::filesystem::path& frames)
 }
 
 template<typename T>
-Transform<T> getTransformationFromDat(const boost::filesystem::path& frames)
+Transform<T> getTransformationFromDat(const std::filesystem::path& frames)
 {
     T alignxf[16];
     int color;
@@ -100,7 +100,7 @@ Transform<T> getTransformationFromDat(const boost::filesystem::path& frames)
 }
 
 template<typename T>
-void writeFrame(const Transform<T>& transform, const boost::filesystem::path& framesOut)
+void writeFrame(const Transform<T>& transform, const std::filesystem::path& framesOut)
 {
     std::ofstream out(framesOut.c_str());
 
@@ -122,7 +122,7 @@ void writeFrame(const Transform<T>& transform, const boost::filesystem::path& fr
 }
 
 template<typename T>
-void writePose(const BaseVector<T>& position, const BaseVector<T>& angles, const boost::filesystem::path& out)
+void writePose(const BaseVector<T>& position, const BaseVector<T>& angles, const std::filesystem::path& out)
 {
     std::ofstream o(out.c_str());
     if(o.good())
@@ -133,7 +133,7 @@ void writePose(const BaseVector<T>& position, const BaseVector<T>& angles, const
 }
 
 template<typename T>
-void writePose(const Vector3<T>& position, const Vector3<T>& angles, const boost::filesystem::path& out)
+void writePose(const Vector3<T>& position, const Vector3<T>& angles, const std::filesystem::path& out)
 {
     std::ofstream o(out.c_str());
     if(o.good())
@@ -144,7 +144,7 @@ void writePose(const Vector3<T>& position, const Vector3<T>& angles, const boost
 }
 
 template<typename T>
-void writePose(const Transform<T>& transform, const boost::filesystem::path& poseOut)
+void writePose(const Transform<T>& transform, const std::filesystem::path& poseOut)
 {
     // block<1,3> was not working for the riegl projects, Alex said it worked before though
     Vector3<T> position = transform.template block<3, 1>(0,3);
@@ -159,7 +159,7 @@ void writePose(const Transform<T>& transform, const boost::filesystem::path& pos
 }
 
 template<typename T>
-Transform<T> loadFromFile(const boost::filesystem::path& file)
+Transform<T> loadFromFile(const std::filesystem::path& file)
 {
     Transform<T> m;
     T arr[16];
@@ -172,9 +172,9 @@ Transform<T> loadFromFile(const boost::filesystem::path& file)
 }
 
 template<typename T>
-Transform<T> getTransformationFromFile(const boost::filesystem::path& file)
+Transform<T> getTransformationFromFile(const std::filesystem::path& file)
 {
-    boost::filesystem::path extension = file.extension();
+    std::filesystem::path extension = file.extension();
     if(extension == ".dat")
     {
         return getTransformationFromDat<T>(file);

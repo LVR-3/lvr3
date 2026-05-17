@@ -10,11 +10,11 @@ HDF5Kernel::HDF5Kernel(const std::string& rootFile, HDF5KernelConfig config)
 :FileKernel(rootFile)
 ,m_config(config)
 {
-    boost::filesystem::path p(rootFile);
+    std::filesystem::path p(rootFile);
 
-    if(p.has_parent_path() && !boost::filesystem::exists(p.parent_path()))
+    if(p.has_parent_path() && !std::filesystem::exists(p.parent_path()))
     {
-        boost::filesystem::create_directory(p.parent_path());
+        std::filesystem::create_directory(p.parent_path());
     }
     m_hdf5File = hdf5util::open(rootFile);
 }
@@ -242,7 +242,7 @@ PointBufferPtr HDF5Kernel::loadPointBuffer(
     HighFive::Group g = hdf5util::getGroup(m_hdf5File, group);
     PointBufferPtr ret;
 
-    boost::shared_array<float> pointData;
+    std::shared_ptr<float[]> pointData;
     std::vector<size_t> pointDim;
     pointData = loadFloatArray(group, container, pointDim);
     PointBufferPtr pb = PointBufferPtr(new PointBuffer(pointData, pointDim[0]));
@@ -250,11 +250,11 @@ PointBufferPtr HDF5Kernel::loadPointBuffer(
     return ret;
 }
 
-boost::optional<cv::Mat> HDF5Kernel::loadImage(
+std::optional<cv::Mat> HDF5Kernel::loadImage(
     const std::string &groupName,
     const std::string &datasetName) const
 {
-    boost::optional<cv::Mat> ret;
+    std::optional<cv::Mat> ret;
 
     if(m_hdf5File && m_hdf5File->isValid())
     {
@@ -434,7 +434,7 @@ boolArr HDF5Kernel::loadBoolArray(
 void HDF5Kernel::saveCharArray(
     const std::string &groupName, const std::string &datasetName,
     const std::vector<size_t> &dimensions,
-    const boost::shared_array<char> &data) const
+    const std::shared_ptr<char[]> &data) const
 {
     this->template saveArray<char>(groupName, datasetName, dimensions, data);
 }
@@ -442,7 +442,7 @@ void HDF5Kernel::saveCharArray(
 void HDF5Kernel::saveUCharArray(
     const std::string &groupName, const std::string &datasetName,
     const std::vector<size_t> &dimensions,
-    const boost::shared_array<unsigned char> &data) const
+    const std::shared_ptr<unsigned char[]> &data) const
 {
     this->template saveArray<unsigned char>(groupName, datasetName, dimensions, data);
 }
@@ -450,7 +450,7 @@ void HDF5Kernel::saveUCharArray(
 void HDF5Kernel::saveShortArray(
     const std::string &groupName, const std::string &datasetName,
     const std::vector<size_t> &dimensions,
-    const boost::shared_array<short> &data) const
+    const std::shared_ptr<short[]> &data) const
 {
     this->template saveArray<short>(groupName, datasetName, dimensions, data);
 }
@@ -458,7 +458,7 @@ void HDF5Kernel::saveShortArray(
 void HDF5Kernel::saveUShortArray(
     const std::string &groupName, const std::string &datasetName,
     const std::vector<size_t> &dimensions,
-    const boost::shared_array<unsigned short> &data) const
+    const std::shared_ptr<unsigned short[]> &data) const
 {
     this->template saveArray<unsigned short>(groupName, datasetName, dimensions, data);
 }
@@ -466,7 +466,7 @@ void HDF5Kernel::saveUShortArray(
 void HDF5Kernel::saveUInt16Array(
     const std::string &groupName, const std::string &datasetName,
     const std::vector<size_t> &dimensions,
-    const boost::shared_array<uint16_t> &data) const
+    const std::shared_ptr<uint16_t[]> &data) const
 {
     this->template saveArray<uint16_t>(groupName, datasetName, dimensions, data);
 }
@@ -474,7 +474,7 @@ void HDF5Kernel::saveUInt16Array(
 void HDF5Kernel::saveIntArray(
     const std::string &groupName, const std::string &datasetName,
     const std::vector<size_t> &dimensions,
-    const boost::shared_array<int> &data) const
+    const std::shared_ptr<int[]> &data) const
 {
     this->template saveArray<int>(groupName, datasetName, dimensions, data);
 }
@@ -482,7 +482,7 @@ void HDF5Kernel::saveIntArray(
 void HDF5Kernel::saveUIntArray(
     const std::string &groupName, const std::string &datasetName,
     const std::vector<size_t> &dimensions,
-    const boost::shared_array<unsigned int> &data) const
+    const std::shared_ptr<unsigned int[]> &data) const
 {
     this->template saveArray<unsigned int>(groupName, datasetName, dimensions, data);
 }
@@ -490,7 +490,7 @@ void HDF5Kernel::saveUIntArray(
 void HDF5Kernel::saveLIntArray(
     const std::string &groupName, const std::string &datasetName,
     const std::vector<size_t> &dimensions,
-    const boost::shared_array<long int> &data) const
+    const std::shared_ptr<long int[]> &data) const
 {
     this->template saveArray<long int>(groupName, datasetName, dimensions, data);
 }
@@ -498,7 +498,7 @@ void HDF5Kernel::saveLIntArray(
 void HDF5Kernel::saveULIntArray(
     const std::string &groupName, const std::string &datasetName,
     const std::vector<size_t> &dimensions,
-    const boost::shared_array<unsigned long int> &data) const
+    const std::shared_ptr<unsigned long int[]> &data) const
 {
     this->template saveArray<unsigned long int>(groupName, datasetName, dimensions, data);
 }
@@ -507,7 +507,7 @@ void HDF5Kernel::saveFloatArray(
     const std::string &groupName,
     const std::string &datasetName,
     const std::vector<size_t> &dimensions,
-    const boost::shared_array<float> &data) const
+    const std::shared_ptr<float[]> &data) const
 {
     this->template saveArray<float>(groupName, datasetName, dimensions, data);
 }
@@ -515,7 +515,7 @@ void HDF5Kernel::saveFloatArray(
 void HDF5Kernel::saveDoubleArray(
     const std::string &groupName, const std::string &datasetName,
     const std::vector<size_t> &dimensions,
-    const boost::shared_array<double> &data) const
+    const std::shared_ptr<double[]> &data) const
 {
     this->template saveArray<double>(groupName, datasetName, dimensions, data);
 }
@@ -523,7 +523,7 @@ void HDF5Kernel::saveDoubleArray(
 void HDF5Kernel::saveBoolArray(
     const std::string &groupName, const std::string &datasetName,
     const std::vector<size_t> &dimensions,
-    const boost::shared_array<bool> &data) const
+    const std::shared_ptr<bool[]> &data) const
 {
     this->template saveArray<bool>(groupName, datasetName, dimensions, data);
 }

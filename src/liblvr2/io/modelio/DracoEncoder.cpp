@@ -426,8 +426,8 @@ std::unique_ptr<draco::Mesh> toDracoMesh(ModelPtr modelPtr)
 
         for (int i = 0; i < materials.size(); i++)
         {
-            boost::optional<TextureHandle> opt_texture_index = materials[i].m_texture;
-            boost::optional<RGB8Color> opt_mat_color = materials[i].m_color;
+            std::optional<TextureHandle> opt_texture_index = materials[i].m_texture;
+            std::optional<RGB8Color> opt_mat_color = materials[i].m_color;
             if(opt_mat_color)
             {
                 RGB8Color mat_color = *opt_mat_color;

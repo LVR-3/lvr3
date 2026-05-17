@@ -34,7 +34,7 @@
 #include "lvr2/config/lvropenmp.hpp"
 #include <random>
 #include <string>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/scan.hpp"
 #include <mpi.h>
@@ -115,7 +115,7 @@ int main(int argc, char** argv)
 
         string in = options.getInputFileName()[0];
 
-        boost::filesystem::path selectedFile(in);
+        std::filesystem::path selectedFile(in);
         string extension = selectedFile.extension().string();
 
         OpenMPConfig::setNumThreads(options.getNumThreads());
@@ -157,7 +157,7 @@ int main(int argc, char** argv)
         } else
         {
             ScanProjectPtr loadedDirectoryProject;
-            if (boost::filesystem::is_directory(selectedFile))
+            if (std::filesystem::is_directory(selectedFile))
             {
                 auto loadedDirectory = lvr2::io::scan::load_project(
                     in,
@@ -179,7 +179,7 @@ int main(int argc, char** argv)
                 project->changed = init;
             }
                 //reconstruction from a .ply file
-            else if (!boost::filesystem::is_directory(selectedFile))
+            else if (!std::filesystem::is_directory(selectedFile))
             {
                 project->project = ScanProjectPtr(new ScanProject);
                 ModelPtr model = ModelFactory::readModel(in);
@@ -197,8 +197,8 @@ int main(int argc, char** argv)
             else
             {
                 project->project = ScanProjectPtr(new ScanProject);
-                boost::filesystem::directory_iterator it{in};
-                while (it != boost::filesystem::directory_iterator{})
+                std::filesystem::directory_iterator it{in};
+                while (it != std::filesystem::directory_iterator{})
                 {
                     cout << it->path().string() << endl;
                     string ext = it->path().extension().string();

@@ -5,15 +5,15 @@
 #include <string>
 #include <tuple>
 
-#include <boost/optional.hpp>
-#include <boost/filesystem.hpp>
+#include <optional>
+#include <filesystem>
 
 #include <yaml-cpp/yaml.h>
 
 namespace lvr2
 {
 
-using StringOptional = boost::optional<std::string>;
+using StringOptional = std::optional<std::string>;
 
 // struct Description
 // {
@@ -124,7 +124,7 @@ public:
     DirectorySchema(const std::string& root) : m_rootPath(root) {}
 
 protected:
-    boost::filesystem::path m_rootPath;
+    std::filesystem::path m_rootPath;
 };
 
 using ScanProjectSchemaPtr = std::shared_ptr<ScanProjectSchema>;

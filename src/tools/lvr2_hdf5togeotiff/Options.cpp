@@ -28,7 +28,7 @@
  */
 
 
-#include <boost/filesystem/operations.hpp>
+#include <filesystem>
 
 #include "Options.hpp"
 
@@ -55,7 +55,7 @@ namespace hdf5togeotiff
             || m_variables["pos"].as<string>().length() != 5
             || m_variables["min"].as<size_t>() < 0
             || m_variables["max"].as<size_t>() <= m_variables["min"].as<size_t>()
-            || !boost::filesystem::exists(boost::filesystem::path(m_variables["h5"].as<string>()))
+            || !std::filesystem::exists(std::filesystem::path(m_variables["h5"].as<string>()))
         )
         {
             ::std::cout << m_descr << ::std::endl;
