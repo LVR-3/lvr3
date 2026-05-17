@@ -27,46 +27,66 @@
 
 #pragma once
 
+#include "lvr2/types/MatrixTypes.hpp"
+
+#include <array>
+#include <filesystem>
 #include <ostream>
 #include <string>
+#include <system_error>
 #include <vector>
 
-#define #include <filesystem>
-#include <system_error>
 namespace fs = std::filesystem;
-
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-namespace pt = boost::property_tree;
-
-
 
 namespace lvr2
 {
 
-class RieglProject {
-    public:
-        /**
-         * @brief Construct a new Riegl Project object
-         * 
-         * @param dir 
-         * @param input_cloud_format  Implemented: rxp,ascii
-         */
-        RieglProject(std::string dir, std::string input_cloud_format = "rxp");
-        bool parse_project(unsigned int start, unsigned int end);
+namespace detail
+{
+class RieglXmlNode;
+}
 
-    //private:
-        fs::path m_project_dir;
-        std::vector<ScanPosition> m_scan_positions;
-        void parse_scanpositions(pt::ptree project_ptree, unsigned int start, unsigned int end);
-        void parse_images_per_scanpos(ScanPosition &scanpos, pt::ptree scanpos_ptree, pt::ptree project_ptree);
-
-        void parse_asciiclouds();
-
-        std::string m_input_cloud_format;
+struct RieglImageFile
+{
+    fs::path image_file;
+    Transformd orientation_transform = Transformd::Identity();
+    Transformd extrinsic_transform = Transformd::Identity();
+    std::array<float, 4> intrinsic_params{};
+    std::array<float, 6> distortion_params{};
 };
 
-std::ostream& operator<<(std::ostream &lhs, const RieglProject &rhs); 
-std::ostream& operator<<(std::ostream &lhs, const ScanPosition &rhs);
+struct RieglScanPosition
+{
+    fs::path scan_file;
+    Transformd transform = Transformd::Identity();
+    std::vector<RieglImageFile> images;
+};
+
+class RieglProject
+{
+  public:
+    /**
+     * @brief Construct a new Riegl Project object
+     *
+     * @param dir
+     * @param input_cloud_format  Implemented: rxp,ascii
+     */
+    RieglProject(std::string dir, std::string input_cloud_format = "rxp");
+    bool parse_project(unsigned int start, unsigned int end);
+
+    fs::path m_project_dir;
+    std::vector<RieglScanPosition> m_scan_positions;
+    std::string m_input_cloud_format;
+
+  private:
+    void parse_scanpositions(const detail::RieglXmlNode& project_ptree, unsigned int start, unsigned int end);
+    void parse_images_per_scanpos(RieglScanPosition& scanpos,
+                                  const detail::RieglXmlNode& scanpos_ptree,
+                                  const detail::RieglXmlNode& project_ptree);
+    void parse_asciiclouds();
+};
+
+std::ostream& operator<<(std::ostream& lhs, const RieglProject& rhs);
+std::ostream& operator<<(std::ostream& lhs, const RieglScanPosition& rhs);
 
 } // namespace lvr2

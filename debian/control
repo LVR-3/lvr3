@@ -5,8 +5,6 @@ Build-Depends: dh-exec (>= 0.3), debhelper (>= 10), cmake, pkg-config,
  libassimp-dev, libexpected-dev, libspdlog-dev, libtbb-dev,
  libtiff-dev, libgdal-dev, libopencv-dev (>= 3.2), libflann-dev,
  liblz4-dev, libgsl-dev, libeigen3-dev,
- libboost-dev, libboost-date-time-dev, libboost-mpi-dev,
- libboost-iostreams-dev, libboost-serialization-dev,
  libhdf5-dev, freeglut3-dev, libproj-dev, ocl-icd-opencl-dev,
  opencl-c-headers, libyaml-cpp-dev, nvidia-cuda-toolkit
 Standards-Version: 4.1.2
@@ -22,8 +20,6 @@ Multi-Arch: same
 Depends: cmake, pkg-config, libassimp-dev, libexpected-dev, libspdlog-dev,
  libtbb-dev, libtiff-dev, libgdal-dev, libopencv-dev (>= 3.2),
  libflann-dev, liblz4-dev, libgsl-dev, libeigen3-dev,
- libboost-dev, libboost-date-time-dev, libboost-mpi-dev,
- libboost-iostreams-dev, libboost-serialization-dev,
  libhdf5-dev, freeglut3-dev, libproj-dev, ocl-icd-opencl-dev,
  opencl-c-headers, libyaml-cpp-dev, liblvr2 (= ${binary:Version}),
  ${misc:Depends}
@@ -58,8 +54,6 @@ Multi-Arch: same
 Depends: cmake, pkg-config, libassimp-dev, libexpected-dev, libspdlog-dev,
  libtbb-dev, libtiff-dev, libgdal-dev, libopencv-dev (>= 3.2),
  libflann-dev, liblz4-dev, libgsl-dev, libeigen3-dev,
- libboost-dev, libboost-date-time-dev, libboost-mpi-dev,
- libboost-iostreams-dev, libboost-serialization-dev,
  libhdf5-dev, freeglut3-dev, libproj-dev, ocl-icd-opencl-dev,
  opencl-c-headers, nvidia-cuda-toolkit, libyaml-cpp-dev,
  liblvr2-cuda (= ${binary:Version}), ${misc:Depends}

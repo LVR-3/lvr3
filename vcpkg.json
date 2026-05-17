@@ -3,10 +3,6 @@
   "version-string": "25.2.3",
   "description": "LVR3 surface reconstruction dependencies for the vcpkg-first build path.",
   "dependencies": [
-    "boost-date-time",
-    "boost-iostreams",
-    "boost-mpi",
-    "boost-serialization",
     "eigen3",
     "flann",
     "freeglut",

@@ -4,12 +4,11 @@
 #include "lvr2/util/ScanSchemaUtils.hpp"
 #include "lvr2/util/TransformUtils.hpp"
 #include "lvr2/util/Logging.hpp"
+#include "lvr2/util/MappedFile.hpp"
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/scan.hpp"
 
 #include <filesystem>
-#include <boost/iostreams/device/mapped_file.hpp>
-#include <boost/iostreams/stream.hpp>
 
 #include <algorithm>
 #include <atomic>
@@ -707,31 +706,21 @@ void exportScanProjectToPLY(ScanProjectPtr project, const std::string plyFile, b
     size_t totalScans = 0;
     size_t w_color;
 
-    // Create three memory mapped files for temporary
-    // point cloud data
-    boost::iostreams::mapped_file_params params;
+    // Create three file-backed scratch buffers for temporary point cloud data.
+    // Worst case estimated file size: assume the buffers are not reduced and
+    // create files large enough to hold all data.
+    lvr2::util::MappedFile pointFile;
+    lvr2::util::MappedFile colorFile;
+    lvr2::util::MappedFile normalFile;
 
-    // Worst case estimated of required file size: we assume that
-    // the buffers are not reduced and create files large enough
-    // to hold all data
-    params.new_file_size = numPointsInProject * 3 * sizeof(float);
-    params.mode = std::ios_base::in | std::ios_base::out | std::ios_base::trunc;
+    pointFile.open_truncated("points.tmp", numPointsInProject * 3 * sizeof(float));
+    float* mmf_points = pointFile.data_as<float>();
 
-    boost::iostreams::mapped_file pointFile;
-    boost::iostreams::mapped_file colorFile;
-    boost::iostreams::mapped_file normalFile;
+    colorFile.open_truncated("colors.tmp", numPointsInProject * 3 * sizeof(unsigned char));
+    unsigned char* mmf_colors = colorFile.data_as<unsigned char>();
 
-    params.path = "points.tmp";
-    pointFile.open(params);
-    float* mmf_points = (float*)pointFile.data();
-
-    params.path = "colors.tmp";
-    colorFile.open(params);
-    unsigned char* mmf_colors = (unsigned char*)colorFile.data();
-
-    params.path = "normals.tmp";
-    normalFile.open(params);
-    float* mmf_normals = (float*)normalFile.data();
+    normalFile.open_truncated("normals.tmp", numPointsInProject * 3 * sizeof(float));
+    float* mmf_normals = normalFile.data_as<float>();
 
     // Reset (for robustness we count the points that were actually loaded
     numPointsInProject = 0;

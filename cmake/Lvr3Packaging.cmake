@@ -61,7 +61,6 @@ set(_LVR2_DEPS
     libxmu-dev
     libyaml-cpp-dev
     ocl-icd-opencl-dev
-    openmpi-bin
 )
 
 # HighFive, rply, and LASlib/LAStools are still required by the system-package
@@ -69,16 +68,10 @@ set(_LVR2_DEPS
 # Do not guess dependency names in generated DEB metadata until those packages
 # are provided by distro packaging or local distributor rules.
 
-# Depend on MPI if it was found during build
-if(MPI_FOUND)
-    list(APPEND _LVR2_DEPS "libopenmpi-dev")
-endif(MPI_FOUND)
-
-# Depend on the boost components
-foreach(_BOOST_COMPONENT ${Boost_COMPONENTS})
-    string(REPLACE "_" "-" _BOOST_COMPONENT ${_BOOST_COMPONENT})
-    list(APPEND _LVR2_DEPS "libboost-${_BOOST_COMPONENT}-dev")
-endforeach()
+# Depend on MPI only when optional PCL support pulls it into the build.
+if(PCL_FOUND AND MPI_FOUND)
+    list(APPEND _LVR2_DEPS "libopenmpi-dev" "openmpi-bin")
+endif()
 
 # Depend on embree if it was used during build
 if(embree_FOUND)

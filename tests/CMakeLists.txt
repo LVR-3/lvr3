@@ -69,6 +69,18 @@ set_tests_properties(lvr2_storage_io_header_compile
     LABELS "cpp;io;scan;storage;header"
 )
 
+add_executable(lvr2_mapped_file_contracts
+  test_mapped_file.cpp
+  ${PROJECT_SOURCE_DIR}/src/liblvr2/util/MappedFile.cpp
+)
+target_include_directories(lvr2_mapped_file_contracts PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_compile_features(lvr2_mapped_file_contracts PRIVATE cxx_std_20)
+add_test(NAME lvr2_mapped_file_contracts COMMAND lvr2_mapped_file_contracts)
+set_tests_properties(lvr2_mapped_file_contracts
+  PROPERTIES
+    LABELS "cpp;util;boost;cxx20"
+)
+
 add_executable(lvr2_cxx20_view_span_contracts
   test_cxx20_view_span_contracts.cpp
 )
@@ -216,6 +228,17 @@ set_tests_properties(lvr2_boost_stdlib_replacements
 )
 
 add_test(
+  NAME lvr2_no_boost_dependency
+  COMMAND ${CMAKE_COMMAND}
+    -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+    -P ${CMAKE_CURRENT_LIST_DIR}/no_boost_dependency.cmake
+)
+set_tests_properties(lvr2_no_boost_dependency
+  PROPERTIES
+    LABELS "cmake;dependencies;boost;cxx20"
+)
+
+add_test(
   NAME lvr2_system_optout_semantics
   COMMAND ${CMAKE_COMMAND}
     -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
@@ -336,7 +359,6 @@ if(LVR2_MESH_IO_ASSIMP_AVAILABLE)
   target_include_directories(lvr2_assimp_adapter_smoke PRIVATE
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/src/liblvr2/private
-    ${Boost_INCLUDE_DIRS}
     ${HDF5_INCLUDE_DIRS}
   )
   target_compile_features(lvr2_assimp_adapter_smoke PRIVATE cxx_std_20)

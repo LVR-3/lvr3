@@ -19,7 +19,6 @@ set(LVR2_CHUNKING_SERVER_DEPENDENCIES
     lvr2las_static
     lvr2rply_static
     TBB::tbb
-    ${Boost_LIBRARIES}
 )
 
 if(CUDA_FOUND)

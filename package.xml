@@ -47,7 +47,6 @@ point clouds.
   <depend>libgsl</depend>
   <depend>eigen</depend>
   <depend>yaml-cpp</depend>
-  <depend>boost</depend>
   <depend>libhdf5-dev</depend>
   <depend>libxi-dev</depend>
   <depend>libxmu-dev</depend>
