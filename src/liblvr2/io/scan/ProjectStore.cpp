@@ -227,7 +227,7 @@ storage::Status saveScan(ProjectStore::State& state,
     auto description = state.schema->scan(positionIndex, lidarIndex, scanIndex);
     if (description.meta)
     {
-        YAML::Node node = *scan;
+        YAML::Node node = YAML::convert<lvr2::Scan>::encode(*scan);
         auto wroteMeta = writeMeta(state, description, node);
         if (!wroteMeta)
         {
@@ -344,7 +344,7 @@ storage::Status saveLidar(ProjectStore::State& state,
     auto description = state.schema->lidar(positionIndex, lidarIndex);
     if (description.meta)
     {
-        YAML::Node node = *lidar;
+        YAML::Node node = YAML::convert<lvr2::LIDAR>::encode(*lidar);
         auto wrote = writeMeta(state, description, node);
         if (!wrote)
         {
@@ -431,7 +431,7 @@ storage::Status savePosition(ProjectStore::State& state,
     auto description = state.schema->position(positionIndex);
     if (description.meta)
     {
-        YAML::Node node = *position;
+        YAML::Node node = YAML::convert<lvr2::ScanPosition>::encode(*position);
         auto wrote = writeMeta(state, description, node);
         if (!wrote)
         {
@@ -666,7 +666,7 @@ storage::Status ProjectStore::save(const lvr2::ScanProject& project) const
     const auto description = state_->schema->scanProject();
     if (description.meta)
     {
-        YAML::Node node = project;
+        YAML::Node node = YAML::convert<lvr2::ScanProject>::encode(project);
         auto wrote = writeMeta(*state_, description, node);
         if (!wrote)
         {

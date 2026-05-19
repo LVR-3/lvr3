@@ -432,7 +432,7 @@ void saveTexture(const lvr2::FileKernelPtr& kernel,
                             static_cast<std::size_t>(texture.m_numChannels),
                             static_cast<std::size_t>(texture.m_numBytesPerChan)},
                            data);
-    YAML::Node meta = texture;
+    YAML::Node meta = YAML::convert<lvr2::Texture>::encode(texture);
     kernel->saveMetaYAML(*desc.metaRoot, *desc.meta, meta);
 }
 
@@ -470,7 +470,7 @@ void saveMaterials(const lvr2::FileKernelPtr& kernel,
     for (std::size_t index = 0; index < materials.size(); ++index)
     {
         auto desc = schema->material(meshName, index);
-        YAML::Node meta = materials[index];
+        YAML::Node meta = YAML::convert<lvr2::Material>::encode(materials[index]);
         kernel->saveMetaYAML(*desc.metaRoot, *desc.meta, meta);
 
         const auto& material = materials[index];
@@ -527,7 +527,7 @@ void loadMaterials(const lvr2::FileKernelPtr& kernel,
                     {
                         mesh->getTextures().resize(texture->m_index + 1);
                     }
-                    material.m_layers.insert({texture->m_layerName, texture->m_index});
+                    material.m_layers.emplace(texture->m_layerName, lvr2::TextureHandle(texture->m_index));
                     if (!material.m_texture)
                     {
                         material.m_texture = lvr2::TextureHandle(texture->m_index);
@@ -562,7 +562,7 @@ std::shared_ptr<T[]> loadArray(const std::shared_ptr<HighFive::File>& file,
     }
 
     result.reset(new T[elementCount]);
-    dataset.read(result.get());
+    dataset.read_raw(result.get());
     return result;
 }
 
@@ -598,32 +598,39 @@ void saveArray(const std::shared_ptr<HighFive::File>& file,
                std::vector<hsize_t> chunkSizes,
                std::shared_ptr<T[]> data)
 {
-    if (!file || !file->isValid())
+    if constexpr (!hdf5util::H5AllowedTypes::contains<T>())
     {
-        throw std::runtime_error("HDF5 mesh store is not open");
+        throw std::runtime_error("HDF5 mesh store does not support this channel type");
     }
-
-    HighFive::DataSpace dataSpace(dimensions);
-    HighFive::DataSetCreateProps properties;
-    if (defaultChunkSize > 0)
+    else
     {
-        for (std::size_t i = 0; i < chunkSizes.size(); ++i)
+        if (!file || !file->isValid())
         {
-            if (chunkSizes[i] > dimensions[i])
-            {
-                chunkSizes[i] = dimensions[i];
-            }
+            throw std::runtime_error("HDF5 mesh store is not open");
         }
-        properties.add(HighFive::Chunking(chunkSizes));
-    }
-    if (compress)
-    {
-        properties.add(HighFive::Deflate(9));
-    }
 
-    auto dataset = hdf5util::createDataset<T>(group, datasetName, dataSpace, properties);
-    dataset->write_raw(data.get());
-    file->flush();
+        HighFive::DataSpace dataSpace(dimensions);
+        HighFive::DataSetCreateProps properties;
+        if (defaultChunkSize > 0)
+        {
+            for (std::size_t i = 0; i < chunkSizes.size(); ++i)
+            {
+                if (chunkSizes[i] > dimensions[i])
+                {
+                    chunkSizes[i] = dimensions[i];
+                }
+            }
+            properties.add(HighFive::Chunking(chunkSizes));
+        }
+        if (compress)
+        {
+            properties.add(HighFive::Deflate(9));
+        }
+
+        auto dataset = hdf5util::createDataset<T>(group, datasetName, dataSpace, properties);
+        dataset->write_raw(data.get());
+        file->flush();
+    }
 }
 
 template<typename T>
@@ -665,7 +672,7 @@ ChannelOptional<T> loadChannel(const std::shared_ptr<HighFive::File>& file,
     }
 
     result = Channel<T>(dimensions[0], dimensions[1]);
-    dataset.read(result->dataPtr().get());
+    dataset.read_raw(result->dataPtr().get());
     return result;
 }
 
@@ -716,9 +723,17 @@ void saveVariantChannel(const std::shared_ptr<HighFive::File>& file,
                         const std::string& name,
                         const VariantT& channel)
 {
-    if (R == channel.type())
+    using ValueType = typename VariantT::template type_of_index<R>;
+    if constexpr (hdf5util::H5AllowedTypes::contains<ValueType>())
     {
-        saveChannel(file, compress, defaultChunkSize, group, name, channel.template extract<typename VariantT::template type_of_index<R>>());
+        if (R == channel.type())
+        {
+            saveChannel(file, compress, defaultChunkSize, group, name, channel.template extract<ValueType>());
+        }
+    }
+    else if (R == channel.type())
+    {
+        throw std::runtime_error("HDF5 mesh store does not support channel type " + channel.typeName());
     }
 }
 
@@ -731,12 +746,24 @@ void saveVariantChannel(const std::shared_ptr<HighFive::File>& file,
                         const std::string& name,
                         const VariantT& channel)
 {
-    if (R == channel.type())
+    using ValueType = typename VariantT::template type_of_index<R>;
+    if constexpr (hdf5util::H5AllowedTypes::contains<ValueType>())
     {
-        saveChannel(file, compress, defaultChunkSize, group, name, channel.template extract<typename VariantT::template type_of_index<R>>());
+        if (R == channel.type())
+        {
+            saveChannel(file, compress, defaultChunkSize, group, name, channel.template extract<ValueType>());
+        }
+        else
+        {
+            saveVariantChannel<Derived, VariantT, R - 1>(file, compress, defaultChunkSize, group, name, channel);
+        }
     }
     else
     {
+        if (R == channel.type())
+        {
+            throw std::runtime_error("HDF5 mesh store does not support channel type " + channel.typeName());
+        }
         saveVariantChannel<Derived, VariantT, R - 1>(file, compress, defaultChunkSize, group, name, channel);
     }
 }
@@ -749,12 +776,15 @@ std::optional<VariantT> loadVariantChannel(const std::shared_ptr<HighFive::File>
                                              const std::string& name)
 {
     using ValueType = typename VariantT::template type_of_index<R>;
-    if (type == HighFive::AtomicType<ValueType>())
+    if constexpr (hdf5util::H5AllowedTypes::contains<ValueType>())
     {
-        auto channel = loadChannel<ValueType>(file, group, name);
-        if (channel)
+        if (type == HighFive::create_datatype<ValueType>())
         {
-            return VariantT(*channel);
+            auto channel = loadChannel<ValueType>(file, group, name);
+            if (channel)
+            {
+                return VariantT(*channel);
+            }
         }
     }
     return std::nullopt;
@@ -770,7 +800,7 @@ std::optional<VariantT> loadVariantChannel(const std::shared_ptr<HighFive::File>
     using ValueType = typename VariantT::template type_of_index<R>;
     if constexpr (hdf5util::H5AllowedTypes::contains<ValueType>())
     {
-        if (type == HighFive::AtomicType<ValueType>())
+        if (type == HighFive::create_datatype<ValueType>())
         {
             auto channel = loadChannel<ValueType>(file, group, name);
             if (channel)

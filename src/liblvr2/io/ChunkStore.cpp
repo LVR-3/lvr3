@@ -53,7 +53,7 @@ std::shared_ptr<T[]> loadArray(const std::shared_ptr<HighFive::File>& file,
     }
 
     result.reset(new T[elementCount]);
-    dataset.read(result.get());
+    dataset.read_raw(result.get());
     return result;
 }
 

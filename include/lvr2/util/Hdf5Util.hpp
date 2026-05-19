@@ -245,7 +245,7 @@ bool exist(const HighFive::Group& group, const std::string& groupName);
  * @return std::shared_ptr<HighFive::File> shared_ptr of HighFive::File object
  */
 std::shared_ptr<HighFive::File> open(const std::filesystem::path& filename,
-    unsigned int flag = HighFive::File::ReadWrite);
+    HighFive::File::AccessMode flag = HighFive::File::ReadWrite);
 
 /**
  * @brief Create a Hdf5 Dataset savely.

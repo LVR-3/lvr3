@@ -267,25 +267,25 @@ std::optional<cv::Mat> HDF5Kernel::loadImage(
 
             if(dtype == HighFive::AtomicType<unsigned char>()){
                 ret = createMat<unsigned char>(dims);
-                dataset.read(reinterpret_cast<unsigned char*>(ret->data));
+                dataset.read_raw(reinterpret_cast<unsigned char*>(ret->data));
             } else if(dtype == HighFive::AtomicType<char>()) {
                 ret = createMat<char>(dims);
-                dataset.read(reinterpret_cast<char*>(ret->data));
+                dataset.read_raw(reinterpret_cast<char*>(ret->data));
             } else if(dtype == HighFive::AtomicType<unsigned short>()) {
                 ret = createMat<unsigned short>(dims);
-                dataset.read(reinterpret_cast<unsigned short*>(ret->data));
+                dataset.read_raw(reinterpret_cast<unsigned short*>(ret->data));
             } else if(dtype == HighFive::AtomicType<short>()) {
                 ret = createMat<short>(dims);
-                dataset.read(reinterpret_cast<short*>(ret->data));
+                dataset.read_raw(reinterpret_cast<short*>(ret->data));
             } else if(dtype == HighFive::AtomicType<int>()) {
                 ret = createMat<int>(dims);
-                dataset.read(reinterpret_cast<int*>(ret->data));
+                dataset.read_raw(reinterpret_cast<int*>(ret->data));
             } else if(dtype == HighFive::AtomicType<float>()) {
                 ret = createMat<float>(dims);
-                dataset.read(reinterpret_cast<float*>(ret->data));
+                dataset.read_raw(reinterpret_cast<float*>(ret->data));
             } else if(dtype == HighFive::AtomicType<double>()) {
                 ret = createMat<double>(dims);
-                dataset.read(reinterpret_cast<double*>(ret->data));
+                dataset.read_raw(reinterpret_cast<double*>(ret->data));
             } else {
                                 lvr2::log::warning("{}", "HDF5Kernel::loadImage(): Warning: Could'nt load blob. Datatype unkown.");
             }
