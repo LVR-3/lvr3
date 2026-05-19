@@ -45,6 +45,23 @@ set_tests_properties(lvr2_mesh_io_facade_header_compile
     LABELS "cpp;io;mesh;header"
 )
 
+add_executable(lvr2_mesh_io_disabled_backend_contract
+  test_mesh_io_disabled_backend.cpp
+  ${PROJECT_SOURCE_DIR}/src/liblvr2/io/MeshIOFacade.cpp
+)
+target_include_directories(lvr2_mesh_io_disabled_backend_contract PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/stubs
+  ${PROJECT_SOURCE_DIR}/include
+  ${PROJECT_SOURCE_DIR}/src/liblvr2/private
+)
+target_compile_features(lvr2_mesh_io_disabled_backend_contract PRIVATE cxx_std_20)
+target_link_libraries(lvr2_mesh_io_disabled_backend_contract PRIVATE tl::expected)
+add_test(NAME lvr2_mesh_io_disabled_backend_contract COMMAND lvr2_mesh_io_disabled_backend_contract)
+set_tests_properties(lvr2_mesh_io_disabled_backend_contract
+  PROPERTIES
+    LABELS "cpp;io;mesh;static"
+)
+
 add_executable(lvr2_static_assert_contracts_compile
   test_static_assert_contracts.cpp
 )
@@ -439,19 +456,23 @@ if(_LVR2_GTEST_MAIN_TARGET)
   target_compile_features(lvr2_smoke_gtest PRIVATE cxx_std_20)
   target_link_libraries(lvr2_smoke_gtest PRIVATE ${_LVR2_GTEST_MAIN_TARGET})
 
-  add_executable(lvr2_mesh_io_facade_gtest
-    test_mesh_io_facade.cpp
-    test_mesh_io_replacement.cpp
-  )
-  target_include_directories(lvr2_mesh_io_facade_gtest PRIVATE
-    ${PROJECT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}
-  )
-  target_compile_features(lvr2_mesh_io_facade_gtest PRIVATE cxx_std_20)
-  target_link_libraries(lvr2_mesh_io_facade_gtest PRIVATE
-    ${_LVR2_GTEST_MAIN_TARGET}
-    lvr2
-  )
+  if(LVR2_MESH_IO_ASSIMP_AVAILABLE)
+    add_executable(lvr2_mesh_io_facade_gtest
+      test_mesh_io_facade.cpp
+      test_mesh_io_replacement.cpp
+    )
+    target_include_directories(lvr2_mesh_io_facade_gtest PRIVATE
+      ${PROJECT_SOURCE_DIR}/include
+      ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    target_compile_features(lvr2_mesh_io_facade_gtest PRIVATE cxx_std_20)
+    target_link_libraries(lvr2_mesh_io_facade_gtest PRIVATE
+      ${_LVR2_GTEST_MAIN_TARGET}
+      lvr2
+    )
+  else()
+    message(STATUS "Private mesh asset I/O disabled; skipping mesh facade backend GoogleTest target.")
+  endif()
 
   add_executable(lvr2_pca_normals_gtest
     test_pca_normals.cpp
@@ -497,10 +518,12 @@ if(_LVR2_GTEST_MAIN_TARGET)
     PROPERTIES
       LABELS "cpp;smoke"
   )
-  gtest_discover_tests(lvr2_mesh_io_facade_gtest
-    PROPERTIES
-      LABELS "cpp;io;mesh"
-  )
+  if(TARGET lvr2_mesh_io_facade_gtest)
+    gtest_discover_tests(lvr2_mesh_io_facade_gtest
+      PROPERTIES
+        LABELS "cpp;io;mesh"
+    )
+  endif()
   gtest_discover_tests(lvr2_pca_normals_gtest
     PROPERTIES
       LABELS "cpp;geometry;normals"
@@ -514,23 +537,27 @@ if(_LVR2_GTEST_MAIN_TARGET)
       LABELS "cpp;io;scan;storage"
   )
 
-  add_executable(lvr2_mesh_io_assimp_gtest
-    test_mesh_io_assimp.cpp
-  )
-  target_include_directories(lvr2_mesh_io_assimp_gtest PRIVATE
-    ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/src/liblvr2/private
-    ${CMAKE_CURRENT_SOURCE_DIR}
-  )
-  target_compile_features(lvr2_mesh_io_assimp_gtest PRIVATE cxx_std_20)
-  target_link_libraries(lvr2_mesh_io_assimp_gtest PRIVATE
-    ${_LVR2_GTEST_MAIN_TARGET}
-    lvr2
-  )
-  gtest_discover_tests(lvr2_mesh_io_assimp_gtest
-    PROPERTIES
-      LABELS "cpp;io;mesh;assimp"
-  )
+  if(LVR2_MESH_IO_ASSIMP_AVAILABLE)
+    add_executable(lvr2_mesh_io_assimp_gtest
+      test_mesh_io_assimp.cpp
+    )
+    target_include_directories(lvr2_mesh_io_assimp_gtest PRIVATE
+      ${PROJECT_SOURCE_DIR}/include
+      ${PROJECT_SOURCE_DIR}/src/liblvr2/private
+      ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    target_compile_features(lvr2_mesh_io_assimp_gtest PRIVATE cxx_std_20)
+    target_link_libraries(lvr2_mesh_io_assimp_gtest PRIVATE
+      ${_LVR2_GTEST_MAIN_TARGET}
+      lvr2
+    )
+    gtest_discover_tests(lvr2_mesh_io_assimp_gtest
+      PROPERTIES
+        LABELS "cpp;io;mesh;assimp"
+    )
+  else()
+    message(STATUS "Private mesh asset I/O disabled; skipping Assimp mesh GoogleTest target.")
+  endif()
 else()
   message(STATUS "GoogleTest targets not available; skipping C++ smoke test target.")
 endif()

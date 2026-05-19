@@ -38,7 +38,7 @@ cmake --preset vcpkg-release
 cmake --build --preset build-vcpkg-release
 ```
 
-For distro/ROS packaging, vcpkg can be disabled with `cmake --preset system-optout-release` or `-DLVR2_WITH_VCPKG=OFF`; individual package escape hatches use `LVR2_USE_SYSTEM_<PKG>=ON` when mixing system packages with a vcpkg toolchain. See `migration_guide.md` for the vcpkg-first dependency policy.
+For distro/ROS packaging, vcpkg can be disabled with `cmake --preset system-optout-release` or `-DLVR2_WITH_VCPKG=OFF`; individual package escape hatches use `LVR2_USE_SYSTEM_<PKG>=ON` when mixing system packages with a vcpkg toolchain. The normal vcpkg smoke preset is shared-only so the required private mesh backend stays out of exported static targets. Static-first non-mesh/policy builds can use `cmake --preset vcpkg-static-release`, which sets `LVR2_ENABLE_MESH_ASSET_IO=OFF`, enables focused tests, disables tools/examples/GPU options, and keeps `lvr2::io::mesh` load/save calls as explicit `UnsupportedFormat` results. See `migration_guide.md` for the vcpkg-first dependency policy.
 
 ### Optional for NVIDIA graphics cards users
 

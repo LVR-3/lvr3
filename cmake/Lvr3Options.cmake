@@ -15,6 +15,12 @@ option(LVR2_WITH_CV_NONFREE "Use OpenCV non-free descriptors" OFF)
 #  - build shared libraries only when explicitly enabled
 option(LVR2_BUILD_STATIC_LIBS "Build static lvr2 libraries" ON)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+set(_LVR2_DEFAULT_MESH_ASSET_IO OFF)
+if(BUILD_SHARED_LIBS AND NOT LVR2_BUILD_STATIC_LIBS)
+  set(_LVR2_DEFAULT_MESH_ASSET_IO ON)
+endif()
+option(LVR2_ENABLE_MESH_ASSET_IO "Enable required private mesh asset I/O; shared-only to avoid exporting the private backend through static targets" ${_LVR2_DEFAULT_MESH_ASSET_IO})
+unset(_LVR2_DEFAULT_MESH_ASSET_IO)
 
 # Test and diagnostics options
 option(LVR2_BUILD_TESTS "Build lvr2 tests" OFF)
@@ -34,9 +40,9 @@ if(NOT LVR2_BUILD_STATIC_LIBS AND NOT BUILD_SHARED_LIBS)
   message(FATAL_ERROR "Both static/shared output are disabled. Set either LVR2_BUILD_STATIC_LIBS=ON or BUILD_SHARED_LIBS=ON.")
 endif()
 
-if(NOT BUILD_SHARED_LIBS OR LVR2_BUILD_STATIC_LIBS)
+if(LVR2_ENABLE_MESH_ASSET_IO AND (NOT BUILD_SHARED_LIBS OR LVR2_BUILD_STATIC_LIBS))
   message(FATAL_ERROR
-    "Required private mesh asset I/O is shared-only in this slice. Configure with "
-    "-DBUILD_SHARED_LIBS=ON -DLVR2_BUILD_STATIC_LIBS=OFF to avoid exporting "
-    "the private backend through static LVR targets.")
+    "Required private mesh asset I/O is shared-only. Configure with "
+    "-DBUILD_SHARED_LIBS=ON -DLVR2_BUILD_STATIC_LIBS=OFF, or set "
+    "-DLVR2_ENABLE_MESH_ASSET_IO=OFF for non-mesh static/policy builds.")
 endif()

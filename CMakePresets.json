@@ -21,6 +21,25 @@
       }
     },
     {
+      "name": "vcpkg-static-release",
+      "displayName": "vcpkg-first static/no mesh I/O (Release)",
+      "description": "Static-first configure lane with private mesh asset I/O disabled; use vcpkg-release for shared private mesh facade validation",
+      "inherits": "vcpkg-release",
+      "binaryDir": "${sourceDir}/build-vcpkg-static-release",
+      "cacheVariables": {
+        "BUILD_SHARED_LIBS": "OFF",
+        "LVR2_BUILD_STATIC_LIBS": "ON",
+        "LVR2_ENABLE_MESH_ASSET_IO": "OFF",
+        "LVR2_BUILD_TESTS": "ON",
+        "LVR2_BUILD_TOOLS": "OFF",
+        "LVR2_BUILD_EXAMPLES": "OFF",
+        "LVR2_WITH_CUDA": "OFF",
+        "LVR2_WITH_OPENCL": "OFF",
+        "LVR2_WITH_PCL": "OFF",
+        "LVR2_WITH_KINFU": "OFF"
+      }
+    },
+    {
       "name": "vcpkg-isolated-release",
       "displayName": "vcpkg-first isolated from system packages (Release)",
       "description": "Use vcpkg and disable CMake system/environment package paths except per-package LVR2_USE_SYSTEM_<PKG> opt-outs",
@@ -109,6 +128,11 @@
     {
       "name": "build-vcpkg-release",
       "configurePreset": "vcpkg-release",
+      "configuration": "Release"
+    },
+    {
+      "name": "build-vcpkg-static-release",
+      "configurePreset": "vcpkg-static-release",
       "configuration": "Release"
     },
     {

@@ -31,8 +31,28 @@ if(_ASSIMP_FIND EQUAL -1)
   message(FATAL_ERROR "CMake must require the private Assimp package internally for mesh asset I/O")
 endif()
 
+if(NOT _TOP_CMAKE MATCHES [[option\(LVR2_ENABLE_MESH_ASSET_IO]])
+  message(FATAL_ERROR "CMake must expose an LVR-owned mesh asset I/O switch instead of an Assimp-specific public option")
+endif()
+
+if(_TOP_CMAKE MATCHES [[option\(LVR2_ENABLE_MESH_ASSET_IO[^\n]*Assimp]])
+  message(FATAL_ERROR "LVR2_ENABLE_MESH_ASSET_IO help text must stay backend-neutral")
+endif()
+
+if(_PRESETS_JSON MATCHES [[vcpkg-static-release[^}]*Assimp]])
+  message(FATAL_ERROR "Static policy preset description must stay backend-neutral")
+endif()
+
 if(NOT _TOP_CMAKE MATCHES "Required private mesh asset I/O is shared-only")
   message(FATAL_ERROR "CMake must keep a clear privacy-first shared-only guard for required private mesh I/O")
+endif()
+
+if(NOT _TOP_CMAKE MATCHES "LVR2_ENABLE_MESH_ASSET_IO AND \\(NOT BUILD_SHARED_LIBS OR LVR2_BUILD_STATIC_LIBS\\)")
+  message(FATAL_ERROR "Static/shared guard must apply only when private mesh asset I/O is enabled")
+endif()
+
+if(NOT _TOP_CMAKE MATCHES "Private mesh asset I/O disabled")
+  message(FATAL_ERROR "CMake must document the non-mesh static/policy configure lane when private mesh asset I/O is disabled")
 endif()
 
 string(FIND "${_TOP_CMAKE}" "find_dependency(assimp" _ASSIMP_DEP_LOWER)
