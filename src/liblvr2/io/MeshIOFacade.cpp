@@ -139,6 +139,33 @@ bool isPrivateBackendSaveFormat(Format format)
 
 } // namespace
 
+#ifndef LVR2_MESH_IO_HAS_ASSIMP
+namespace detail
+{
+
+Result<MeshBufferPtr> loadWithPrivateMeshBackend(const std::filesystem::path& path, Format format)
+{
+    return makeUnexpected(ErrorCode::UnsupportedFormat,
+                          std::string("Mesh asset I/O for format '") + formatName(format) +
+                              "' requires a shared build with private mesh asset I/O enabled.",
+                          path,
+                          format);
+}
+
+Status saveWithPrivateMeshBackend(const MeshBufferPtr&,
+                                  const std::filesystem::path& path,
+                                  const SaveOptions& options)
+{
+    return makeStatusUnexpected(ErrorCode::UnsupportedFormat,
+                                std::string("Mesh asset I/O for format '") + formatName(options.format) +
+                                    "' requires a shared build with private mesh asset I/O enabled.",
+                                path,
+                                options.format);
+}
+
+} // namespace detail
+#endif
+
 Result<MeshBufferPtr> load(const std::filesystem::path& path, const LoadOptions& options)
 {
     const Format format = resolveFormat(path, options.format);
