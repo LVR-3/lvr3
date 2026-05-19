@@ -42,7 +42,7 @@
 
 
 // #include "lvr2/io/HDF5IO.hpp"
-// #include "lvr2/io/WaveformIO.hpp"
+// WaveformIO support is disabled; private adapter include intentionally omitted.
 #include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/io/mesh.hpp"
 #include "lvr2/types/Model.hpp"

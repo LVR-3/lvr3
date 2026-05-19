@@ -33,9 +33,12 @@
  */
 
 #include "lvr2/io/Tiles3dIO.hpp"
+#include "lvr2/io/modelio/B3dmIO.hpp"
 
 #include <Cesium3DTilesWriter/TilesetWriter.h>
 #include <lvr2/util/Logging.hpp>
+
+#include <utility>
 
 extern const char* VIEWER_HTML;
 
@@ -76,6 +79,20 @@ void indexToName(int i, std::string& name, size_t max)
         i %= RADIX;
     }
     name += (i < 10 ? '0' + i : 'a' + i - 10);
+}
+
+void writeB3dm(ModelPtr model, const std::string& filename, bool compress)
+{
+    B3dmIO io;
+    io.setModel(std::move(model));
+    if (compress)
+    {
+        io.saveCompressed(filename);
+    }
+    else
+    {
+        io.save(filename);
+    }
 }
 
 void writeTileset(Cesium3DTiles::Tileset& tileset, const std::string& outputDir, float scale)

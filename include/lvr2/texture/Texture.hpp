@@ -39,8 +39,8 @@
 #include <cstring>
 #include <math.h>
 #include <cstdio>
+#include <string>
 #include "lvr2/geometry/BoundingRectangle.hpp"
-#include "lvr2/io/modelio/PPMIO.hpp"
 
 namespace lvr2 
 {

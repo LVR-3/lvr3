@@ -39,6 +39,7 @@
 
 #include <array>
 #include <fstream>
+#include <iostream>
 #include <vector>
 
 using std::array;
@@ -62,7 +63,7 @@ inline std::ostream& dout()
     static bool isDebug = getenv("LVR2_MESH_DEBUG") != nullptr;
     static std::ofstream unopenedFile;
 
-    return isDebug ? cout : unopenedFile;
+    return isDebug ? std::cout : unopenedFile;
 }
 
 /**

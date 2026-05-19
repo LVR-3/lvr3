@@ -702,7 +702,7 @@ void UosIO::readOldFormat(ModelPtr &model, string dir, int first, int last, size
     }
 }
 
-Matrix4<Vec> UosIO::parseFrameFile(ifstream& frameFile)
+Matrix4<Vec> UosIO::parseFrameFile(std::ifstream& frameFile)
 {
     float m[16], color;
     while(frameFile.good())

@@ -32,6 +32,7 @@ system-optout-policy-smoke:
     - cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/system_optout_semantics.cmake
     - cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/no_vendored_dependencies.cmake
     - cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/no_public_assimp_leakage.cmake
+    - cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/removed_public_modelio_headers.cmake
     - cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/required_private_assimp_policy.cmake
     - cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/diagnostic_hooks_policy.cmake
     - cmake -DLVR2_SOURCE_DIR="$PWD" -P tests/packaging_policy.cmake
@@ -62,7 +63,7 @@ vcpkg-smoke-lyrical:
       export VCPKG_ROOT="$CI_PROJECT_DIR/.vcpkg"
       cmake --preset vcpkg-release -G Ninja $LVR3_CI_CMAKE_ARGS
       cmake --build --preset build-vcpkg-release --parallel 2 --target lvr2_mesh_io_facade_header_compile lvr2_mesh_io_disabled_backend_contract lvr2_static_assert_contracts_compile lvr2_storage_io_header_compile lvr2_storage_backend_span_contracts lvr2_mapped_file_contracts lvr2_cxx20_view_span_contracts lvr2_cli_parser_contracts
-      ctest --test-dir build-vcpkg-release --output-on-failure -R "lvr2_(mesh_io_facade_header_compile|mesh_io_disabled_backend_contract|static_assert_contracts_compile|storage_io_header_compile|storage_backend_span_contracts|storage_io_contract_guard|unified_io_namespace_guard|cxx20_view_span_contracts|cxx20_view_span_policy|cli_parser_contracts|removed_public_mesh_io_headers|no_public_assimp_leakage|required_private_assimp_policy|no_vendored_dependencies|no_boost_cli_parser_dependency|boost_stdlib_replacements|no_boost_dependency|mapped_file_contracts|system_optout_semantics|diagnostic_hooks_policy|packaging_policy|no_bundled_viewer|cmake_module_audit|source_include_root_guard|cmake_toolchain_contract|lvr3_package_identity_smoke|lyrical_cxx20_baseline|pytest_smoke)"
+      ctest --test-dir build-vcpkg-release --output-on-failure -R "lvr2_(mesh_io_facade_header_compile|mesh_io_disabled_backend_contract|static_assert_contracts_compile|storage_io_header_compile|storage_backend_span_contracts|storage_io_contract_guard|unified_io_namespace_guard|cxx20_view_span_contracts|cxx20_view_span_policy|cli_parser_contracts|removed_public_mesh_io_headers|removed_public_modelio_headers|no_public_assimp_leakage|required_private_assimp_policy|no_vendored_dependencies|no_boost_cli_parser_dependency|boost_stdlib_replacements|no_boost_dependency|mapped_file_contracts|system_optout_semantics|diagnostic_hooks_policy|packaging_policy|no_bundled_viewer|cmake_module_audit|source_include_root_guard|cmake_toolchain_contract|lvr3_package_identity_smoke|lyrical_cxx20_baseline|pytest_smoke)"
       cmake --build --preset build-vcpkg-release --parallel 2 --target lvr2
       cmake --install build-vcpkg-release --prefix "$PWD/build-vcpkg-release/install-smoke"
       vcpkg_prefix="$(find "$PWD/vcpkg_installed" "$PWD/build-vcpkg-release/vcpkg_installed" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -n 1)"
