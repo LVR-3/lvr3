@@ -1,9 +1,11 @@
 lvr2 Debian packaging notes
 ==========================
 
-The Debian packaging intentionally preserves the existing lvr2 source and
-binary package identities while the build also installs the lvr3 CMake package
-facade for CMake consumers.
+The ROS and CMake package identity is now lvr3, so Debian builds install
+`package.xml` under `share/lvr3` and provide the self-contained lvr3 CMake
+package. The Debian source and binary package names intentionally preserve the
+existing lvr2 identities as a compatibility surface until a separate Debian
+rename slice is accepted.
 
 Distributor builds use system packages instead of the default vcpkg-first
 workflow by passing `-DLVR2_WITH_VCPKG=OFF`. Mesh asset I/O uses the required

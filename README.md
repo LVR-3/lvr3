@@ -327,13 +327,15 @@ sudo make install
 
 ## Use in your own CMake project
 
-After installation, you can include the lvr2 project in your own CMake project as follows:
+After installation, you can include the lvr3 project in your own CMake project as follows:
 
 ```cmake
-find_package(lvr2 REQUIRED)
-add_executable(my_own_exec my_own_code.cpp)
-target_link_libraries(my_app lvr2::lvr2)
+find_package(lvr3 REQUIRED)
+add_executable(my_app my_own_code.cpp)
+target_link_libraries(my_app lvr3::lvr3)
 ```
+
+The legacy `find_package(lvr2)` and `lvr2::lvr2` aggregate target remain available as compatibility aliases during migration.
 
 # Citation
 

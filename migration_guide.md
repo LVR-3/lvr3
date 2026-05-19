@@ -82,7 +82,7 @@ public:
 
 ## lvr3 package identity
 
-`find_package(lvr3)` is now available as a compatibility package identity that reuses the existing `lvr2` install/export.
+`lvr3` is now the canonical CMake project, ROS package, install-share, CPack, and CMake package identity. Compatibility CMake files still expose the historical `lvr2` package and targets for existing consumers.
 
 Example:
 
@@ -100,15 +100,14 @@ target_link_libraries(my_app PRIVATE lvr2::lvr2)
 
 Compatibility guarantees:
 
-- Existing `lvr2` install tree and exported target names are unchanged.
-- `find_package(lvr2)` and `lvr2::lvr2` continue to work unchanged.
-- `find_package(lvr3)` loads the same installed artifacts and exposes:
-  - `lvr3::lvr3` as the canonical alias to the aggregate `lvr2::lvr2` target.
+- `project(lvr3)`, `package.xml` (`<name>lvr3</name>`), `share/lvr3`, CPack archives, and `find_package(lvr3)` now agree on the `lvr3` identity.
+- `find_package(lvr2)` and `lvr2::lvr2` continue to work as explicit CMake compatibility surfaces.
+- `find_package(lvr3)` is self-contained and imports the installed target export before exposing:
+  - `lvr3::lvr3` as the canonical alias to the aggregate `lvr2::lvr2` compatibility target.
   - `lvr3::lvr3_static` when a static target is installed.
 - `LVR3_USE_STATIC_LIBS` mirrors `LVR2_USE_STATIC_LIBS` for `LVR3_LIBRARIES`; the canonical target remains the aggregate target.
 - Only audited compatibility CMake find modules remain installed; `lvr3` config also exposes the remaining module lookup path so `find_dependency`-based consumers keep working.
-- No package names, install directories (`share/lvr2`, `package.xml`), C++ namespaces,
-  CLI/tool names, options, or Debian package names are changed.
+- C++ namespace, include directory, CLI/tool names, CMake option names, and Debian binary package names remain `lvr2` compatibility surfaces until later ADR-backed rename slices.
 
 ## Guarded vcpkg presets
 
@@ -186,7 +185,7 @@ The Qt/VTK `lvr2_viewer` and the ncurses/Embree `lvr2_ascii_viewer` are no longe
 
 ## ROS and Debian packaging
 
-ROS and Debian packaging currently preserve the historical `lvr2` identity: `package.xml`, Debian source and binary package names, CLI/tool names, C++ namespaces, and `share/lvr2` installation are unchanged. The `lvr3` identity is available through the installed CMake package facade for CMake consumers.
+ROS package metadata now uses the canonical `lvr3` identity: `package.xml` is named `lvr3` and installs under `share/lvr3`. CPack archive names also use `lvr3`. The Debian source and binary package names, CLI/tool names, C++ namespaces, include directory, and CMake option names remain `lvr2` compatibility surfaces until separate ADR-backed rename slices.
 
 Debian packaging uses the distributor/system-package escape hatch instead of the vcpkg-first default:
 

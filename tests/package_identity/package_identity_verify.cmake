@@ -111,6 +111,12 @@ endif()
   string(APPEND _TARGETS_CONTENT "${_COMPONENT_TARGETS_CONTENT}")
 
   file(WRITE "${_LVR2_CONFIG_DIR}/lvr2-targets.cmake" "${_TARGETS_CONTENT}")
+  file(WRITE "${_LVR3_CONFIG_DIR}/lvr2-targets.cmake" "${_TARGETS_CONTENT}")
+
+  foreach(_config_dir IN ITEMS "${_LVR2_CONFIG_DIR}" "${_LVR3_CONFIG_DIR}")
+    file(WRITE "${_config_dir}/lvr-dependencies.cmake"
+"include(CMakeFindDependencyMacro)\nfind_dependency(tl-expected CONFIG)\nfind_dependency(spdlog CONFIG)\nlist(APPEND CMAKE_MODULE_PATH \"${_config_dir}/Modules\")\n")
+  endforeach()
 
   file(WRITE "${_LVR2_CONFIG_DIR}/lvr2-config-version.cmake"
 "set(PACKAGE_VERSION \"25.2.3\")\nset(PACKAGE_VERSION_EXACT TRUE)\nset(PACKAGE_VERSION_COMPATIBLE TRUE)\n")
@@ -231,6 +237,15 @@ if(DEFINED ENV{LVR2_PACKAGE_IDENTITY_INSTALL_PREFIX} AND NOT _ENV_PREFIX STREQUA
   set(_PREFIX_REQUESTED TRUE)
   if(NOT IS_DIRECTORY "${_ENV_PREFIX}")
     message(FATAL_ERROR "LVR2_PACKAGE_IDENTITY_INSTALL_PREFIX is set but '${_ENV_PREFIX}' does not exist.")
+  endif()
+  if(NOT EXISTS "${_ENV_PREFIX}/share/lvr3/package.xml")
+    message(FATAL_ERROR "Installed prefix must contain canonical ROS package metadata at share/lvr3/package.xml")
+  endif()
+  if(EXISTS "${_ENV_PREFIX}/share/lvr2/package.xml")
+    message(FATAL_ERROR "Installed prefix must not install lvr3 package.xml under legacy share/lvr2")
+  endif()
+  if(NOT EXISTS "${_ENV_PREFIX}/lib/cmake/lvr3/lvr2-targets.cmake")
+    message(FATAL_ERROR "Installed lvr3 config must include its local compatibility target export")
   endif()
   list(APPEND _PACKAGE_PREFIXES "${_ENV_PREFIX}")
   list(APPEND _PACKAGE_SHAPES "requested")

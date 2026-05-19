@@ -68,6 +68,7 @@ set(_required_project_cmake_files
   cmake/modules/README.md
   cmake/lvr2-config.cmake.in
   cmake/lvr3-config.cmake.in
+  cmake/lvr-dependencies.cmake.in
   cmake/lvr2-uninstall.cmake.in
   src/tools/CMakeLists.txt
   docs/cmake/module-audit.md
@@ -132,22 +133,22 @@ foreach(_required_dependency_token IN ITEMS
   endif()
 endforeach()
 
-file(READ "${LVR2_SOURCE_DIR}/cmake/lvr2-config.cmake.in" _lvr2_config_template)
+file(READ "${LVR2_SOURCE_DIR}/cmake/lvr-dependencies.cmake.in" _lvr_dependencies_template)
 foreach(_required_export_dependency_token IN ITEMS
     "find_dependency(draco CONFIG)"
     "find_dependency(OpenCL)")
-  string(FIND "${_lvr2_config_template}" "${_required_export_dependency_token}" _required_export_dependency_token_pos)
+  string(FIND "${_lvr_dependencies_template}" "${_required_export_dependency_token}" _required_export_dependency_token_pos)
   if(_required_export_dependency_token_pos LESS 0)
-    message(FATAL_ERROR "Optional config/standard dependency is missing from installed package config: ${_required_export_dependency_token}")
+    message(FATAL_ERROR "Optional config/standard dependency is missing from installed package dependency helper: ${_required_export_dependency_token}")
   endif()
 endforeach()
-string(FIND "${_lvr2_config_template}" "include(\${CMAKE_CURRENT_LIST_DIR}/lvr2-targets.cmake)" _targets_include_pos)
-foreach(_required_pre_target_dependency_token IN ITEMS
-    "find_dependency(draco CONFIG)"
-    "find_dependency(OpenCL)")
-  string(FIND "${_lvr2_config_template}" "${_required_pre_target_dependency_token}" _pre_target_dependency_pos)
-  if(_targets_include_pos LESS 0 OR _pre_target_dependency_pos GREATER _targets_include_pos)
-    message(FATAL_ERROR "Optional imported-target dependency must be found before lvr2-targets.cmake: ${_required_pre_target_dependency_token}")
+
+foreach(_config_template IN ITEMS cmake/lvr2-config.cmake.in cmake/lvr3-config.cmake.in)
+  file(READ "${LVR2_SOURCE_DIR}/${_config_template}" _config_template_text)
+  string(FIND "${_config_template_text}" "include(\${CMAKE_CURRENT_LIST_DIR}/lvr-dependencies.cmake)" _dependency_include_pos)
+  string(FIND "${_config_template_text}" "include(\${CMAKE_CURRENT_LIST_DIR}/lvr2-targets.cmake)" _targets_include_pos)
+  if(_dependency_include_pos LESS 0 OR _targets_include_pos LESS 0 OR _dependency_include_pos GREATER _targets_include_pos)
+    message(FATAL_ERROR "${_config_template} must include dependency helper before lvr2-targets.cmake")
   endif()
 endforeach()
 
