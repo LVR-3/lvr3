@@ -150,7 +150,7 @@ public:
      * @return          A matrix representing the final transformation
      *                  from a frame file
      */
-    Matrix4<Vec> parseFrameFile(ifstream& frameFile);
+    Matrix4<Vec> parseFrameFile(std::ifstream& frameFile);
 
 private:
 

@@ -37,6 +37,7 @@
 
 #include "lvr2/texture/Texture.hpp"
 #include "lvr2/display/GlTexture.hpp"
+#include "lvr2/io/modelio/PPMIO.hpp"
 
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgcodecs.hpp>

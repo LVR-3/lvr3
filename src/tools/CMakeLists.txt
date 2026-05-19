@@ -49,7 +49,10 @@ endif(LVR2_BUILD_TOOLS_EXPERIMENTAL)
 
 function(lvr2_tool_uses_private_library_headers target_name)
   if(TARGET ${target_name})
-    target_include_directories(${target_name} PRIVATE "${PROJECT_SOURCE_DIR}/src/liblvr2/private")
+    get_target_property(_lvr2_tool_type ${target_name} TYPE)
+    if(NOT _lvr2_tool_type STREQUAL "INTERFACE_LIBRARY")
+      target_include_directories(${target_name} PRIVATE "${PROJECT_SOURCE_DIR}/src/liblvr2/private")
+    endif()
   endif()
 endfunction()
 
@@ -66,6 +69,7 @@ foreach(_lvr2_private_header_tool IN ITEMS
     lvr2_gs_reconstruction
     lvr2_hdf5_mesh_tool
     lvr2_hdf5tool
+    lvr2_mesh_reduce
     lvr2_image_normals
     lvr2_kaboom
     lvr2_largescale_reconstruct

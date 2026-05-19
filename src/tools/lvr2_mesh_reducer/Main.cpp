@@ -40,6 +40,7 @@ using std::unique_ptr;
 using std::make_unique;
 
 #include "lvr2/types/Model.hpp"
+#include "lvr2/io/ModelFactory.hpp"
 #include "lvr2/geometry/HalfEdgeMesh.hpp"
 #include "lvr2/geometry/PMPMesh.hpp"
 #include "lvr2/algorithm/FinalizeAlgorithms.hpp"

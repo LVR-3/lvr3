@@ -314,6 +314,14 @@ Current mesh facade coverage routes OBJ, PLY, STL, DAE/Collada, glTF, and glb me
 
 Replacement coverage is guarded by `lvr2_removed_public_mesh_io_headers`, `lvr2_no_legacy_mesh_facade_usage`, `lvr2_required_private_assimp_policy`, and the mesh facade GoogleTest coverage (`lvr2_mesh_io_facade_gtest`, including replacement tests).
 
+## Public `modelio` reader removal
+
+The remaining low-level `modelio` reader/writer headers are no longer installed as public C++ API. This includes `ModelIOBase`, `AsciiIO`, `DatIO`, `LasIO`, `PCDIO`, `PPMIO`, `UosIO`, `GeoTIFFIO`, optional `RdbxIO`/`RxpIO`, and 3D Tiles/Draco helpers such as `B3dmIO`, `DrcIO`, `DracoEncoder`, and `DracoDecoder`.
+
+These classes are private in-tree adapters for current tools and compatibility bridges only. Public headers no longer include `<lvr2/io/modelio/...>`, and downstream code must not include those headers directly. Use `<lvr2/io/mesh.hpp>` / `lvr2::io::mesh` for mesh assets and the `lvr2::io::scan`/`lvr2::io::storage` ProjectStore APIs for scan-project storage. Point-cloud/raster-specific facade work remains future work; until then, the bundled tools preserve their CLI behavior through private adapters rather than a public `modelio` namespace.
+
+The public removal is guarded by `lvr2_removed_public_modelio_headers` in addition to the mesh-facade and unified-I/O namespace guards.
+
 ## Required private Assimp adapter
 
 Assimp is required internally for mesh asset I/O, but it is not exposed as an LVR build option. The backend is intentionally shared-only to keep Assimp out of exported static target interfaces:

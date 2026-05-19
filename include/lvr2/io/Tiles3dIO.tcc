@@ -36,8 +36,6 @@
 
 #include "Tiles3dIO.hpp"
 
-#include "lvr2/io/modelio/B3dmIO.hpp"
-
 #include <filesystem>
 
 #include <Cesium3DTiles/Tileset.h>
@@ -52,6 +50,7 @@ namespace Tiles3dIO_internal
 void convertBoundingBox(const pmp::BoundingBox& in, Cesium3DTiles::BoundingVolume& out);
 void indexToName(int i, std::string& name, size_t max);
 void writeTileset(Cesium3DTiles::Tileset& tileset, const std::string& outputDir, float scale);
+void writeB3dm(ModelPtr model, const std::string& filename, bool compress);
 
 }
 
@@ -132,16 +131,7 @@ void Tiles3dIO<BaseVecT>::writeTiles(Cesium3DTiles::Tile& tile,
         model->m_mesh = pmp_mesh->toMeshBuffer_const();
         pmp_mesh.reset();
 
-        B3dmIO io;
-        io.setModel(model);
-        if (compress)
-        {
-            io.saveCompressed(outputDir + filename);
-        }
-        else
-        {
-            io.save(outputDir + filename);
-        }
+        Tiles3dIO_internal::writeB3dm(model, outputDir + filename, compress);
         ++progress;
     }
 }

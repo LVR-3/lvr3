@@ -42,9 +42,9 @@ using std::ifstream;
 
 #include <filesystem>
 
-#include "lvr2/io/WaveformIO.hpp"
-#include "lvr2/io/Progress.hpp"
-#include "lvr2/io/Timestamp.hpp"
+#include "lvr2/io/modelio/WaveformIO.hpp"
+#include "lvr2/util/Progress.hpp"
+#include "lvr2/util/Timestamp.hpp"
 
 namespace lvr2
 {

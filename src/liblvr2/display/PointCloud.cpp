@@ -37,6 +37,7 @@
 #include "lvr2/types/Model.hpp"
 #include "lvr2/util/ColorGradient.hpp"
 
+#include <iostream>
 #include <string.h>
 
 namespace lvr2
@@ -137,7 +138,7 @@ void PointCloud::updateDisplayLists(){
 
     // Check for existing display list for normal rendering
     if(m_listIndex != -1) {
-        cout<<"PointCloud::initDisplayList() delete display list"<<endl;
+        std::cout << "PointCloud::initDisplayList() delete display list" << std::endl;
         glDeleteLists(m_listIndex,1);
     }
 
