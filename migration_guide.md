@@ -126,7 +126,7 @@ cmake --preset vcpkg-system-tbb-tl-release
 
 Vendored dependencies under `ext/` were removed. `spdlog`, `HighFive`, `rply`, and `LASlib` now come from packages; `spdmon` was replaced by a small LVR-owned progress monitor implementation. The old `ExternalProject_Add` download path for 3D Tiles was also removed; keep `LVR2_WITH_3DTILES=OFF` until a package-backed Cesium Native path is added.
 
-Assimp is now part of the default vcpkg manifest dependency set because mesh asset I/O requires the private backend. Optional vcpkg features must be requested alongside the matching CMake options for other packages. For example, use `-DVCPKG_MANIFEST_FEATURES=pcl -DLVR2_WITH_PCL=ON` for PCL tools and `-DVCPKG_MANIFEST_FEATURES=draco` for optional Draco support.
+Assimp is now part of the default vcpkg manifest dependency set because mesh asset I/O requires the private backend. Optional vcpkg features must be requested alongside the matching CMake options for other packages. For example, use `-DVCPKG_MANIFEST_FEATURES=pcl -DLVR2_WITH_PCL=ON` for PCL tools and `-DVCPKG_MANIFEST_FEATURES=draco` for optional Draco support. On Linux, OpenGL remains a host SDK dependency even in vcpkg-first builds; install `libgl-dev` (or the distro equivalent). The vcpkg presets enable `LVR2_USE_SYSTEM_OPENGL=ON` for that platform SDK lookup while keeping the rest of the dependency path vcpkg-first.
 
 `LVR2_IGNORE_SYSTEM_PACKAGES` defaults to `ON` when vcpkg is enabled. To intentionally use a system package with the vcpkg toolchain, enable that package's explicit escape hatch. The matching vcpkg installed prefix is ignored for that package lookup so the system package wins instead of acting only as a fallback:
 
@@ -144,7 +144,7 @@ cmake --preset system-optout-release
 cmake -S . -B build-system -DLVR2_WITH_VCPKG=OFF
 ```
 
-Common package escape hatches follow the `LVR2_USE_SYSTEM_<PKG>` pattern, including `LVR2_USE_SYSTEM_TL_EXPECTED`, `LVR2_USE_SYSTEM_TBB`, `LVR2_USE_SYSTEM_SPDLOG`, `LVR2_USE_SYSTEM_HIGHFIVE`, `LVR2_USE_SYSTEM_RPLY`, `LVR2_USE_SYSTEM_LASLIB`, `LVR2_USE_SYSTEM_OPENCV`, `LVR2_USE_SYSTEM_HDF5`, and `LVR2_USE_SYSTEM_EIGEN3`. `CMakeSettings.json` is still kept for compatibility. Assimp is required privately for mesh I/O and is intentionally not exposed as a package-specific LVR option.
+Common package escape hatches follow the `LVR2_USE_SYSTEM_<PKG>` pattern, including `LVR2_USE_SYSTEM_TL_EXPECTED`, `LVR2_USE_SYSTEM_TBB`, `LVR2_USE_SYSTEM_SPDLOG`, `LVR2_USE_SYSTEM_HIGHFIVE`, `LVR2_USE_SYSTEM_RPLY`, `LVR2_USE_SYSTEM_LASLIB`, `LVR2_USE_SYSTEM_OPENGL`, `LVR2_USE_SYSTEM_OPENCV`, `LVR2_USE_SYSTEM_HDF5`, and `LVR2_USE_SYSTEM_EIGEN3`. `CMakeSettings.json` is still kept for compatibility. Assimp is required privately for mesh I/O and is intentionally not exposed as a package-specific LVR option.
 
 ## Format-style logging facade
 

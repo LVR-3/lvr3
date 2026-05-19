@@ -16,6 +16,7 @@
         "BUILD_SHARED_LIBS": "ON",
         "LVR2_BUILD_STATIC_LIBS": "OFF",
         "LVR2_WITH_VCPKG": "ON",
+        "LVR2_USE_SYSTEM_OPENGL": "ON",
         "LVR2_VCPKG_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
       }
     },
