@@ -1,7 +1,7 @@
 # Verifies a single package identity load order from an installed prefix.
 
 cmake_minimum_required(VERSION 4.2)
-project(PackageIdentityLoadOrder CXX)
+project(PackageIdentityLoadOrder C CXX)
 
 if(NOT DEFINED CHECK_PREFIX OR CHECK_PREFIX STREQUAL "")
   message(FATAL_ERROR "CHECK_PREFIX must be provided")
@@ -20,7 +20,7 @@ set(_LVR_COMPONENTS geometry io reconstruction texture registration display)
 set(_LVR_UNKNOWN_COMPONENT definitely_missing)
 
 if(CHECK_ORDER STREQUAL "legacy")
-  find_package(lvr2 CONFIG REQUIRED COMPONENTS ${_LVR_COMPONENTS} NO_DEFAULT_PATH)
+  find_package(lvr2 CONFIG REQUIRED COMPONENTS ${_LVR_COMPONENTS})
 
   if(NOT TARGET lvr2::lvr2)
     message(FATAL_ERROR "find_package(lvr2) did not provide lvr2::lvr2")
@@ -30,7 +30,7 @@ if(CHECK_ORDER STREQUAL "legacy")
   endif()
 
 elseif(CHECK_ORDER STREQUAL "modern")
-  find_package(lvr3 CONFIG REQUIRED COMPONENTS ${_LVR_COMPONENTS} NO_DEFAULT_PATH)
+  find_package(lvr3 CONFIG REQUIRED COMPONENTS ${_LVR_COMPONENTS})
 
   if(NOT TARGET lvr3::lvr3)
     message(FATAL_ERROR "find_package(lvr3) did not provide lvr3::lvr3")
@@ -40,8 +40,8 @@ elseif(CHECK_ORDER STREQUAL "modern")
   endif()
 
 elseif(CHECK_ORDER STREQUAL "legacy_then_modern")
-  find_package(lvr2 CONFIG REQUIRED COMPONENTS ${_LVR_COMPONENTS} NO_DEFAULT_PATH)
-  find_package(lvr3 CONFIG REQUIRED COMPONENTS ${_LVR_COMPONENTS} NO_DEFAULT_PATH)
+  find_package(lvr2 CONFIG REQUIRED COMPONENTS ${_LVR_COMPONENTS})
+  find_package(lvr3 CONFIG REQUIRED COMPONENTS ${_LVR_COMPONENTS})
 
   if(NOT TARGET lvr2::lvr2)
     message(FATAL_ERROR "find_package(lvr2) did not provide lvr2::lvr2")
@@ -51,8 +51,8 @@ elseif(CHECK_ORDER STREQUAL "legacy_then_modern")
   endif()
 
 elseif(CHECK_ORDER STREQUAL "modern_then_legacy")
-  find_package(lvr3 CONFIG REQUIRED COMPONENTS ${_LVR_COMPONENTS} NO_DEFAULT_PATH)
-  find_package(lvr2 CONFIG REQUIRED COMPONENTS ${_LVR_COMPONENTS} NO_DEFAULT_PATH)
+  find_package(lvr3 CONFIG REQUIRED COMPONENTS ${_LVR_COMPONENTS})
+  find_package(lvr2 CONFIG REQUIRED COMPONENTS ${_LVR_COMPONENTS})
 
   if(NOT TARGET lvr3::lvr3)
     message(FATAL_ERROR "find_package(lvr3) did not provide lvr3::lvr3")
@@ -62,7 +62,7 @@ elseif(CHECK_ORDER STREQUAL "modern_then_legacy")
   endif()
 
 elseif(CHECK_ORDER STREQUAL "legacy_unknown_quiet")
-  find_package(lvr2 CONFIG QUIET COMPONENTS ${_LVR_UNKNOWN_COMPONENT} NO_DEFAULT_PATH)
+  find_package(lvr2 CONFIG QUIET COMPONENTS ${_LVR_UNKNOWN_COMPONENT})
   if(lvr2_FOUND OR LVR2_FOUND)
     message(FATAL_ERROR "find_package(lvr2 QUIET COMPONENTS ${_LVR_UNKNOWN_COMPONENT}) should report not found")
   endif()
@@ -73,7 +73,7 @@ elseif(CHECK_ORDER STREQUAL "legacy_unknown_quiet")
   return()
 
 elseif(CHECK_ORDER STREQUAL "modern_unknown_quiet")
-  find_package(lvr3 CONFIG QUIET COMPONENTS ${_LVR_UNKNOWN_COMPONENT} NO_DEFAULT_PATH)
+  find_package(lvr3 CONFIG QUIET COMPONENTS ${_LVR_UNKNOWN_COMPONENT})
   if(lvr3_FOUND OR LVR3_FOUND)
     message(FATAL_ERROR "find_package(lvr3 QUIET COMPONENTS ${_LVR_UNKNOWN_COMPONENT}) should report not found")
   endif()
@@ -84,7 +84,7 @@ elseif(CHECK_ORDER STREQUAL "modern_unknown_quiet")
   return()
 
 elseif(CHECK_ORDER STREQUAL "legacy_unknown_optional")
-  find_package(lvr2 CONFIG REQUIRED OPTIONAL_COMPONENTS ${_LVR_UNKNOWN_COMPONENT} NO_DEFAULT_PATH)
+  find_package(lvr2 CONFIG REQUIRED OPTIONAL_COMPONENTS ${_LVR_UNKNOWN_COMPONENT})
   if(NOT lvr2_FOUND OR NOT LVR2_FOUND)
     message(FATAL_ERROR "find_package(lvr2 OPTIONAL_COMPONENTS ${_LVR_UNKNOWN_COMPONENT}) should keep the package found")
   endif()
@@ -95,7 +95,7 @@ elseif(CHECK_ORDER STREQUAL "legacy_unknown_optional")
   return()
 
 elseif(CHECK_ORDER STREQUAL "modern_unknown_optional")
-  find_package(lvr3 CONFIG REQUIRED OPTIONAL_COMPONENTS ${_LVR_UNKNOWN_COMPONENT} NO_DEFAULT_PATH)
+  find_package(lvr3 CONFIG REQUIRED OPTIONAL_COMPONENTS ${_LVR_UNKNOWN_COMPONENT})
   if(NOT lvr3_FOUND OR NOT LVR3_FOUND)
     message(FATAL_ERROR "find_package(lvr3 OPTIONAL_COMPONENTS ${_LVR_UNKNOWN_COMPONENT}) should keep the package found")
   endif()
@@ -106,11 +106,11 @@ elseif(CHECK_ORDER STREQUAL "modern_unknown_optional")
   return()
 
 elseif(CHECK_ORDER STREQUAL "legacy_unknown_required")
-  find_package(lvr2 CONFIG REQUIRED COMPONENTS ${_LVR_UNKNOWN_COMPONENT} NO_DEFAULT_PATH)
+  find_package(lvr2 CONFIG REQUIRED COMPONENTS ${_LVR_UNKNOWN_COMPONENT})
   message(FATAL_ERROR "find_package(lvr2 REQUIRED COMPONENTS ${_LVR_UNKNOWN_COMPONENT}) unexpectedly succeeded")
 
 elseif(CHECK_ORDER STREQUAL "modern_unknown_required")
-  find_package(lvr3 CONFIG REQUIRED COMPONENTS ${_LVR_UNKNOWN_COMPONENT} NO_DEFAULT_PATH)
+  find_package(lvr3 CONFIG REQUIRED COMPONENTS ${_LVR_UNKNOWN_COMPONENT})
   message(FATAL_ERROR "find_package(lvr3 REQUIRED COMPONENTS ${_LVR_UNKNOWN_COMPONENT}) unexpectedly succeeded")
 
 else()

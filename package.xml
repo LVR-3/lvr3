@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>lvr2</name>
+  <name>lvr3</name>
   <version>25.2.3</version>
   <description>
 The Las Vegas Surface Reconstruction Toolkit is an Open Source toolkit to reconstruct triangle meshes 

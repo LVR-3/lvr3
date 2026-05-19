@@ -22,16 +22,28 @@ install(EXPORT lvr2-targets
     NAMESPACE lvr2::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2)
 
+# The lvr3 package is canonical but intentionally imports the legacy lvr2 target
+# export names as compatibility targets before adding lvr3 aliases.
+install(EXPORT lvr2-targets
+    FILE lvr2-targets.cmake
+    NAMESPACE lvr2::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr3)
+
 write_basic_package_version_file(
   ${CMAKE_CURRENT_BINARY_DIR}/lvr2-config-version.cmake
-  VERSION ${lvr2_VERSION}
+  VERSION ${PROJECT_VERSION}
   COMPATIBILITY SameMajorVersion
 )
 
 write_basic_package_version_file(
   ${CMAKE_CURRENT_BINARY_DIR}/lvr3-config-version.cmake
-  VERSION ${lvr2_VERSION}
+  VERSION ${PROJECT_VERSION}
   COMPATIBILITY SameMajorVersion
+)
+
+configure_file(cmake/lvr-dependencies.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/lvr-dependencies.cmake
+    @ONLY
 )
 
 configure_package_config_file(cmake/lvr2-config.cmake.in
@@ -48,6 +60,7 @@ install(
   FILES
     ${CMAKE_CURRENT_BINARY_DIR}/lvr2-config.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/lvr2-config-version.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/lvr-dependencies.cmake
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr2
 )
 
@@ -55,11 +68,12 @@ install(
   FILES
     ${CMAKE_CURRENT_BINARY_DIR}/lvr3-config.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/lvr3-config-version.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/lvr-dependencies.cmake
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lvr3
 )
 
-# install package.xml for ROS
-install(FILES package.xml DESTINATION share/lvr2)
+# install package.xml for ROS under the canonical package identity.
+install(FILES package.xml DESTINATION share/lvr3)
 
 install(FILES
     ${_LVR_CMAKE_MODULES}

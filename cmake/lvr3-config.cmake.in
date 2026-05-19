@@ -1,8 +1,10 @@
 # -----------------------------------------------------------------
 # lvr3's cmake configuration
 #
-# This package preserves the existing installed artifacts and targets of lvr2,
-# while exposing the modern package identity lvr3.
+# The canonical package identity is lvr3. The installed target export still
+# imports legacy lvr2 target names as a documented compatibility exception;
+# this config then exposes lvr3 aliases over the same aggregate/component
+# targets.
 #
 # Provided options:
 # - LVR3_USE_STATIC_LIBS to prefer the static library of lvr (if built)
@@ -14,29 +16,22 @@
 # -----------------------------------------------------------------
 @PACKAGE_INIT@
 
-include(CMakeFindDependencyMacro)
-find_dependency(tl-expected CONFIG)
-find_dependency(spdlog CONFIG)
-
-# Import from existing lvr2 package install if available in the same prefix.
-set(_LVR3_LVR2_CONFIG_DIR "${CMAKE_CURRENT_LIST_DIR}/../lvr2")
-if(NOT TARGET lvr2::lvr2 AND NOT TARGET lvr2::lvr2_static)
-  if(EXISTS "${_LVR3_LVR2_CONFIG_DIR}/lvr2-config.cmake")
-    include("${_LVR3_LVR2_CONFIG_DIR}/lvr2-config.cmake")
-  else()
-    find_dependency(lvr2)
-  endif()
-endif()
+include(${CMAKE_CURRENT_LIST_DIR}/lvr3-config-version.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/lvr-dependencies.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/lvr2-targets.cmake)
 
 if(NOT TARGET lvr2::lvr2 AND NOT TARGET lvr2::lvr2_static)
-  message(FATAL_ERROR "Could not find lvr2 package while configuring lvr3 compatibility facade.")
+  message(FATAL_ERROR "The lvr3 package could not import its compatibility lvr2 target export.")
 endif()
 
-if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/Modules")
-  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/Modules")
+if(NOT DEFINED LVR2_INCLUDE_DIRS)
+  set(LVR2_INCLUDE_DIRS @LVR2_INSTALL_INCLUDE_DIRS@)
 endif()
-if(EXISTS "${_LVR3_LVR2_CONFIG_DIR}/Modules")
-  list(APPEND CMAKE_MODULE_PATH "${_LVR3_LVR2_CONFIG_DIR}/Modules")
+if(DEFINED LIBFREENECT_INCLUDE_DIRS)
+  list(APPEND LVR2_INCLUDE_DIRS ${LIBFREENECT_INCLUDE_DIRS})
+endif()
+if(NOT DEFINED LVR2_DEFINITIONS)
+  set(LVR2_DEFINITIONS @LVR2_DEFINITIONS@)
 endif()
 
 set(LVR3_INCLUDE_DIRS "${LVR2_INCLUDE_DIRS}")
@@ -51,6 +46,19 @@ if(TARGET lvr2::lvr2_static)
     set(_LVR3_STATIC_ALIAS_TARGET ${_LVR3_LVR2_STATIC_ALIASED})
   else()
     set(_LVR3_STATIC_ALIAS_TARGET lvr2::lvr2_static)
+  endif()
+endif()
+
+# Static-only installs historically export the aggregate as lvr2::lvr2. Keep
+# the explicit lvr2::lvr2_static and lvr3::lvr3_static aliases available.
+if(NOT _LVR3_INSTALL_HAS_STATIC_TARGET AND TARGET lvr2::lvr2)
+  get_target_property(_LVR3_AGGREGATE_TYPE lvr2::lvr2 TYPE)
+  if(_LVR3_AGGREGATE_TYPE STREQUAL "STATIC_LIBRARY")
+    if(NOT TARGET lvr2::lvr2_static)
+      add_library(lvr2::lvr2_static ALIAS lvr2::lvr2)
+    endif()
+    set(_LVR3_INSTALL_HAS_STATIC_TARGET TRUE)
+    set(_LVR3_STATIC_ALIAS_TARGET lvr2::lvr2)
   endif()
 endif()
 
@@ -71,9 +79,9 @@ else()
   message(FATAL_ERROR "No installed lvr3 library target is available.")
 endif()
 
-# The canonical modern target mirrors the legacy aggregate target. In dual
-# static/shared installs this keeps lvr3::lvr3 aligned with lvr2::lvr2 while
-# LVR3_LIBRARIES can still honor the static preference variable below.
+# The canonical modern target mirrors the legacy aggregate target while the
+# C++ namespace, include tree, tool names, and lvr2 target names remain in a
+# deliberate compatibility window.
 if(NOT TARGET lvr3::lvr3)
   if(TARGET lvr2::lvr2)
     add_library(lvr3::lvr3 ALIAS lvr2::lvr2)
@@ -85,15 +93,29 @@ if(_LVR3_INSTALL_HAS_STATIC_TARGET AND NOT TARGET lvr3::lvr3_static)
   add_library(lvr3::lvr3_static ALIAS ${_LVR3_STATIC_ALIAS_TARGET})
 endif()
 
+if(NOT DEFINED LVR2_USE_STATIC_LIBS)
+  option(LVR2_USE_STATIC_LIBS "Prefer static lvr2 library when available" ${_LVR3_INSTALL_HAS_STATIC_TARGET})
+endif()
+if(LVR2_USE_STATIC_LIBS AND TARGET lvr2::lvr2_static)
+  set(LVR2_LIBRARY lvr2::lvr2_static)
+elseif(TARGET lvr2::lvr2)
+  set(LVR2_LIBRARY lvr2::lvr2)
+endif()
+set(LVR2_LIBRARIES ${LVR2_LIBRARY})
+
 set(_LVR3_KNOWN_COMPONENTS geometry io reconstruction texture registration display)
 foreach(_LVR3_COMPONENT IN LISTS _LVR3_KNOWN_COMPONENTS)
   if(TARGET lvr2::${_LVR3_COMPONENT})
     if(NOT TARGET lvr3::${_LVR3_COMPONENT})
       add_library(lvr3::${_LVR3_COMPONENT} ALIAS lvr2::${_LVR3_COMPONENT})
     endif()
+    set(lvr2_${_LVR3_COMPONENT}_FOUND TRUE)
+    set(LVR2_${_LVR3_COMPONENT}_FOUND TRUE)
     set(lvr3_${_LVR3_COMPONENT}_FOUND TRUE)
     set(LVR3_${_LVR3_COMPONENT}_FOUND TRUE)
   else()
+    set(lvr2_${_LVR3_COMPONENT}_FOUND FALSE)
+    set(LVR2_${_LVR3_COMPONENT}_FOUND FALSE)
     set(lvr3_${_LVR3_COMPONENT}_FOUND FALSE)
     set(LVR3_${_LVR3_COMPONENT}_FOUND FALSE)
   endif()
@@ -122,6 +144,8 @@ else()
 endif()
 set(LVR3_LIBRARIES ${LVR3_LIBRARY})
 
+set(lvr2_FOUND TRUE)
+set(LVR2_FOUND ${lvr2_FOUND})
 set(lvr3_FOUND TRUE)
 check_required_components(lvr3)
 set(LVR3_FOUND ${lvr3_FOUND})

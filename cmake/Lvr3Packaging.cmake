@@ -2,7 +2,7 @@
 # AUTO PACKAGING USING CPACK
 ############
 
-# Only enable packaging when lvr2 is the top-level project
+# Only enable packaging when lvr3 is the top-level project
 if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     return()
 endif()
@@ -27,9 +27,10 @@ else()
     set(OS_NAME "${CMAKE_SYSTEM_NAME}")
 endif()
 
-# Package name: lvr2-version-arch-os
+# Package name: lvr3-version-arch-os
+set(CPACK_PACKAGE_NAME "lvr3")
 set(CPACK_PACKAGE_FILE_NAME
-    "lvr2-${PROJECT_VERSION}-${ARCH}-${OS_NAME}"
+    "lvr3-${PROJECT_VERSION}-${ARCH}-${OS_NAME}"
 )
 
 # Generators
