@@ -18,7 +18,7 @@ foreach(_root IN LISTS _roots)
   set(_path "${LVR2_SOURCE_DIR}/${_root}")
   if(EXISTS "${_path}")
     if(IS_DIRECTORY "${_path}")
-      file(GLOB_RECURSE _files CONFIGURE_DEPENDS
+      file(GLOB_RECURSE _files LIST_DIRECTORIES false
         "${_path}/*")
     else()
       set(_files "${_path}")

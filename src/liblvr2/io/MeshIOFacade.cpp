@@ -139,7 +139,7 @@ bool isPrivateBackendSaveFormat(Format format)
 
 } // namespace
 
-#ifndef LVR2_MESH_IO_HAS_ASSIMP
+#ifndef LVR2_MESH_ASSET_IO_ENABLED
 namespace detail
 {
 
