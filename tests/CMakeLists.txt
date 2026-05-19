@@ -329,6 +329,17 @@ set_tests_properties(lvr2_source_include_root_guard
 )
 
 add_test(
+  NAME lvr2_cmake_toolchain_contract
+  COMMAND ${CMAKE_COMMAND}
+    -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+    -P ${CMAKE_CURRENT_LIST_DIR}/cmake_toolchain_contract.cmake
+)
+set_tests_properties(lvr2_cmake_toolchain_contract
+  PROPERTIES
+    LABELS "cmake;toolchain;presets"
+)
+
+add_test(
   NAME lvr2_lyrical_cxx20_baseline
   COMMAND ${CMAKE_COMMAND}
     -DLVR2_SOURCE_DIR=${PROJECT_SOURCE_DIR}

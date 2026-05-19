@@ -28,7 +28,7 @@ https://github.com/uos/lvr2 - develop
 
 ### Step 1: Install build tools and vcpkg dependencies
 
-A C++20 compiler and CMake 4.2 or newer are required for the primary ROS 2 Lyrical / Ubuntu Resolute 26.04 target. Dependencies are resolved primarily through the `vcpkg.json` manifest:
+A C++20 compiler and CMake 4.2 or newer are required for the primary ROS 2 Lyrical / Ubuntu Resolute 26.04 target; see `docs/cmake/toolchain-contract.md` for the executable CMake/Ninja/preset contract. Dependencies are resolved primarily through the `vcpkg.json` manifest:
 
 ```bash
 git clone https://github.com/microsoft/vcpkg.git ~/vcpkg
