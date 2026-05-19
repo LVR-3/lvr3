@@ -34,7 +34,7 @@ add_executable(lvr2_mesh_reduce ${LVR_REDUCE_SOURCES})
 #set_target_properties(lvr2_mesh_reduce PROPERTIES BINARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 target_link_libraries(lvr2_mesh_reduce ${LVR_REDUCE_DEPENDENCIES})
 
-find_package(HDF5 QUIET REQUIRED)
+lvr2_find_package(HDF5 QUIET REQUIRED)
 include_directories(${HDF5_INCLUDE_DIR})
 target_link_libraries(lvr2_mesh_reduce ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 

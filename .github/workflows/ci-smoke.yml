@@ -51,7 +51,7 @@ jobs:
         run: |
           apt-get update
           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            build-essential ca-certificates cmake curl git ninja-build pkg-config tar unzip zip
+            build-essential ca-certificates cmake curl git libgl-dev ninja-build pkg-config tar unzip zip
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -171,7 +171,7 @@ jobs:
         run: |
           apt-get update
           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            build-essential ca-certificates cmake curl git ninja-build pkg-config python3 tar unzip zip
+            build-essential ca-certificates cmake curl git libgl-dev ninja-build pkg-config python3 tar unzip zip
 
       - name: Checkout
         uses: actions/checkout@v4

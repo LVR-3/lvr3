@@ -118,7 +118,7 @@ set_tests_properties(lvr2_cli_parser_contracts
 )
 
 if(NOT LVR2_SPDLOG_TARGET)
-  find_package(spdlog CONFIG QUIET)
+  lvr2_find_package(spdlog CONFIG QUIET)
   if(TARGET spdlog::spdlog_header_only)
     set(LVR2_SPDLOG_TARGET spdlog::spdlog_header_only)
   endif()

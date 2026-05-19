@@ -34,9 +34,7 @@ elseif(LVR2_WITH_VCPKG)
 endif()
 
 if(LVR2_IGNORE_SYSTEM_PACKAGES)
-  message(STATUS "LVR2_IGNORE_SYSTEM_PACKAGES=ON: disabling CMake system/env search by default")
-  set(CMAKE_FIND_USE_CMAKE_SYSTEM_PATH OFF)
-  set(CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH OFF)
+  message(STATUS "LVR2_IGNORE_SYSTEM_PACKAGES=ON: isolating lvr2_find_package() calls from CMake system/env package search by default")
 endif()
 
 set(_LVR2_SYSTEM_PACKAGE_OPTOUTS
