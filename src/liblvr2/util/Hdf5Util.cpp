@@ -236,7 +236,7 @@ bool exist(const HighFive::Group& group, const std::string& groupName)
     return false;
 }
 
-std::shared_ptr<HighFive::File> open(const std::filesystem::path& filename, unsigned int flag)
+std::shared_ptr<HighFive::File> open(const std::filesystem::path& filename, HighFive::File::AccessMode flag)
 {
     std::shared_ptr<HighFive::File> hdf5_file;
 
@@ -258,47 +258,47 @@ std::optional<std::string> highFiveTypeToLvr(std::string h5type)
 {
     std::optional<std::string> ret;
 
-    if(HighFive::AtomicType<char>().string() == h5type)
+    if(HighFive::create_datatype<char>().string() == h5type)
     {
         ret = Channel<char>::typeName();
     } else
-    if(HighFive::AtomicType<unsigned char>().string() == h5type)
+    if(HighFive::create_datatype<unsigned char>().string() == h5type)
     {
         ret = Channel<unsigned char>::typeName();
     } else
-    if(HighFive::AtomicType<short>().string() == h5type)
+    if(HighFive::create_datatype<short>().string() == h5type)
     {
         ret = Channel<short>::typeName();
     } else
-    if(HighFive::AtomicType<unsigned short>().string() == h5type)
+    if(HighFive::create_datatype<unsigned short>().string() == h5type)
     {
         ret = Channel<unsigned short>::typeName();
     } else
-    if(HighFive::AtomicType<int>().string() == h5type)
+    if(HighFive::create_datatype<int>().string() == h5type)
     {
         ret = Channel<int>::typeName();
     } else
-    if(HighFive::AtomicType<long int>().string() == h5type)
+    if(HighFive::create_datatype<long int>().string() == h5type)
     {
         ret = Channel<long int>::typeName();
     } else
-    if(HighFive::AtomicType<unsigned int>().string() == h5type)
+    if(HighFive::create_datatype<unsigned int>().string() == h5type)
     {
         ret = Channel<unsigned int>::typeName();
     } else
-    if(HighFive::AtomicType<size_t>().string() == h5type)
+    if(HighFive::create_datatype<size_t>().string() == h5type)
     {
         ret = Channel<size_t>::typeName();
     } else
-    if(HighFive::AtomicType<float>().string() == h5type)
+    if(HighFive::create_datatype<float>().string() == h5type)
     {
         ret = Channel<float>::typeName();
     } else
-    if(HighFive::AtomicType<double>().string() == h5type)
+    if(HighFive::create_datatype<double>().string() == h5type)
     {
         ret = Channel<double>::typeName();
     } else
-    if(HighFive::AtomicType<bool>().string() == h5type)
+    if(HighFive::create_datatype<bool>().string() == h5type)
     {
         ret = Channel<bool>::typeName();
     }

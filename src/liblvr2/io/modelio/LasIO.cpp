@@ -70,9 +70,9 @@ ModelPtr LasIO::read(string filename )
         {
             size_t buf_pos = 3 * i;
             lasreader->read_point();
-            points[buf_pos]     = lasreader->point.x;
-            points[buf_pos + 1] = lasreader->point.y;
-            points[buf_pos + 2] = lasreader->point.z;
+            points[buf_pos]     = static_cast<float>(lasreader->point.get_x());
+            points[buf_pos + 1] = static_cast<float>(lasreader->point.get_y());
+            points[buf_pos + 2] = static_cast<float>(lasreader->point.get_z());
 
             // Create fake colors from intensities
             /// TODO: Check for color attributes if possible...

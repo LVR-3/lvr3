@@ -39,7 +39,7 @@ ChannelOptional<T> HDF5Kernel::loadChannelOptional(
             if (elementCount)
             {
                 ret = Channel<T>(dim[0], dim[1]);
-                dataset.read(ret->dataPtr().get());
+                dataset.read_raw(ret->dataPtr().get());
             }
         }
     }
@@ -101,7 +101,7 @@ std::shared_ptr<T[]> HDF5Kernel::loadArray(
             {
                 ret = std::shared_ptr<T[]>(new T[elementCount]);
 
-                dataset.read(ret.get());
+                dataset.read_raw(ret.get());
             }
         }
     }
@@ -213,7 +213,7 @@ bool HDF5Kernel::getChannel(const std::string group, const std::string name, std
             if(elementCount)
             {
                 channel = Channel<T>(dim[0], dim[1]);
-                dataset.read(channel->dataPtr().get());
+                dataset.read_raw(channel->dataPtr().get());
             }
         }
     }

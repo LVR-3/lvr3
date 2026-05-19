@@ -839,22 +839,22 @@ void SurfaceMeshIO::read_pmp(SurfaceMesh& mesh)
 template<typename T>
 void read_vprop(const HighFive::Group& group, SurfaceMesh& mesh, const std::string& name)
 {
-    if (group.exist(name)) group.getDataSet(name).read((char*)mesh.vertex_property<T>(name).data());
+    if (group.exist(name)) group.getDataSet(name).read_raw((char*)mesh.vertex_property<T>(name).data());
 }
 template<typename T>
 void read_eprop(const HighFive::Group& group, SurfaceMesh& mesh, const std::string& name)
 {
-    if (group.exist(name)) group.getDataSet(name).read((char*)mesh.edge_property<T>(name).data());
+    if (group.exist(name)) group.getDataSet(name).read_raw((char*)mesh.edge_property<T>(name).data());
 }
 template<typename T>
 void read_hprop(const HighFive::Group& group, SurfaceMesh& mesh, const std::string& name)
 {
-    if (group.exist(name)) group.getDataSet(name).read((char*)mesh.halfedge_property<T>(name).data());
+    if (group.exist(name)) group.getDataSet(name).read_raw((char*)mesh.halfedge_property<T>(name).data());
 }
 template<typename T>
 void read_fprop(const HighFive::Group& group, SurfaceMesh& mesh, const std::string& name)
 {
-    if (group.exist(name)) group.getDataSet(name).read((char*)mesh.face_property<T>(name).data());
+    if (group.exist(name)) group.getDataSet(name).read_raw((char*)mesh.face_property<T>(name).data());
 }
 
 void SurfaceMeshIO::read_hdf5(const HighFive::Group& group, SurfaceMesh& mesh)

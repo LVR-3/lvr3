@@ -99,6 +99,25 @@ set_tests_properties(lvr2_storage_backend_span_contracts
     LABELS "cpp;io;scan;storage;spans"
 )
 
+if(BUILD_SHARED_LIBS)
+  add_executable(lvr2_hdf5_mesh_store_contracts
+    test_hdf5_mesh_store_contracts.cpp
+  )
+  target_include_directories(lvr2_hdf5_mesh_store_contracts PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/src/liblvr2/private
+  )
+  target_compile_features(lvr2_hdf5_mesh_store_contracts PRIVATE cxx_std_20)
+  target_link_libraries(lvr2_hdf5_mesh_store_contracts PRIVATE lvr2)
+  add_test(NAME lvr2_hdf5_mesh_store_contracts COMMAND lvr2_hdf5_mesh_store_contracts)
+  set_tests_properties(lvr2_hdf5_mesh_store_contracts
+    PROPERTIES
+      LABELS "cpp;io;mesh;storage;hdf5"
+  )
+else()
+  message(STATUS "Shared library disabled; skipping HDF5 mesh-store runtime contract target.")
+endif()
+
 add_executable(lvr2_mapped_file_contracts
   test_mapped_file.cpp
   ${PROJECT_SOURCE_DIR}/src/liblvr2/util/MappedFile.cpp

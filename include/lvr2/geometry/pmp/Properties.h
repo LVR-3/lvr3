@@ -84,7 +84,7 @@ public:
         {
             throw std::runtime_error("PropertyArray::restore: Dimension mismatch");
         }
-        dataset.read(start);
+        dataset.read_raw(start);
     }
 
     //! Return the type_info of the property
