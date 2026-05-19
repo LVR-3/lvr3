@@ -33,7 +33,7 @@ set(_banned_metadata_patterns
 foreach(_root IN LISTS _roots)
   set(_path "${LVR2_SOURCE_DIR}/${_root}")
   if(IS_DIRECTORY "${_path}")
-    file(GLOB_RECURSE _files CONFIGURE_DEPENDS "${_path}/*")
+    file(GLOB_RECURSE _files LIST_DIRECTORIES false "${_path}/*")
   elseif(EXISTS "${_path}")
     set(_files "${_path}")
   else()

@@ -290,7 +290,7 @@ if(BUILD_SHARED_LIBS)
             target_link_libraries(lvr2 PRIVATE ${LVR2_ASSIMP_LIBRARIES})
             target_include_directories(lvr2 PRIVATE ${LVR2_ASSIMP_INCLUDE_DIRS})
         endif()
-        target_compile_definitions(lvr2 PRIVATE LVR2_MESH_IO_HAS_ASSIMP=1)
+        target_compile_definitions(lvr2 PRIVATE LVR2_MESH_ASSET_IO_ENABLED=1)
     endif()
     target_compile_definitions(lvr2
         PUBLIC
